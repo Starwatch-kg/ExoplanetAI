@@ -1,8 +1,7 @@
 import sys
 sys.path.append('./src')
-
 from preprocess import load_lightcurve, normalize
-import visualizelightcurve
+from visualize import plot_lightcurve
 
 if __name__ == "__main__":
     data = load_lightcurve('data/kepler_data.csv')
@@ -11,6 +10,6 @@ if __name__ == "__main__":
     data = normalize(data)
     print('Данные нормализованы')
     
-    print('visualizelightcurve module path:', visualizelightcurve.__file__)
-    visualizelightcurve.plot_lightcurve(data)
+    print('plot_lightcurve function path:', plot_lightcurve.__module__)
+    plot_lightcurve(data)
     print(data.head())
