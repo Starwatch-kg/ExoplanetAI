@@ -1,0 +1,104 @@
+# --- General Configuration ---
+seed: 42
+log_dir: "logs/exoplanet_run"
+input_length: 2000 # Должно соответствовать данным
+batch_size: 32
+epochs: 15
+learning_rate: 0.001
+num_workers: 0 # 0 для Windows/macOS, можно > 0 для Linux
+
+# --- Data Configuration ---
+data_path: "data/kepler_data.csv" # Путь к основному датасету
+cache_dir: "data/tess_cache"
+output_dir: "results"
+
+# --- Synthetic Data Generation (for main.py debug) ---
+synthetic_data:
+  num_samples: 200
+  length: 2000
+  transit_fraction: 0.5
+
+# --- Model Configuration (ExoplanetNet) ---
+model:
+  num_blocks: 4
+  base_filters: 16
+  kernel_size: 11
+  dropout_rate: 0.3
+  weight_decay: 1e-4
+
+# --- Callbacks Configuration ---
+callbacks:
+  early_stopping:
+    patience: 5
+  reduce_lr:
+    patience: 2
+    factor: 0.2
+
+# --- Inference Configuration ---
+inference:
+  stride: 100
+  threshold: 0.6
+  min_len: 3
+
+# --- TESS Data Loading Configuration ---
+tess_config:
+  min_cadence_length: 1000
+  max_outlier_fraction: 0.1
+  sectors: [1, 2, 3, 4, 5]  # Секторы TESS для анализа
+
+# --- Hybrid Transit Search Configuration ---
+bls_config:
+  period_range: [0.5, 50.0]
+  nperiods: 1000
+  oversample_factor: 5
+
+neural_config:
+  input_length: 2000
+  hidden_dim: 256
+  num_layers: 3
+  dropout: 0.3
+
+# --- Representation Learning Configuration ---
+representation_config:
+  embedding_dim: 128
+  hidden_dim: 256
+  num_layers: 4
+  dropout: 0.1
+  temperature: 0.1
+
+# --- Anomaly Detection Configuration ---
+anomaly_config:
+  latent_dim: 32
+  hidden_dim: 256
+  vae_weight: 0.4
+  bnn_weight: 0.3
+  svm_weight: 0.3
+
+# --- Training Configuration ---
+training:
+  representation_epochs: 100
+  anomaly_epochs: 100
+  learning_rate: 1e-3
+  batch_size: 32
+  weight_decay: 1e-4
+
+# --- Search Configuration ---
+search:
+  confidence_threshold: 0.3
+  top_n_candidates: 50
+  min_transit_depth: 0.001
+  max_transit_depth: 0.1
+
+# --- GPU Optimization Configuration ---
+gpu_config:
+  device_id: null  # null для автоматического выбора
+  memory_fraction: 0.8
+  mixed_precision: true
+  gradient_accumulation_steps: 1
+
+# --- Parallel Processing Configuration ---
+parallel_config:
+  num_workers: 4
+  use_multiprocessing: true
+  max_batch_size: 64
+  prefetch_factor: 2
