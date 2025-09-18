@@ -1,0 +1,687 @@
+/* Импорт шрифтов - должен быть первым */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&family=JetBrains+Mono:wght@100;200;300;400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+
+/* Tailwind CSS directives */
+/* eslint-disable-next-line */
+@tailwind base;
+/* eslint-disable-next-line */
+@tailwind components;
+/* eslint-disable-next-line */
+@tailwind utilities;
+
+@layer base {
+  body {
+    background: linear-gradient(to bottom right, #0f172a, #581c87, #0f172a);
+    color: white;
+    min-height: 100vh;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+  
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+@layer components {
+  .cosmic-gradient {
+    background: linear-gradient(to bottom right, #0f172a, #581c87, #0f172a);
+  }
+  
+  .glass-effect {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+  
+  .glow-effect {
+    box-shadow: 0 10px 15px -3px rgba(6, 182, 212, 0.25);
+  }
+  
+  .space-card {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    box-shadow: 0 10px 15px -3px rgba(6, 182, 212, 0.25);
+    transition: all 0.3s;
+  }
+  
+  .space-card:hover {
+    box-shadow: 0 10px 15px -3px rgba(6, 182, 212, 0.4);
+  }
+  
+  .cosmic-button {
+    background: linear-gradient(to right, #06b6d4, #9333ea);
+    color: white;
+    font-weight: 600;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    transition: all 0.3s;
+    transform: scale(1);
+    box-shadow: 0 10px 15px -3px rgba(6, 182, 212, 0.25);
+  }
+  
+  .cosmic-button:hover {
+    background: linear-gradient(to right, #0891b2, #7c3aed);
+    transform: scale(1.05);
+  }
+  
+  .cosmic-input {
+    background: rgba(30, 41, 59, 0.5);
+    border: 1px solid rgba(6, 182, 212, 0.3);
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+    color: white;
+    transition: all 0.3s;
+  }
+  
+  .cosmic-input::placeholder {
+    color: rgba(148, 163, 184, 1);
+  }
+  
+  .cosmic-input:focus {
+    border-color: #22d3ee;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(34, 211, 238, 0.2);
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background-color: #1e293b;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgba(6, 182, 212, 0.5);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(34, 211, 238, 0.7);
+}
+
+/* Starfield animation */
+.starfield {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.star {
+  position: absolute;
+  background: white;
+  border-radius: 50%;
+  animation: twinkle 2s ease-in-out infinite alternate;
+}
+
+.star:nth-child(odd) {
+  animation-delay: 1s;
+}
+
+.star:nth-child(3n) {
+  animation-delay: 2s;
+}
+
+/* Loading animation */
+.loading-dots {
+  display: inline-block;
+}
+
+.loading-dots::after {
+  content: '';
+  animation: dots 1.5s steps(4, end) infinite;
+}
+
+@keyframes dots {
+  0%, 20% { content: ''; }
+  40% { content: '.'; }
+  60% { content: '..'; }
+  80%, 100% { content: '...'; }
+}
+
+@keyframes twinkle {
+  0% { opacity: 0.3; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.2); }
+  100% { opacity: 0.3; transform: scale(1); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 5px rgba(6, 182, 212, 0.5), 0 0 10px rgba(6, 182, 212, 0.3), 0 0 15px rgba(6, 182, 212, 0.2); }
+  50% { box-shadow: 0 0 10px rgba(6, 182, 212, 0.8), 0 0 20px rgba(6, 182, 212, 0.6), 0 0 30px rgba(6, 182, 212, 0.4); }
+}
+
+@keyframes neon-flicker {
+  0%, 100% { text-shadow: 0 0 5px #06b6d4, 0 0 10px #06b6d4, 0 0 15px #06b6d4; }
+  50% { text-shadow: 0 0 2px #06b6d4, 0 0 5px #06b6d4, 0 0 8px #06b6d4; }
+}
+
+@keyframes slide-in-from-space {
+  0% { transform: translateX(-100px) rotate(-5deg); opacity: 0; }
+  100% { transform: translateX(0) rotate(0deg); opacity: 1; }
+}
+
+@keyframes cosmic-rotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes particle-drift {
+  0% { transform: translateY(100vh) translateX(-10px); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateY(-100px) translateX(10px); opacity: 0; }
+}
+
+/* Темная космическая тема */
+:root {
+  --space-black: #0b0d17;
+  --deep-space: #1a1b2f;
+  --neon-blue: #6ec3f9;
+  --planet-orange: #ff6b35;
+  --exo-purple: #9d4edd;
+}
+
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: radial-gradient(ellipse at center, var(--deep-space) 0%, var(--space-black) 70%);
+  color: #ffffff;
+  min-height: 100vh;
+}
+
+/* Улучшенные стили компонентов */
+.button {
+  background: linear-gradient(135deg, var(--neon-blue), var(--exo-purple));
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 14px 28px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(6, 182, 212, 0.3);
+}
+
+.button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.button:hover::before {
+  left: 100%;
+}
+
+.button:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 15px 35px rgba(6, 182, 212, 0.4), 0 5px 15px rgba(157, 78, 221, 0.3);
+  animation: glow-pulse 2s infinite;
+}
+
+/* Карточки с космическими эффектами */
+.cosmic-card {
+  background: linear-gradient(145deg, rgba(26, 27, 47, 0.9), rgba(11, 13, 23, 0.8));
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(110, 195, 249, 0.2);
+  border-radius: 16px;
+  padding: 24px;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  animation: float 6s ease-in-out infinite;
+}
+
+.cosmic-card::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(45deg, #06b6d4, #9d4edd, #ff6b35, #06b6d4);
+  border-radius: 18px;
+  opacity: 0;
+  z-index: -1;
+  transition: opacity 0.3s;
+  animation: cosmic-rotate 4s linear infinite;
+}
+
+.cosmic-card:hover::before {
+  opacity: 0.7;
+}
+
+.cosmic-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 20px 40px rgba(6, 182, 212, 0.3), 0 10px 20px rgba(157, 78, 221, 0.2);
+  border-color: rgba(110, 195, 249, 0.5);
+}
+
+/* Неоновые заголовки */
+.neon-title {
+  color: #06b6d4;
+  text-shadow: 0 0 10px #06b6d4, 0 0 20px #06b6d4, 0 0 30px #06b6d4;
+  animation: neon-flicker 3s infinite alternate;
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+
+/* Светящиеся границы */
+.glow-border {
+  border: 2px solid transparent;
+  background: linear-gradient(145deg, rgba(26, 27, 47, 0.9), rgba(11, 13, 23, 0.8)) padding-box,
+              linear-gradient(45deg, #06b6d4, #9d4edd) border-box;
+  border-radius: 12px;
+  animation: glow-pulse 3s infinite;
+}
+
+/* Частицы в фоне */
+.cosmic-particles {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: -2;
+}
+
+.particle {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background: #06b6d4;
+  border-radius: 50%;
+  animation: particle-drift 15s linear infinite;
+  box-shadow: 0 0 6px #06b6d4;
+}
+
+.particle:nth-child(2n) {
+  background: #9d4edd;
+  box-shadow: 0 0 6px #9d4edd;
+  animation-duration: 20s;
+  animation-delay: -5s;
+}
+
+.particle:nth-child(3n) {
+  background: #ff6b35;
+  box-shadow: 0 0 6px #ff6b35;
+  animation-duration: 25s;
+  animation-delay: -10s;
+}
+
+/* Анимации для графиков */
+@keyframes pulsate {
+  0% { opacity: 0.8; }
+  50% { opacity: 1; }
+  100% { opacity: 0.8; }
+}
+
+.plot-container {
+  animation: pulsate 4s infinite;
+}
+
+/* Минималистичная тема система с деталями */
+:root {
+  /* Темная космическая тема - минимализм */
+  --bg-primary: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 50%, #16213e 100%);
+  --bg-secondary: rgba(15, 23, 42, 0.95);
+  --bg-tertiary: rgba(30, 41, 59, 0.8);
+  --bg-glass: rgba(255, 255, 255, 0.05);
+  
+  /* Текст - улучшенная типографика */
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-tertiary: #94a3b8;
+  --text-accent: #38bdf8;
+  --text-muted: #64748b;
+  
+  /* Границы - тонкие и элегантные */
+  --border-primary: rgba(148, 163, 184, 0.1);
+  --border-secondary: rgba(148, 163, 184, 0.2);
+  --border-accent: rgba(56, 189, 248, 0.3);
+  --border-glow: rgba(56, 189, 248, 0.6);
+  
+  /* Тени - мягкие и глубокие */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.15);
+  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.25);
+  --shadow-glow: 0 0 20px rgba(56, 189, 248, 0.2);
+  --shadow-glow-strong: 0 0 40px rgba(56, 189, 248, 0.4);
+  
+  /* Градиенты - утонченные */
+  --gradient-primary: linear-gradient(135deg, #38bdf8 0%, #8b5cf6 100%);
+  --gradient-secondary: linear-gradient(135deg, #06b6d4 0%, #3b82f6 50%, #8b5cf6 100%);
+  --gradient-accent: linear-gradient(90deg, transparent 0%, rgba(56, 189, 248, 0.1) 50%, transparent 100%);
+  
+  /* Размеры - точная система */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-2xl: 3rem;
+  
+  /* Радиусы - современные */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.5rem;
+}
+
+/* Светлая тема */
+[data-theme="light"] {
+  --bg-primary: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  --bg-secondary: linear-gradient(145deg, rgba(248, 250, 252, 0.9), rgba(226, 232, 240, 0.8));
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --text-accent: #0369a1;
+  --border-primary: rgba(3, 105, 161, 0.2);
+  --border-glow: rgba(3, 105, 161, 0.5);
+  --shadow-glow: 0 0 20px rgba(3, 105, 161, 0.2);
+  --gradient-primary: linear-gradient(135deg, #0369a1, #7c3aed);
+  --gradient-secondary: linear-gradient(45deg, #0369a1, #7c3aed, #ea580c);
+}
+
+/* Улучшенные переходы между темами */
+* {
+  transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+              border-color 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+              color 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Современные шрифты - перемещаем в начало файла */
+
+body {
+  font-family: 'Space Grotesk', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.7;
+  letter-spacing: -0.01em;
+  font-weight: 400;
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Минималистичные кнопки с деталями */
+.btn {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-secondary);
+  border-radius: var(--radius-lg);
+  padding: var(--space-sm) var(--space-lg);
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 500;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+  letter-spacing: 0.025em;
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-primary {
+  background: var(--gradient-primary);
+  border: 1px solid var(--border-accent);
+  color: white;
+  font-weight: 600;
+  box-shadow: var(--shadow-glow);
+}
+
+.btn-ghost {
+  background: transparent;
+  border: 1px solid var(--border-primary);
+  color: var(--text-secondary);
+}
+
+.btn-minimal {
+  background: var(--bg-glass);
+  border: 1px solid var(--border-primary);
+  color: var(--text-primary);
+  backdrop-filter: blur(20px);
+}
+
+.btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn:hover::before {
+  left: 100%;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--border-accent);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-glow-strong);
+  filter: brightness(1.1);
+}
+
+.btn-ghost:hover {
+  background: var(--bg-glass);
+  color: var(--text-primary);
+  border-color: var(--border-secondary);
+}
+
+.btn-minimal:hover {
+  background: var(--bg-secondary);
+  border-color: var(--border-accent);
+  box-shadow: var(--shadow-glow);
+}
+
+/* Минималистичные карточки с деталями */
+.card {
+  background: var(--bg-secondary);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-xl);
+  padding: var(--space-xl);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.card-minimal {
+  background: var(--bg-glass);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  backdrop-filter: blur(30px);
+}
+
+.card-elevated {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-secondary);
+  box-shadow: var(--shadow-lg);
+}
+
+.card-glass {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-primary);
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: var(--gradient-secondary);
+  border-radius: 18px;
+  opacity: 0;
+  z-index: -1;
+  transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: cosmic-rotate 8s linear infinite;
+}
+
+.card:hover::before {
+  opacity: 0.1;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2), var(--shadow-glow);
+  border-color: var(--border-glow);
+}
+
+/* Заголовки с неоновыми эффектами */
+.title {
+  color: var(--text-accent);
+  font-family: 'Inter', sans-serif;
+  font-weight: 800;
+  letter-spacing: -0.05em;
+  text-shadow: 0 0 10px var(--border-glow);
+  animation: neon-flicker 4s infinite alternate;
+}
+
+/* Инпуты с космическими эффектами */
+.input {
+  background: var(--bg-secondary);
+  border: 2px solid var(--border-primary);
+  border-radius: 12px;
+  padding: 14px 16px;
+  color: var(--text-primary);
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(10px);
+}
+
+.input::placeholder {
+  color: var(--text-secondary);
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--border-accent);
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.1), var(--shadow-glow);
+  transform: translateY(-1px);
+}
+
+/* Минималистичная типографика */
+.text-heading {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.text-body {
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  line-height: 1.6;
+  letter-spacing: -0.01em;
+}
+
+.text-mono {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+.text-xs { font-size: 11px; }
+.text-sm { font-size: 13px; }
+.text-base { font-size: 14px; }
+.text-lg { font-size: 16px; }
+.text-xl { font-size: 18px; }
+.text-2xl { font-size: 24px; }
+.text-3xl { font-size: 32px; }
+
+/* Утилитарные классы для минимализма */
+.glass-effect {
+  background: var(--bg-glass);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border-primary);
+}
+
+.subtle-border {
+  border: 1px solid var(--border-primary);
+}
+
+.accent-border {
+  border: 1px solid var(--border-accent);
+}
+
+.glow-subtle {
+  box-shadow: var(--shadow-glow);
+}
+
+.glow-strong {
+  box-shadow: var(--shadow-glow-strong);
+}
+
+.surface-minimal {
+  background: var(--bg-glass);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+}
+
+.surface-elevated {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-secondary);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Анимации для минимализма */
+.hover-lift {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.hover-glow {
+  transition: all 0.3s ease;
+}
+
+.hover-glow:hover {
+  box-shadow: var(--shadow-glow);
+  border-color: var(--border-accent);
+}

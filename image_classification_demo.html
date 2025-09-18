@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CNN Классификация Изображений - Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e293b 0%, #334155 50%, #1e293b 100%);
+            color: #f1f5f9;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #06b6d4, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            color: #94a3b8;
+            font-size: 1.1rem;
+        }
+
+        .upload-area {
+            background: rgba(30, 41, 59, 0.8);
+            border: 2px dashed #475569;
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 30px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .upload-area:hover {
+            border-color: #06b6d4;
+            background: rgba(6, 182, 212, 0.1);
+        }
+
+        .upload-area.dragover {
+            border-color: #06b6d4;
+            background: rgba(6, 182, 212, 0.2);
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            color: #94a3b8;
+        }
+
+        .model-selector {
+            background: rgba(30, 41, 59, 0.6);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .model-selector h3 {
+            margin-bottom: 15px;
+            color: #06b6d4;
+        }
+
+        .model-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+        }
+
+        .model-btn {
+            background: rgba(51, 65, 85, 0.8);
+            border: 2px solid #475569;
+            color: #f1f5f9;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .model-btn:hover {
+            border-color: #06b6d4;
+            background: rgba(6, 182, 212, 0.2);
+        }
+
+        .model-btn.active {
+            border-color: #06b6d4;
+            background: rgba(6, 182, 212, 0.3);
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .upload-btn {
+            background: linear-gradient(45deg, #06b6d4, #3b82f6);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .upload-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .result-card {
+            background: rgba(30, 41, 59, 0.8);
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #475569;
+            transition: transform 0.3s ease;
+        }
+
+        .result-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .result-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .result-info {
+            padding: 20px;
+        }
+
+        .result-class {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #06b6d4;
+        }
+
+        .confidence-bar {
+            background: #374151;
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ef4444, #f59e0b, #10b981);
+            transition: width 0.5s ease;
+        }
+
+        .confidence-text {
+            font-size: 0.9rem;
+            color: #94a3b8;
+        }
+
+        .processing {
+            text-align: center;
+            padding: 20px;
+            color: #06b6d4;
+        }
+
+        .spinner {
+            border: 3px solid #374151;
+            border-top: 3px solid #06b6d4;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid #ef4444;
+            color: #fca5a5;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .success {
+            background: rgba(16, 185, 129, 0.2);
+            border: 1px solid #10b981;
+            color: #6ee7b7;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧠 CNN Классификация Изображений</h1>
+            <p>Загрузите изображения для классификации с помощью сверточной нейронной сети</p>
+        </div>
+
+        <div class="model-selector">
+            <h3>Выберите модель CNN:</h3>
+            <div class="model-buttons">
+                <button class="model-btn active" data-model="resnet">
+                    <strong>ResNet CNN</strong><br>
+                    <small>Высокая точность</small>
+                </button>
+                <button class="model-btn" data-model="cnn">
+                    <strong>Basic CNN</strong><br>
+                    <small>Быстрая обработка</small>
+                </button>
+                <button class="model-btn" data-model="densenet">
+                    <strong>DenseNet CNN</strong><br>
+                    <small>Эффективная архитектура</small>
+                </button>
+                <button class="model-btn" data-model="attention">
+                    <strong>Attention CNN</strong><br>
+                    <small>С механизмом внимания</small>
+                </button>
+            </div>
+        </div>
+
+        <div class="upload-area" id="uploadArea">
+            <div class="upload-icon">📁</div>
+            <h3>Перетащите изображения сюда или нажмите для выбора</h3>
+            <p>Поддерживаемые форматы: JPEG, PNG, WebP, BMP</p>
+            <br>
+            <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
+                Выбрать файлы
+            </button>
+            <input type="file" id="fileInput" class="file-input" multiple accept="image/*">
+        </div>
+
+        <div id="status"></div>
+        <div id="results" class="results-grid"></div>
+    </div>
+
+    <script>
+        let selectedModel = 'resnet';
+        const API_BASE = 'http://localhost:8000';
+
+        // Обработка выбора модели
+        document.querySelectorAll('.model-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.model-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                selectedModel = btn.dataset.model;
+            });
+        });
+
+        // Обработка drag & drop
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const statusDiv = document.getElementById('status');
+        const resultsDiv = document.getElementById('results');
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = Array.from(e.dataTransfer.files);
+            handleFiles(files);
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            const files = Array.from(e.target.files);
+            handleFiles(files);
+        });
+
+        function showStatus(message, type = 'info') {
+            statusDiv.innerHTML = `<div class="${type}">${message}</div>`;
+        }
+
+        function showProcessing() {
+            statusDiv.innerHTML = `
+                <div class="processing">
+                    <div class="spinner"></div>
+                    Обработка изображений...
+                </div>
+            `;
+        }
+
+        function handleFiles(files) {
+            if (files.length === 0) return;
+
+            // Фильтруем только изображения
+            const imageFiles = files.filter(file => file.type.startsWith('image/'));
+            
+            if (imageFiles.length === 0) {
+                showStatus('Пожалуйста, выберите файлы изображений', 'error');
+                return;
+            }
+
+            if (imageFiles.length > 10) {
+                showStatus('Максимум 10 изображений за раз', 'error');
+                return;
+            }
+
+            classifyImages(imageFiles);
+        }
+
+        async function classifyImages(files) {
+            showProcessing();
+            resultsDiv.innerHTML = '';
+
+            try {
+                for (const file of files) {
+                    await classifyImage(file);
+                }
+                showStatus(`Успешно обработано ${files.length} изображений`, 'success');
+            } catch (error) {
+                showStatus(`Ошибка: ${error.message}`, 'error');
+            }
+        }
+
+        async function classifyImage(file) {
+            const formData = new FormData();
+            formData.append('image', file);
+            formData.append('model_type', selectedModel);
+
+            try {
+                const response = await fetch(`${API_BASE}/api/cnn/classify-image`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const result = await response.json();
+                displayResult(file, result);
+            } catch (error) {
+                console.error('Classification error:', error);
+                displayError(file, error.message);
+            }
+        }
+
+        function displayResult(file, result) {
+            const imageUrl = URL.createObjectURL(file);
+            const confidence = Math.round(result.confidence * 100);
+            
+            const resultCard = document.createElement('div');
+            resultCard.className = 'result-card';
+            resultCard.innerHTML = `
+                <img src="${imageUrl}" alt="${file.name}" class="result-image">
+                <div class="result-info">
+                    <div class="result-class">${result.class_name}</div>
+                    <div class="confidence-bar">
+                        <div class="confidence-fill" style="width: ${confidence}%"></div>
+                    </div>
+                    <div class="confidence-text">
+                        Уверенность: ${confidence}% | Время: ${result.processing_time.toFixed(2)}с
+                    </div>
+                    <div style="margin-top: 10px; font-size: 0.8rem; color: #64748b;">
+                        Файл: ${file.name}
+                    </div>
+                </div>
+            `;
+            
+            resultsDiv.appendChild(resultCard);
+        }
+
+        function displayError(file, error) {
+            const resultCard = document.createElement('div');
+            resultCard.className = 'result-card';
+            resultCard.innerHTML = `
+                <div style="height: 200px; background: #374151; display: flex; align-items: center; justify-content: center; color: #94a3b8;">
+                    ❌ Ошибка загрузки
+                </div>
+                <div class="result-info">
+                    <div class="result-class" style="color: #ef4444;">Ошибка обработки</div>
+                    <div style="color: #94a3b8; font-size: 0.9rem;">
+                        ${error}
+                    </div>
+                    <div style="margin-top: 10px; font-size: 0.8rem; color: #64748b;">
+                        Файл: ${file.name}
+                    </div>
+                </div>
+            `;
+            
+            resultsDiv.appendChild(resultCard);
+        }
+
+        // Проверка доступности API при загрузке
+        window.addEventListener('load', async () => {
+            try {
+                const response = await fetch(`${API_BASE}/api/cnn/image-models`);
+                if (response.ok) {
+                    showStatus('✅ Сервер CNN готов к работе', 'success');
+                } else {
+                    showStatus('⚠️ Сервер недоступен. Запустите backend: python main.py', 'error');
+                }
+            } catch (error) {
+                showStatus('⚠️ Сервер недоступен. Запустите backend: python main.py', 'error');
+            }
+        });
+    </script>
+</body>
+</html>

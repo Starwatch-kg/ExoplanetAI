@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json.schemastore.org/package.json",
+  "name": "frontend",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@sentry/react": "^8.35.0",
+    "@sentry/vite-plugin": "^2.22.7",
+    "@types/react-router-dom": "^5.3.3",
+    "framer-motion": "^12.23.12",
+    "lucide-react": "^0.544.0",
+    "plotly.js-dist-min": "^3.1.0",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "react-plotly.js": "^2.6.0",
+    "react-router-dom": "^6.27.0",
+    "recharts": "^2.12.7",
+    "tailwindcss": "^3.4.17"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.33.0",
+    "@types/node": "^24.5.1",
+    "@types/react": "^19.1.10",
+    "@types/react-dom": "^19.1.7",
+    "@types/react-plotly.js": "^2.6.3",
+    "@types/recharts": "^1.8.29",
+    "@vitejs/plugin-react": "^5.0.0",
+    "autoprefixer": "^10.4.21",
+    "eslint": "^9.33.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.20",
+    "globals": "^16.3.0",
+    "postcss": "^8.5.6",
+    "typescript": "~5.8.3",
+    "typescript-eslint": "^8.39.1",
+    "vite": "^7.1.2"
+  }
+}
