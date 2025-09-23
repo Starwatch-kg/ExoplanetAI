@@ -1,0 +1,60 @@
+MIT License
+
+Copyright (c) 2024 Exoplanet Search Project
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+---
+
+Third-party licenses:
+
+This project uses several open-source libraries and datasets:
+
+1. Lightkurve (MIT License)
+   Copyright (c) 2017-2024 Lightkurve Collaboration
+
+2. Astropy (BSD 3-Clause License)
+   Copyright (c) 2011-2024, Astropy Developers
+
+3. FastAPI (MIT License)
+   Copyright (c) 2018 Sebastián Ramírez
+
+4. React (MIT License)
+   Copyright (c) Facebook, Inc. and its affiliates
+
+5. Three.js (MIT License)
+   Copyright © 2010-2024 three.js authors
+
+6. Plotly.js (MIT License)
+   Copyright (c) 2021 Plotly, Inc
+
+7. NASA/MAST Data
+   Data from the Mikulski Archive for Space Telescopes (MAST) is provided
+   courtesy of NASA and the Space Telescope Science Institute.
+
+8. TESS Mission Data
+   TESS data products are provided by the TESS Science Processing Operations
+   Center (SPOC) at NASA Ames Research Center.
+
+9. Kepler Mission Data
+   Kepler data products are provided by the Kepler Science Operations Center
+   at NASA Ames Research Center.
+
+For complete license information of third-party components, please refer to
+their respective repositories and documentation.
