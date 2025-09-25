@@ -1,0 +1,55 @@
+# GitHub Actions CI для ExoplanetAI Python
+name: CI Python
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test-backend:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install black flake8 mypy bandit pytest pytest-asyncio aiohttp cachetools
+        pip install -r backend/requirements.txt
+
+    - name: Run Black (code formatter)
+      run: black --check --diff backend/
+
+    - name: Run Flake8 (linter)
+      run: flake8 backend/ --count --select=E9,F63,F7,F82 --show-source --statistics
+
+    - name: Run MyPy (type checker)
+      run: mypy backend/ --ignore-missing-imports
+
+    - name: Run Bandit (security linter)
+      run: bandit -r backend/ -f json -o bandit-report.json
+
+    - name: Run pytest
+      run: pytest backend/tests/ -v --tb=short
+
+    - name: Upload test results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: pytest-results
+        path: htmlcov/
+
+    - name: Upload Bandit report
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: bandit-report
+        path: bandit-report.json

@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exoplanet AI - CORS Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .test-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .test-section h2 {
+            color: #ffd700;
+            margin-top: 0;
+        }
+        
+        button {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+        
+        button:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .result {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+            border-left: 4px solid #ffd700;
+        }
+        
+        .success {
+            border-left-color: #2ecc71;
+            background: rgba(46, 204, 113, 0.1);
+        }
+        
+        .error {
+            border-left-color: #e74c3c;
+            background: rgba(231, 76, 60, 0.1);
+        }
+        
+        .loading {
+            border-left-color: #f39c12;
+            background: rgba(243, 156, 18, 0.1);
+        }
+        
+        input, select {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 5px;
+            padding: 8px 12px;
+            color: white;
+            margin: 5px;
+            width: 200px;
+        }
+        
+        input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-success { background: #2ecc71; }
+        .status-error { background: #e74c3c; }
+        .status-loading { background: #f39c12; animation: pulse 1s infinite; }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌌 Exoplanet AI - CORS Test</h1>
+        
+        <div class="test-section">
+            <h2>🔍 Basic API Tests</h2>
+            <button onclick="testCORS()">Test CORS</button>
+            <button onclick="testHealth()">Test Health</button>
+            <button onclick="testRoot()">Test Root</button>
+            <div id="basic-results" class="result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>📊 BLS Analysis Test</h2>
+            <input type="text" id="target-name" placeholder="Target Name (e.g., TIC 123456789)" value="TIC 123456789">
+            <select id="catalog">
+                <option value="TIC">TIC</option>
+                <option value="KIC">KIC</option>
+                <option value="EPIC">EPIC</option>
+            </select>
+            <select id="mission">
+                <option value="TESS">TESS</option>
+                <option value="Kepler">Kepler</option>
+                <option value="K2">K2</option>
+            </select>
+            <br>
+            <button onclick="testBLS()">Run BLS Analysis</button>
+            <div id="bls-results" class="result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>🔍 Exoplanet Search Test</h2>
+            <input type="text" id="search-target" placeholder="Target Name" value="TIC 987654321">
+            <label><input type="checkbox" id="use-bls" checked> Use BLS</label>
+            <label><input type="checkbox" id="use-ai" checked> Use AI</label>
+            <br>
+            <button onclick="testSearch()">Run Search</button>
+            <div id="search-results" class="result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>📈 Connection Status</h2>
+            <div id="status">
+                <span class="status-indicator status-loading"></span>
+                Checking connection...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000';
+        const API_V1 = `${API_BASE}/api/v1`;
+        
+        // Utility functions
+        function updateStatus(success, message) {
+            const statusDiv = document.getElementById('status');
+            const indicator = success ? 'status-success' : 'status-error';
+            statusDiv.innerHTML = `<span class="status-indicator ${indicator}"></span>${message}`;
+        }
+        
+        function displayResult(elementId, result, isSuccess = true) {
+            const element = document.getElementById(elementId);
+            element.className = `result ${isSuccess ? 'success' : 'error'}`;
+            element.textContent = typeof result === 'object' ? JSON.stringify(result, null, 2) : result;
+        }
+        
+        function displayLoading(elementId, message = 'Loading...') {
+            const element = document.getElementById(elementId);
+            element.className = 'result loading';
+            element.textContent = message;
+        }
+        
+        async function makeRequest(url, options = {}) {
+            try {
+                const response = await fetch(url, {
+                    ...options,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...options.headers
+                    }
+                });
+                
+                const data = await response.json();
+                
+                return {
+                    success: response.ok,
+                    status: response.status,
+                    data: data,
+                    headers: Object.fromEntries(response.headers.entries())
+                };
+            } catch (error) {
+                return {
+                    success: false,
+                    error: error.message,
+                    data: null
+                };
+            }
+        }
+        
+        // Test functions
+        async function testCORS() {
+            displayLoading('basic-results', 'Testing CORS...');
+            
+            const result = await makeRequest(`${API_V1}/test-cors`);
+            
+            if (result.success) {
+                displayResult('basic-results', {
+                    message: 'CORS test successful!',
+                    status: result.status,
+                    data: result.data,
+                    cors_headers: {
+                        'Access-Control-Allow-Origin': result.headers['access-control-allow-origin'],
+                        'Access-Control-Allow-Methods': result.headers['access-control-allow-methods'],
+                        'Access-Control-Allow-Headers': result.headers['access-control-allow-headers']
+                    }
+                });
+                updateStatus(true, 'API connection successful');
+            } else {
+                displayResult('basic-results', {
+                    error: 'CORS test failed',
+                    details: result.error || `HTTP ${result.status}`
+                }, false);
+                updateStatus(false, 'API connection failed');
+            }
+        }
+        
+        async function testHealth() {
+            displayLoading('basic-results', 'Testing health endpoint...');
+            
+            const result = await makeRequest(`${API_V1}/health`);
+            
+            if (result.success) {
+                displayResult('basic-results', {
+                    message: 'Health check successful!',
+                    status: result.status,
+                    health_data: result.data
+                });
+            } else {
+                displayResult('basic-results', {
+                    error: 'Health check failed',
+                    details: result.error || `HTTP ${result.status}`
+                }, false);
+            }
+        }
+        
+        async function testRoot() {
+            displayLoading('basic-results', 'Testing root endpoint...');
+            
+            const result = await makeRequest(`${API_BASE}/`);
+            
+            if (result.success) {
+                displayResult('basic-results', {
+                    message: 'Root endpoint successful!',
+                    status: result.status,
+                    data: result.data
+                });
+            } else {
+                displayResult('basic-results', {
+                    error: 'Root endpoint failed',
+                    details: result.error || `HTTP ${result.status}`
+                }, false);
+            }
+        }
+        
+        async function testBLS() {
+            displayLoading('bls-results', 'Running BLS analysis...');
+            
+            const targetName = document.getElementById('target-name').value;
+            const catalog = document.getElementById('catalog').value;
+            const mission = document.getElementById('mission').value;
+            
+            if (!targetName) {
+                displayResult('bls-results', 'Please enter a target name', false);
+                return;
+            }
+            
+            const requestData = {
+                target_name: targetName,
+                catalog: catalog,
+                mission: mission,
+                period_min: 1.0,
+                period_max: 10.0,
+                duration_min: 0.05,
+                duration_max: 0.3,
+                snr_threshold: 7.0,
+                use_enhanced: true
+            };
+            
+            const result = await makeRequest(`${API_V1}/bls`, {
+                method: 'POST',
+                body: JSON.stringify(requestData)
+            });
+            
+            if (result.success) {
+                displayResult('bls-results', {
+                    message: 'BLS analysis successful!',
+                    status: result.status,
+                    bls_result: result.data
+                });
+            } else {
+                displayResult('bls-results', {
+                    error: 'BLS analysis failed',
+                    details: result.error || result.data || `HTTP ${result.status}`
+                }, false);
+            }
+        }
+        
+        async function testSearch() {
+            displayLoading('search-results', 'Running exoplanet search...');
+            
+            const targetName = document.getElementById('search-target').value;
+            const useBLS = document.getElementById('use-bls').checked;
+            const useAI = document.getElementById('use-ai').checked;
+            
+            if (!targetName) {
+                displayResult('search-results', 'Please enter a target name', false);
+                return;
+            }
+            
+            const requestData = {
+                target_name: targetName,
+                catalog: 'TIC',
+                mission: 'TESS',
+                use_bls: useBLS,
+                use_ai: useAI,
+                use_ensemble: true,
+                search_mode: 'ensemble',
+                period_min: 1.0,
+                period_max: 10.0,
+                snr_threshold: 7.0
+            };
+            
+            const result = await makeRequest(`${API_V1}/search`, {
+                method: 'POST',
+                body: JSON.stringify(requestData)
+            });
+            
+            if (result.success) {
+                displayResult('search-results', {
+                    message: 'Exoplanet search successful!',
+                    status: result.status,
+                    search_result: result.data
+                });
+            } else {
+                displayResult('search-results', {
+                    error: 'Exoplanet search failed',
+                    details: result.error || result.data || `HTTP ${result.status}`
+                }, false);
+            }
+        }
+        
+        // Auto-test connection on page load
+        window.addEventListener('load', () => {
+            setTimeout(testCORS, 1000);
+        });
+    </script>
+</body>
+</html>

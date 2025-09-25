@@ -1,0 +1,839 @@
+<<<<<<< HEAD
+<<<<<<< HEAD
+/* Tailwind CSS directives */
+=======
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+>>>>>>> ef5c656 (Версия 1.5.1)
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+<<<<<<< HEAD
+  body {
+    background: linear-gradient(to bottom right, #0f172a, #581c87, #0f172a);
+    color: white;
+    min-height: 100vh;
+    font-family: 'Inter', system-ui, sans-serif;
+=======
+  * {
+    @apply border-gray-800;
+  }
+  
+  body {
+    @apply bg-space-gradient text-white;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-feature-settings: "cv11", "ss01";
+    font-variation-settings: "opsz" 32;
+>>>>>>> ef5c656 (Версия 1.5.1)
+=======
+/*
+  IMPORTANT: This file uses Tailwind CSS directives (@tailwind, @apply, @layer)
+  
+  IDE warnings about "Unknown at rule" are EXPECTED and can be SAFELY IGNORED.
+  These directives are processed by PostCSS with Tailwind CSS plugin during build.
+  
+  The project is correctly configured with:
+  - tailwind.config.js ✓
+  - postcss.config.js ✓  
+  - Tailwind CSS installed in package.json ✓
+  
+  To suppress IDE warnings, you can:
+  1. Install Tailwind CSS IntelliSense extension
+  2. Configure your IDE to recognize Tailwind directives
+  3. Or simply ignore these warnings as they don't affect functionality
+*/
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+/* Tailwind CSS Base Styles */
+@tailwind base;
+/* Tailwind CSS Component Classes */
+@tailwind components;
+/* Tailwind CSS Utility Classes */
+@tailwind utilities;
+
+/* NASA Space Theme Variables */
+:root {
+  --nasa-blue: #0B3D91;
+  --nasa-red: #FC3D21;
+  --nasa-white: #FFFFFF;
+  --space-black: #000000;
+  --deep-space: #0a0a0a;
+  --nebula-purple: #1a1a2e;
+  --cosmic-blue: #16213e;
+  --stellar-blue: #0f3460;
+  --galaxy-purple: #533a7b;
+  --neon-cyan: #00FFFF;
+  --plasma-pink: #FF006E;
+  --solar-orange: #FF8500;
+  --aurora-green: #39FF14;
+  --starlight: #E6E6FA;
+}
+
+@layer base {
+  * {
+    @apply border-slate-700;
+    box-sizing: border-box;
+  }
+  
+  body {
+    @apply text-white;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background: #000000;
+    overflow-x: hidden;
+>>>>>>> 975c3a7 (Версия 1.5.1)
+  }
+  
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+<<<<<<< HEAD
+<<<<<<< HEAD
+/* Звёздное небо анимация */
+@keyframes twinkle {
+  0%, 100% { opacity: 0.3; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes shooting-star {
+  0% {
+    transform: translateX(-100px) translateY(-100px) rotate(45deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(calc(100vw + 100px)) translateY(calc(100vh + 100px)) rotate(45deg);
+    opacity: 0;
+  }
+}
+
+.stars-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  background: radial-gradient(ellipse at center, #0f172a 0%, #000 100%);
+  overflow: hidden;
+}
+
+.star {
+  position: absolute;
+  background: white;
+  border-radius: 50%;
+  animation: twinkle 3s infinite ease-in-out;
+}
+
+.star:nth-child(odd) {
+  animation-delay: 1s;
+  animation-duration: 4s;
+}
+
+.star:nth-child(3n) {
+  animation-delay: 2s;
+  animation-duration: 2s;
+}
+
+.planet {
+  position: absolute;
+  background: #9333ea;
+  border-radius: 50%;
+  animation: float 6s infinite ease-in-out;
+}
+
+.nebula {
+  position: absolute;
+  background: radial-gradient(circle, rgba(147, 51, 234, 0.3) 0%, transparent 70%);
+  border-radius: 50%;
+  filter: blur(40px);
+}
+
+.shooting-star {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: white;
+  animation: shooting-star 2s linear infinite;
+}
+
+.shooting-star::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: -20px;
+  width: 20px;
+  height: 1px;
+  background: linear-gradient(to right, transparent, white);
+}
+
+/* Улучшенные эффекты */
+.glass-card {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 16px;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.gradient-border {
+  position: relative;
+  background: linear-gradient(45deg, #06b6d4, #9333ea, #ec4899);
+  border-radius: 16px;
+  padding: 2px;
+}
+
+.gradient-border::before {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  background: rgba(15, 23, 42, 0.9);
+  border-radius: 14px;
+  z-index: -1;
+}
+
+.pulse-glow {
+  animation: pulse-glow 2s infinite ease-in-out;
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(6, 182, 212, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(6, 182, 212, 0.6), 0 0 40px rgba(147, 51, 234, 0.4);
+  }
+}
+
+/* Оптимизированные анимации */
+.smooth-transition {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.hover-lift {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+/* Производительные CSS свойства */
+.gpu-accelerated {
+  transform: translateZ(0);
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+/* Стили для светлой темы */
+.light-theme {
+  --bg-primary: #f8fafc;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #f1f5f9;
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --text-tertiary: #94a3b8;
+  --border-primary: #e2e8f0;
+  --border-secondary: #cbd5e1;
+  --accent-primary: #3b82f6;
+  --accent-secondary: #8b5cf6;
+  --accent-tertiary: #ec4899;
+}
+
+.light-theme body {
+  background: linear-gradient(to bottom right, #f8fafc, #e2e8f0, #f8fafc);
+  color: var(--text-primary);
+}
+
+/* Адаптивные стили для светлой темы */
+.light-theme .glass-card {
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+.light-theme .stars-bg {
+  background: radial-gradient(ellipse at center, #f8fafc 0%, #e2e8f0 100%);
+}
+
+.light-theme .star {
+  background: #1e293b;
+}
+
+.light-theme .nebula {
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.2) 0%, transparent 70%);
+}
+
+.light-theme .cosmic-button {
+  background: linear-gradient(to right, #3b82f6, #8b5cf6);
+  color: white;
+}
+
+.light-theme .cosmic-button:hover {
+  background: linear-gradient(to right, #2563eb, #7c3aed);
+}
+
+.light-theme .cosmic-input {
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  color: var(--text-primary);
+}
+
+.light-theme .cosmic-input::placeholder {
+  color: var(--text-secondary);
+}
+
+.light-theme .cosmic-input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+/* Улучшенные анимации для светлой темы */
+.light-theme .hover-lift:hover {
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+.light-theme .pulse-glow {
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+}
+
+/* Мобильная адаптация для светлой темы */
+@media (max-width: 768px) {
+  .light-theme .glass-card {
+    backdrop-filter: blur(8px);
+    background: rgba(255, 255, 255, 0.8);
+  }
+
+  .light-theme .stars-bg {
+    background-attachment: scroll;
+  }
+}
+
+.cosmic-button {
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  transition: all 0.3s;
+  transform: scale(1);
+  box-shadow: 0 10px 15px -3px rgba(6, 182, 212, 0.25);
+}
+
+.cosmic-button:hover {
+  background: linear-gradient(to right, #0891b2, #7c3aed);
+  transform: scale(1.05);
+}
+
+.cosmic-input {
+  background: rgba(30, 41, 59, 0.5);
+  border: 1px solid rgba(6, 182, 212, 0.3);
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  color: white;
+  transition: all 0.3s;
+}
+
+.cosmic-input::placeholder {
+  color: rgba(148, 163, 184, 1);
+}
+
+.cosmic-input:focus {
+  border-color: #22d3ee;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(34, 211, 238, 0.2);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background-color: #1e293b;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgba(6, 182, 212, 0.5);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(34, 211, 238, 0.7);
+}
+
+/* Starfield animation */
+.starfield {
+=======
+/* Animated Stars Background */
+.stars-container {
+>>>>>>> 975c3a7 (Версия 1.5.1)
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.star {
+  position: absolute;
+<<<<<<< HEAD
+  background: white;
+  border-radius: 50%;
+  animation: twinkle 2s ease-in-out infinite alternate;
+}
+
+.star:nth-child(odd) {
+  animation-delay: 1s;
+}
+
+.star:nth-child(3n) {
+  animation-delay: 2s;
+}
+
+/* Loading animation */
+.loading-dots {
+  display: inline-block;
+}
+
+.loading-dots::after {
+  content: '';
+  animation: dots 1.5s steps(4, end) infinite;
+}
+
+@keyframes dots {
+  0%, 20% { content: ''; }
+  40% { content: '.'; }
+  60% { content: '..'; }
+  80%, 100% { content: '...'; }
+}
+
+/* Темная космическая тема */
+:root {
+  --space-black: #0b0d17;
+  --deep-space: #1a1b2f;
+  --neon-blue: #6ec3f9;
+  --planet-orange: #ff6b35;
+  --exo-purple: #9d4edd;
+}
+
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: radial-gradient(ellipse at center, var(--deep-space) 0%, var(--space-black) 70%);
+  color: #ffffff;
+  min-height: 100vh;
+}
+
+/* Дополнительные стили для компонентов */
+.button {
+  background: linear-gradient(135deg, var(--neon-blue), var(--exo-purple));
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+}
+
+/* Анимации для графиков */
+@keyframes pulsate {
+  0% { opacity: 0.8; }
+  50% { opacity: 1; }
+  100% { opacity: 0.8; }
+}
+
+.plot-container {
+  animation: pulsate 4s infinite;
+}
+=======
+@layer components {
+  .btn-primary {
+    @apply bg-primary-600 hover:bg-primary-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:ring-offset-space-100;
+  }
+  
+  .btn-secondary {
+    @apply bg-space-600 hover:bg-space-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-space-500 focus:ring-offset-2 focus:ring-offset-space-100;
+  }
+  
+  .btn-cosmic {
+    @apply bg-cosmic-gradient hover:shadow-lg hover:shadow-cosmic-500/25 text-white font-medium py-2 px-4 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-cosmic-500 focus:ring-offset-2 focus:ring-offset-space-100;
+  }
+  
+  .card {
+    @apply bg-space-800/50 backdrop-blur-sm border border-space-600 rounded-xl p-6 shadow-lg;
+  }
+  
+  .input-field {
+    @apply bg-space-700/50 border border-space-600 rounded-lg px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200;
+  }
+  
+  .glass-effect {
+    @apply bg-white/10 backdrop-blur-md border border-white/20;
+  }
+  
+  .text-gradient {
+    @apply bg-gradient-to-r from-primary-400 to-cosmic-400 bg-clip-text text-transparent;
+  }
+  
+  .cosmic-glow {
+    @apply shadow-lg shadow-cosmic-500/25;
+  }
+  
+  .loading-spinner {
+    @apply animate-spin rounded-full border-2 border-gray-300 border-t-primary-600;
+  }
+=======
+  background: var(--starlight);
+  border-radius: 50%;
+  animation: twinkle 4s infinite ease-in-out;
+}
+
+.star-small {
+  width: 1px;
+  height: 1px;
+  animation-duration: 3s;
+}
+
+.star-medium {
+  width: 2px;
+  height: 2px;
+  animation-duration: 4s;
+  box-shadow: 0 0 4px var(--neon-cyan);
+}
+
+.star-large {
+  width: 3px;
+  height: 3px;
+  animation-duration: 5s;
+  box-shadow: 0 0 6px var(--aurora-green);
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.3; transform: scale(1); }
+  25% { opacity: 0.8; transform: scale(1.2); }
+  50% { opacity: 1; transform: scale(1.5); }
+  75% { opacity: 0.6; transform: scale(1.1); }
+}
+
+@layer components {
+  /* NASA Style Buttons */
+  .nasa-btn {
+    @apply relative overflow-hidden font-semibold text-sm uppercase tracking-wide transition-all duration-300;
+    background: linear-gradient(135deg, var(--nasa-blue) 0%, var(--stellar-blue) 100%);
+    border: 1px solid var(--nasa-blue);
+    color: var(--nasa-white);
+    padding: 12px 24px;
+    border-radius: 4px;
+  }
+  
+  .nasa-btn:hover {
+    background: linear-gradient(135deg, var(--stellar-blue) 0%, var(--nasa-blue) 100%);
+    box-shadow: 0 0 20px rgba(11, 61, 145, 0.5);
+    transform: translateY(-2px);
+  }
+  
+  .nasa-btn:active {
+    transform: translateY(0);
+  }
+  
+  .nasa-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+  }
+  
+  .nasa-btn:hover::before {
+    left: 100%;
+  }
+  
+  .nasa-btn-danger {
+    background: linear-gradient(135deg, var(--nasa-red) 0%, #d32f2f 100%);
+    border: 1px solid var(--nasa-red);
+  }
+  
+  .nasa-btn-danger:hover {
+    background: linear-gradient(135deg, #d32f2f 0%, var(--nasa-red) 100%);
+    box-shadow: 0 0 20px rgba(252, 61, 33, 0.5);
+  }
+  
+  .nasa-btn-success {
+    background: linear-gradient(135deg, var(--aurora-green) 0%, #2e7d32 100%);
+    border: 1px solid var(--aurora-green);
+  }
+  
+  .nasa-btn-success:hover {
+    box-shadow: 0 0 20px rgba(57, 255, 20, 0.5);
+  }
+  
+  /* NASA Style Cards - Minimalist */
+  .nasa-card {
+    background: rgba(11, 61, 145, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    @apply p-6;
+    transition: all 0.2s ease;
+  }
+  
+  .nasa-card:hover {
+    background: rgba(11, 61, 145, 0.15);
+    border-color: rgba(0, 255, 255, 0.3);
+    transform: translateY(-1px);
+  }
+  
+  /* NASA Style Inputs */
+  .nasa-input {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(11, 61, 145, 0.5);
+    border-radius: 4px;
+    padding: 12px 16px;
+    color: var(--starlight);
+    font-size: 14px;
+    transition: all 0.3s ease;
+    @apply w-full;
+  }
+  
+  .nasa-input:focus {
+    outline: none;
+    border-color: var(--neon-cyan);
+    box-shadow: 0 0 0 2px rgba(0, 255, 255, 0.2);
+    background: rgba(0, 0, 0, 0.5);
+  }
+  
+  .nasa-input::placeholder {
+    color: rgba(230, 230, 250, 0.5);
+  }
+  
+  /* Typography */
+  .nasa-title {
+    font-size: 3rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--neon-cyan) 0%, var(--starlight) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-align: center;
+    margin-bottom: 1rem;
+  }
+  
+  .nasa-subtitle {
+    font-size: 1.5rem;
+    font-weight: 400;
+    color: var(--starlight);
+    text-align: center;
+    opacity: 0.8;
+  }
+  
+  .nasa-text {
+    color: var(--starlight);
+    line-height: 1.6;
+  }
+  
+  /* Status Indicators */
+  .status-success {
+    color: var(--aurora-green);
+    text-shadow: 0 0 10px var(--aurora-green);
+  }
+  
+  .status-warning {
+    color: var(--solar-orange);
+    text-shadow: 0 0 10px var(--solar-orange);
+  }
+  
+  .status-error {
+    color: var(--nasa-red);
+    text-shadow: 0 0 10px var(--nasa-red);
+  }
+  
+  .status-info {
+    color: var(--neon-cyan);
+    text-shadow: 0 0 10px var(--neon-cyan);
+  }
+  
+  /* Loading Spinner */
+  .nasa-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(11, 61, 145, 0.3);
+    border-top: 3px solid var(--neon-cyan);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  
+  .pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite alternate;
+  }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes pulse-glow {
+  from { box-shadow: 0 0 20px rgba(0, 255, 255, 0.3); }
+  to { box-shadow: 0 0 30px rgba(0, 255, 255, 0.6); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+}
+
+@keyframes cosmic-gradient {
+  0% { background-position: 0% 50%; }
+  25% { background-position: 100% 50%; }
+  50% { background-position: 100% 100%; }
+  75% { background-position: 0% 100%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes nebula-drift {
+  0% { transform: translateX(0) translateY(0) rotate(0deg); }
+  33% { transform: translateX(50px) translateY(-30px) rotate(120deg); }
+  66% { transform: translateX(-30px) translateY(50px) rotate(240deg); }
+  100% { transform: translateX(0) translateY(0) rotate(360deg); }
+>>>>>>> 975c3a7 (Версия 1.5.1)
+}
+
+@layer utilities {
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+  
+  .animate-pulse-slow {
+    animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+<<<<<<< HEAD
+}
+
+/* Custom scrollbar for webkit browsers */
+=======
+  
+  .animate-pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite alternate;
+  }
+}
+
+/* NASA Style Scrollbar */
+>>>>>>> 975c3a7 (Версия 1.5.1)
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+<<<<<<< HEAD
+  @apply bg-space-800;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-space-600 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-space-500;
+}
+
+/* Plotly.js custom styling */
+.plotly .modebar {
+  @apply bg-space-800/80 backdrop-blur-sm;
+}
+
+.plotly .modebar-btn {
+  @apply text-gray-300 hover:text-white;
+}
+
+/* React Query DevTools custom styling */
+.ReactQueryDevtools {
+  @apply bg-space-900/95 backdrop-blur-sm;
+}
+>>>>>>> ef5c656 (Версия 1.5.1)
+=======
+  background: rgba(11, 61, 145, 0.1);
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(45deg, var(--nasa-blue), var(--neon-cyan));
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(45deg, var(--neon-cyan), var(--nasa-blue));
+}
+
+/* Plotly.js NASA styling */
+.plotly .modebar {
+  background: rgba(11, 61, 145, 0.2) !important;
+  backdrop-filter: blur(10px);
+}
+
+.plotly .modebar-btn {
+  color: var(--starlight) !important;
+}
+
+.plotly .modebar-btn:hover {
+  color: var(--neon-cyan) !important;
+}
+
+/* React Query DevTools NASA styling */
+.ReactQueryDevtools {
+  background: rgba(0, 0, 0, 0.95) !important;
+  backdrop-filter: blur(10px);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .nasa-title {
+    font-size: 2rem;
+  }
+  
+  .nasa-subtitle {
+    font-size: 1.2rem;
+  }
+  
+  .nasa-btn {
+    padding: 10px 20px;
+    font-size: 12px;
+  }
+  
+  .nasa-card {
+    @apply p-4;
+  }
+}
+>>>>>>> 975c3a7 (Версия 1.5.1)

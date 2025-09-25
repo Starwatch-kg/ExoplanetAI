@@ -1,0 +1,95 @@
+{
+<<<<<<< HEAD
+<<<<<<< HEAD
+  "$schema": "https://json.schemastore.org/package.json",
+  "name": "frontend",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@headlessui/react": "^2.2.8",
+    "@sentry/react": "^8.35.0",
+    "@sentry/vite-plugin": "^2.22.7",
+    "@types/react-router-dom": "^5.3.3",
+    "framer-motion": "^12.23.12",
+    "lucide-react": "^0.544.0",
+    "plotly.js-dist-min": "^3.1.0",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "react-plotly.js": "^2.6.0",
+    "react-router-dom": "^6.27.0",
+    "tailwindcss": "^3.4.17"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.33.0",
+    "@types/node": "^24.5.1",
+    "@types/react": "^19.1.10",
+    "@types/react-dom": "^19.1.7",
+    "@types/react-plotly.js": "^2.6.3",
+    "@vitejs/plugin-react": "^5.0.0",
+    "autoprefixer": "^10.4.21",
+    "eslint": "^9.33.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.20",
+    "globals": "^16.3.0",
+    "postcss": "^8.5.6",
+    "typescript": "~5.8.3",
+    "typescript-eslint": "^8.39.1",
+    "vite": "^7.1.2"
+=======
+=======
+>>>>>>> 975c3a7 (Версия 1.5.1)
+  "name": "exoplanet-ai-frontend",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "^4.41.0",
+    "axios": "^1.6.2",
+    "clsx": "^2.0.0",
+    "framer-motion": "^10.16.5",
+    "lucide-react": "^0.294.0",
+    "plotly.js": "^2.27.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-hook-form": "^7.48.2",
+    "react-plotly.js": "^2.6.0",
+    "react-router-dom": "^6.20.1",
+    "tailwind-merge": "^2.0.0",
+    "zustand": "^4.4.7"
+  },
+  "devDependencies": {
+    "@tanstack/react-query-devtools": "^4.41.0",
+    "@types/node": "^20.9.0",
+    "@types/plotly.js": "^2.12.29",
+    "@types/react": "^18.2.37",
+    "@types/react-dom": "^18.2.15",
+    "@typescript-eslint/eslint-plugin": "^6.10.0",
+    "@typescript-eslint/parser": "^6.10.0",
+    "@vitejs/plugin-react": "^4.1.1",
+    "autoprefixer": "^10.4.16",
+    "eslint": "^8.53.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.4",
+    "postcss": "^8.4.31",
+    "tailwindcss": "^3.3.5",
+    "typescript": "^5.2.2",
+    "vite": "^7.1.7"
+<<<<<<< HEAD
+>>>>>>> ef5c656 (Версия 1.5.1)
+=======
+>>>>>>> 975c3a7 (Версия 1.5.1)
+  }
+}

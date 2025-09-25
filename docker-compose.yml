@@ -1,0 +1,46 @@
+version: '3.9'
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: exoplanet_ai
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  backend:
+    build: ./apps/backend
+    environment:
+      NODE_ENV: production
+      PORT: 8080
+      HOST: 0.0.0.0
+      CORS_ORIGIN: http://localhost:5173
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/exoplanet_ai?schema=public
+      REDIS_URL: redis://redis:6379
+      JWT_ACCESS_SECRET: access_secret
+      JWT_REFRESH_SECRET: refresh_secret
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+volumes:
+  pgdata: {}
+
+
