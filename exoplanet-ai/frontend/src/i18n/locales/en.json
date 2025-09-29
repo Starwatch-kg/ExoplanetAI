@@ -1,0 +1,293 @@
+{
+  "app": {
+    "title": "AstroManas",
+    "subtitle": "Revolutionary Exoplanet Detection System",
+    "description": "Advanced AI platform with C++ acceleration and Gravitational Phase Interferometry for exoplanet discovery",
+    "footer": {
+      "powered": "AstroManas - The Future of Exoplanet Discovery",
+      "description": "Revolutionary system with AI, C++ acceleration and Gravitational Phase Interferometry method"
+    }
+  },
+  "navigation": {
+    "home": "Home",
+    "aiTraining": "AI Training",
+    "gpi": "GPI",
+    "bls": "BLS",
+    "catalog": "Catalog",
+    "database": "Database",
+    "about": "About",
+    "settings": "Settings"
+  },
+  "pages": {
+    "home": {
+      "title": "AstroManas",
+      "subtitle": "Revolutionary Exoplanet Detection System",
+      "features": "System Features",
+      "getStarted": "Get Started",
+      "techStack": "Technology Stack"
+    },
+    "features": {
+      "bls": {
+        "title": "BLS Analysis",
+        "description": "Classic Box Least Squares algorithm for fast and reliable detection of transit signals in photometric data."
+      },
+      "gpi": {
+        "title": "GPI Method", 
+        "description": "Revolutionary Gravitational Phase Interferometry for analyzing microscopic phase shifts in stellar gravitational fields."
+      },
+      "database": {
+        "title": "Database",
+        "description": "Comprehensive SQLite database for storing search results, performance metrics and exoplanet catalog."
+      }
+    }
+  },
+  "search": {
+    "title": "Advanced Search",
+    "subtitle": "Choose your analysis method",
+    "selectMethod": "Select Analysis Method",
+    "blsMethod": "BLS (Box Least Squares)",
+    "gpiMethod": "GPI (Gravitational Phase Interferometry)",
+    "blsDescription": "Classic transit detection method",
+    "gpiDescription": "Revolutionary gravitational analysis",
+    "startAnalysis": "Start Analysis",
+    "features": {
+      "bls": {
+        "fast": "Fast and reliable transit detection",
+        "optimized": "Optimized for periodic signals",
+        "statistical": "Statistical significance testing",
+        "clean": "Works well with clean data"
+      },
+      "gpi": {
+        "gravitational": "Detects subtle gravitational effects",
+        "ai": "AI-enhanced analysis",
+        "sensitivity": "High sensitivity to small planets",
+        "processing": "Advanced signal processing"
+      }
+    },
+    "bestFor": "Best for",
+    "processingTime": "Processing Time",
+    "accuracy": "Accuracy",
+    "comparison": "Method Comparison",
+    "needHelp": "Need Help Choosing?",
+    "helpText": "Not sure which method to use? Start with BLS for most cases, or try GPI for challenging detections and small planets.",
+    "learnMore": "Learn More",
+    "learnMoreMethods": "Learn more about our methods",
+    "table": {
+      "feature": "Feature",
+      "processingSpeed": "Processing Speed",
+      "smallPlanet": "Small Planet Detection",
+      "noiseTolerance": "Noise Tolerance",
+      "aiEnhancement": "AI Enhancement",
+      "bestUseCase": "Best Use Case",
+      "fast": "Fast",
+      "moderate": "Moderate",
+      "good": "Good",
+      "excellent": "Excellent",
+      "high": "High",
+      "yes": "Yes",
+      "no": "No",
+      "regularTransits": "Regular transits",
+      "edgeCases": "Edge cases"
+    }
+  },
+  "gpi": {
+    "title": "Gravitational Phase Interferometry",
+    "subtitle": "Revolutionary exoplanet detection method",
+    "description": "Advanced analysis of microscopic phase shifts in stellar gravitational fields",
+    "parameters": "Analysis Parameters",
+    "targetName": "Target Name",
+    "catalog": "Catalog",
+    "mission": "Mission",
+    "sensitivity": "Phase Sensitivity",
+    "useAI": "Use AI Enhancement",
+    "analyze": "Analyze",
+    "analyzing": "Analyzing...",
+    "results": "Analysis Results",
+    "confidence": "Detection Confidence",
+    "method": "Method",
+    "processingTime": "Processing Time",
+    "generateSynthetic": "Generate Synthetic Data",
+    "advancedParams": "Advanced Parameters",
+    "snrThreshold": "SNR Threshold",
+    "periodRange": "Period Range (days)",
+    "minPeriod": "Min",
+    "maxPeriod": "Max",
+    "showAdvanced": "Show Advanced",
+    "hideAdvanced": "Hide Advanced"
+  },
+  "aiTraining": {
+    "title": "AI Model Training",
+    "subtitle": "Train and optimize neural networks for exoplanet detection",
+    "parameters": "Training Parameters",
+    "modelType": "Model Type",
+    "learningRate": "Learning Rate",
+    "batchSize": "Batch Size",
+    "epochs": "Epochs",
+    "validationSplit": "Validation Split",
+    "useAugmentation": "Use Data Augmentation",
+    "earlyStopping": "Early Stopping",
+    "startTraining": "Start Training",
+    "stopTraining": "Stop Training",
+    "downloadModel": "Download Model",
+    "status": "Training Status",
+    "progress": "Progress",
+    "accuracy": "Accuracy",
+    "loss": "Loss",
+    "valAccuracy": "Val Accuracy",
+    "training": "Training in progress...",
+    "idle": "Ready to train",
+    "logs": "Training Logs",
+    "noLogs": "No logs available"
+  },
+  "bls": {
+    "title": "Box Least Squares Analysis",
+    "subtitle": "Classic transit detection method",
+    "description": "Fast and reliable detection of transit signals in photometric data",
+    "parameters": "BLS Parameters",
+    "targetName": "Target Name",
+    "catalog": "Catalog",
+    "mission": "Mission",
+    "minPeriod": "Min Period (days)",
+    "maxPeriod": "Max Period (days)",
+    "analyze": "Analyze",
+    "analyzing": "Analyzing...",
+    "results": "Analysis Results",
+    "period": "Period",
+    "snr": "Signal-to-Noise Ratio",
+    "power": "Power",
+    "significant": "Significant Detection"
+  },
+  "catalog": {
+    "title": "Exoplanet Catalog",
+    "subtitle": "Explore our database of discovered exoplanets",
+    "search": "Search",
+    "searchPlaceholder": "Search planets...",
+    "discoveryMethod": "Discovery Method",
+    "allMethods": "All Methods",
+    "minConfidence": "Min Confidence",
+    "anyConfidence": "Any Confidence",
+    "habitableOnly": "Habitable Zone Only",
+    "confirmedPlanets": "Confirmed Planets",
+    "habitableZone": "Habitable Zone",
+    "avgConfidence": "Avg Confidence",
+    "loading": "Loading exoplanet catalog...",
+    "hostStar": "Host",
+    "orbitalPeriod": "Orbital Period",
+    "radius": "Radius",
+    "temperature": "Temperature",
+    "distance": "Distance",
+    "discovered": "Discovered",
+    "confidence": "confidence",
+    "previous": "Previous",
+    "next": "Next",
+    "page": "Page"
+  },
+  "database": {
+    "title": "Database Dashboard",
+    "subtitle": "Monitor system performance and data insights",
+    "statistics": "Statistics",
+    "searchHistory": "Search History",
+    "systemMetrics": "System Metrics",
+    "loading": "Loading database information...",
+    "totalExoplanets": "Total Exoplanets",
+    "confirmed": "Confirmed",
+    "totalSearches": "Total Searches",
+    "last24h": "Last 24h",
+    "searchesByMethod": "Searches by Method",
+    "refreshData": "Refresh Data",
+    "cleanupOldData": "Cleanup Old Data",
+    "filterByMethod": "Filter by method:",
+    "allMethods": "All Methods",
+    "systemStatus": "System Status",
+    "api": "API",
+    "version": "Version",
+    "database": "Database",
+    "connected": "Connected"
+  },
+  "about": {
+    "title": "About AstroManas",
+    "subtitle": "Revolutionary Exoplanet Detection System",
+    "mission": "Our Mission",
+    "missionText": "AstroManas represents the cutting edge of exoplanet detection technology, combining artificial intelligence, high-performance C++ computing, and revolutionary analysis methods to discover new worlds beyond our solar system.",
+    "features": "Key Features",
+    "aiPowered": "AI-Powered Analysis",
+    "aiDescription": "Advanced machine learning models enhance detection accuracy",
+    "cppAcceleration": "C++ Acceleration",
+    "cppDescription": "High-performance native modules for critical computations",
+    "gpiMethod": "GPI Method",
+    "gpiDescription": "Revolutionary Gravitational Phase Interferometry technique",
+    "realData": "Real NASA Data",
+    "realDataDescription": "Direct integration with TESS, Kepler, and K2 missions",
+    "team": "Our Team",
+    "teamDescription": "Dedicated scientists and engineers pushing the boundaries of exoplanet discovery",
+    "contact": "Contact Us",
+    "contactDescription": "Get in touch for collaborations and research opportunities"
+  },
+  "notFound": {
+    "title": "Page Not Found",
+    "subtitle": "The page you're looking for doesn't exist",
+    "description": "It seems you've ventured into uncharted space. Let's get you back to familiar territory.",
+    "backHome": "Back to Home",
+    "explore": "Explore Our Features"
+  },
+  "theme": {
+    "toggle": "Toggle theme",
+    "light": "Light theme",
+    "dark": "Dark theme"
+  },
+  "language": {
+    "toggle": "Change language",
+    "english": "English",
+    "russian": "Русский"
+  },
+  "results": {
+    "title": "Analysis Results",
+    "noResults": "No exoplanet candidates found",
+    "candidate": "Exoplanet Candidate",
+    "candidates": "Exoplanet Candidates",
+    "lightcurve": {
+      "title": "Light Curve",
+      "xlabel": "Time (days)",
+      "ylabel": "Normalized Flux",
+      "loading": "Loading light curve data...",
+      "error": "Failed to load light curve data"
+    },
+    "statistics": {
+      "title": "Detection Statistics",
+      "period": "Orbital Period",
+      "depth": "Transit Depth",
+      "duration": "Transit Duration",
+      "snr": "Signal-to-Noise Ratio",
+      "confidence": "Detection Confidence"
+    },
+    "classification": {
+      "title": "AI Classification",
+      "planet": "Planet",
+      "star": "Stellar Signal",
+      "noise": "Noise/Artifact",
+      "confidence": "Confidence"
+    }
+  },
+  "status": {
+    "api": "API Status",
+    "version": "Version",
+    "healthy": "Healthy",
+    "error": "Error",
+    "loading": "Loading..."
+  },
+  "errors": {
+    "generic": "An error occurred",
+    "network": "Network error",
+    "api": "API error",
+    "notFound": "Data not found",
+    "invalidInput": "Invalid input",
+    "searchFailed": "Search failed"
+  },
+  "units": {
+    "days": "days",
+    "hours": "hours",
+    "minutes": "minutes",
+    "percent": "%",
+    "ppm": "ppm"
+  }
+}
