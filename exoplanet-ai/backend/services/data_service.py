@@ -13,6 +13,7 @@ import logging
 import time
 import json
 from pathlib import Path
+import re
 
 try:
     import lightkurve as lk
@@ -20,11 +21,33 @@ try:
     from astropy.coordinates import SkyCoord
     from astroquery.mast import Catalogs, Observations
 except ImportError as e:
-    raise ImportError(f"Required astronomy libraries not installed: {e}")
+    # Don't raise error immediately, only when the NASA data functions are used
+    pass
 
 from core.logging_config import get_logger
 
 logger = get_logger(__name__)
+
+def normalize_tic_id(raw: str) -> str:
+    # FIX: [FINDING_003] Нормализация и валидация TIC id
+    s = raw.upper().replace("TIC", "").strip()
+    if not re.match(r'^\d{1,10}$', s):
+        raise ValueError("Invalid TIC ID format")
+    return s
+
+def normalize_kic_id(raw: str) -> str:
+    # FIX: [FINDING_003] Нормализация и валидация KIC id
+    s = raw.upper().replace("KIC", "").strip()
+    if not re.match(r'^\d{1,10}$', s):
+        raise ValueError("Invalid KIC ID format")
+    return s
+
+def normalize_epic_id(raw: str) -> str:
+    # FIX: [FINDING_003] Нормализация и валидация EPIC id
+    s = raw.upper().replace("EPIC", "").strip()
+    if not re.match(r'^\d{1,10}$', s):
+        raise ValueError("Invalid EPIC ID format")
+    return s
 
 class Mission(Enum):
     """Supported space missions"""
@@ -194,13 +217,13 @@ class DataService:
         """Query TIC catalog using astroquery"""
         
         def _sync_query():
-            # Remove TIC prefix if present
-            clean_id = tic_id.replace("TIC", "").replace("tic", "").strip()
+            # Validate and normalize TIC ID
+            clean_id = normalize_tic_id(tic_id)
             
             # Query MAST for TIC data
             catalog_data = Catalogs.query_object(
-                f"TIC {clean_id}", 
-                radius=0.01 * u.deg, 
+                f"TIC {clean_id}",
+                radius=0.01 * u.deg,
                 catalog="TIC"
             )
             
@@ -229,11 +252,12 @@ class DataService:
         """Query KIC catalog using astroquery"""
         
         def _sync_query():
-            clean_id = kic_id.replace("KIC", "").replace("kic", "").strip()
+            # Validate and normalize KIC ID
+            clean_id = normalize_kic_id(kic_id)
             
             catalog_data = Catalogs.query_object(
-                f"KIC {clean_id}", 
-                radius=0.01 * u.deg, 
+                f"KIC {clean_id}",
+                radius=0.01 * u.deg,
                 catalog="Kepler"
             )
             
@@ -260,11 +284,12 @@ class DataService:
         """Query EPIC catalog using astroquery"""
         
         def _sync_query():
-            clean_id = epic_id.replace("EPIC", "").replace("epic", "").strip()
+            # Validate and normalize EPIC ID
+            clean_id = normalize_epic_id(epic_id)
             
             catalog_data = Catalogs.query_object(
-                f"EPIC {clean_id}", 
-                radius=0.01 * u.deg, 
+                f"EPIC {clean_id}",
+                radius=0.01 * u.deg,
                 catalog="K2"
             )
             

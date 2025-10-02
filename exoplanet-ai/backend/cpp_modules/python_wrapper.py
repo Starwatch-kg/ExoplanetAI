@@ -11,8 +11,33 @@ import logging
 from pathlib import Path
 import subprocess
 import os
+import sys
 
 logger = logging.getLogger(__name__)
+
+def _get_lib_extension() -> str:
+    # FIX: [FINDING_001] Определяем расширение в зависимости от платформы
+    if sys.platform.startswith("win"):
+        return ".dll"
+    if sys.platform.startswith("darwin"):
+        return ".dylib"
+    return ".so"
+
+def load_cpp_library(cpp_dir: Path, lib_basename: str):
+    # FIX: [FINDING_001] Безопасная загрузка C++ библиотеки
+    lib_ext = _get_lib_extension()
+    lib_path = (Path(cpp_dir) / f"{lib_basename}{lib_ext}").resolve()
+    allowed_dir = Path(__file__).parent.resolve()
+    if allowed_dir not in lib_path.parents:
+        raise FileNotFoundError(f"Library {lib_path} is outside allowed directory")
+    if not lib_path.exists():
+        raise FileNotFoundError(f"Library not found: {lib_path}")
+    # Используем ctypes для динамической загрузки
+    try:
+        return ctypes.CDLL(str(lib_path))
+    except OSError as e:
+        logger.exception("Failed to load native lib")
+        raise
 
 class CPPModuleManager:
     """Manager for C++ acceleration modules"""
@@ -29,41 +54,33 @@ class CPPModuleManager:
         cpp_dir = Path(__file__).parent
         
         # Check if compiled libraries exist
-        gpi_lib = cpp_dir / "gpi_generator.dll"  # Windows
-        search_lib = cpp_dir / "search_accelerator.dll"
+        gpi_lib = cpp_dir / f"gpi_generator{_get_lib_extension()}"
+        search_lib = cpp_dir / f"search_accelerator{_get_lib_extension()}"
         
         if not gpi_lib.exists() or not search_lib.exists():
             logger.info("C++ modules not found, checking for compiler...")
             try:
-                # Check if g++ is available
-                result = subprocess.run(["g++", "--version"], 
-                                      capture_output=True, text=True, timeout=5)
-                if result.returncode != 0:
-                    raise FileNotFoundError("g++ not available")
-                
-                logger.info("Compiling C++ modules...")
-                
-                # Compile GPI generator
-                subprocess.run([
-                    "g++", "-shared", "-fPIC", "-O3", "-fopenmp",
-                    str(cpp_dir / "gpi_data_generator.cpp"),
-                    "-o", str(gpi_lib)
-                ], check=True, capture_output=True)
+                # Use safe compile function
+                safe_compile_cpp(
+                    source_path=cpp_dir / "gpi_data_generator.cpp",
+                    output_path=gpi_lib,
+                    allowed_dir=cpp_dir
+                )
                 
                 # Compile search accelerator (requires FFTW)
-                subprocess.run([
-                    "g++", "-shared", "-fPIC", "-O3", "-fopenmp",
-                    str(cpp_dir / "search_accelerator.cpp"),
-                    "-lfftw3", "-lfftw3_threads", "-lm",
-                    "-o", str(search_lib)
-                ], check=True, capture_output=True)
+                safe_compile_cpp(
+                    source_path=cpp_dir / "search_accelerator.cpp",
+                    output_path=search_lib,
+                    allowed_dir=cpp_dir,
+                    extra_flags=["-lfftw3", "-lfftw3_threads", "-lm"]
+                )
                 
                 logger.info("✅ C++ modules compiled successfully")
                 
             except (subprocess.CalledProcessError, FileNotFoundError, subprocess.TimeoutExpired) as e:
                 logger.warning(f"⚠️ C++ compilation failed: {e}")
                 logger.info("Falling back to Python implementations")
-                logger.info("To enable C++ acceleration, install MinGW-w64 or Visual Studio Build Tools")
+                logger.info("To enable C++ acceleration, install g++ and FFTW library")
     
     def _load_modules(self):
         """Load compiled C++ modules"""
@@ -71,16 +88,18 @@ class CPPModuleManager:
         
         try:
             # Load GPI generator
-            gpi_lib_path = cpp_dir / "gpi_generator.dll"
-            if gpi_lib_path.exists():
-                self.gpi_lib = ctypes.CDLL(str(gpi_lib_path))
+            try:
+                self.gpi_lib = load_cpp_library(cpp_dir, "gpi_generator")
                 self._setup_gpi_interface()
+            except FileNotFoundError:
+                logger.warning("GPI generator library not found, using Python fallback")
             
             # Load search accelerator
-            search_lib_path = cpp_dir / "search_accelerator.dll"
-            if search_lib_path.exists():
-                self.search_lib = ctypes.CDLL(str(search_lib_path))
+            try:
+                self.search_lib = load_cpp_library(cpp_dir, "search_accelerator")
                 self._setup_search_interface()
+            except FileNotFoundError:
+                logger.warning("Search accelerator library not found, using Python fallback")
             
             self.modules_loaded = True
             logger.info("✅ C++ modules loaded successfully")
@@ -154,6 +173,28 @@ class CPPModuleManager:
         except Exception as e:
             logger.warning(f"Failed to setup search interface: {e}")
             self.search_lib = None
+
+def safe_compile_cpp(source_path: Path, output_path: Path, allowed_dir: Path, extra_flags: List[str] = None, timeout: int = 300):
+    # FIX: [FINDING_002] Безопасная компиляция C++ через g++
+    source_path = Path(source_path).resolve()
+    output_path = Path(output_path).resolve()
+    allowed_dir = Path(allowed_dir).resolve()
+    if allowed_dir not in source_path.parents:
+        raise ValueError("Source path is outside allowed directory")
+    
+    # Build command with safe parameters
+    cmd = ["g++", "-shared", "-fPIC", "-O3", "-fopenmp"]
+    cmd.append(str(source_path))
+    cmd.extend(["-o", str(output_path)])
+    if extra_flags:
+        cmd.extend(extra_flags)
+    
+    try:
+        result = subprocess.run(cmd, check=True, capture_output=True, cwd=str(allowed_dir), timeout=timeout)
+        logger.info("Compile stdout: %s", result.stdout.decode('utf-8', errors='ignore'))
+    except subprocess.CalledProcessError as e:
+        logger.error("Compile failed: %s", e.stderr.decode('utf-8', errors='ignore'))
+        raise
 
 class GPIDataGenerator:
     """High-performance GPI data generator"""

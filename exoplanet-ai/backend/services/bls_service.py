@@ -18,6 +18,7 @@ from core.logging_config import get_logger
 
 logger = get_logger(__name__)
 
+
 @dataclass
 class BLSResult:
     """Enhanced BLS analysis result"""
@@ -109,7 +110,8 @@ class BLSService:
     
     def _advanced_bls(self, time: np.ndarray, flux: np.ndarray, periods: np.ndarray) -> Tuple[np.ndarray, Dict]:
         """Advanced BLS implementation with optimizations"""
-        powers = np.zeros_like(periods)
+        # FIX: [FINDING_006] optimize BLS to process periods in chunks
+        powers = np.empty(len(periods), dtype=float)
         best_stats = {}
         
         # Precompute statistics for efficiency
@@ -117,75 +119,81 @@ class BLSService:
         flux_std = np.std(flux)
         n_points = len(time)
         
-        for i, period in enumerate(periods):
-            # Phase fold the data
-            phase = (time % period) / period
+        # Process periods in chunks to reduce memory usage
+        CHUNK = 1000
+        for start in range(0, len(periods), CHUNK):
+            end = min(start+CHUNK, len(periods))
+            chunk_periods = periods[start:end]
             
-            # Sort by phase for efficient processing
-            sort_idx = np.argsort(phase)
-            phase_sorted = phase[sort_idx]
-            flux_sorted = flux[sort_idx]
-            
-            best_power = 0
-            best_depth = 0
-            best_duration = 0
-            best_t0 = 0
-            
-            # Adaptive duration range based on period
-            if period < 1.0:
-                duration_fracs = [0.005, 0.01, 0.02, 0.05]
-            elif period < 10.0:
-                duration_fracs = [0.01, 0.02, 0.05, 0.1]
-            else:
-                duration_fracs = [0.02, 0.05, 0.1, 0.15]
-            
-            # Try different transit centers (phase offsets)
-            for phase_offset in np.linspace(0, 1, 20):
-                phase_shifted = (phase_sorted + phase_offset) % 1.0
+            for i, period in enumerate(chunk_periods):
+                # Phase fold the data
+                phase = (time % period) / period
                 
-                for duration_frac in duration_fracs:
-                    # Find in-transit points
-                    in_transit = phase_shifted < duration_frac
+                # Sort by phase for efficient processing
+                sort_idx = np.argsort(phase)
+                phase_sorted = phase[sort_idx]
+                flux_sorted = flux[sort_idx]
+                
+                best_power = 0
+                best_depth = 0
+                best_duration = 0
+                best_t0 = 0
+                
+                # Adaptive duration range based on period
+                if period < 1.0:
+                    duration_fracs = [0.005, 0.01, 0.02, 0.05]
+                elif period < 10.0:
+                    duration_fracs = [0.01, 0.02, 0.05, 0.1]
+                else:
+                    duration_fracs = [0.02, 0.05, 0.1, 0.15]
+                
+                # Try different transit centers (phase offsets)
+                for phase_offset in np.linspace(0, 1, 20):
+                    phase_shifted = (phase_sorted + phase_offset) % 1.0
                     
-                    n_in = np.sum(in_transit)
-                    n_out = n_points - n_in
-                    
-                    if n_in < 5 or n_out < 20:
-                        continue
-                    
-                    # Calculate statistics
-                    in_flux = np.mean(flux_sorted[in_transit])
-                    out_flux = np.mean(flux_sorted[~in_transit])
-                    in_std = np.std(flux_sorted[in_transit]) if n_in > 1 else flux_std
-                    out_std = np.std(flux_sorted[~in_transit]) if n_out > 1 else flux_std
-                    
-                    if out_flux > 0 and in_std > 0 and out_std > 0:
-                        depth = (out_flux - in_flux) / out_flux
+                    for duration_frac in duration_fracs:
+                        # Find in-transit points
+                        in_transit = phase_shifted < duration_frac
                         
-                        if depth > 0:
-                            # Enhanced power calculation with proper statistics
-                            depth_err = np.sqrt((in_std**2 / n_in) + (out_std**2 / n_out)) / out_flux
-                            if depth_err > 0:
-                                snr = depth / depth_err
-                                power = snr * np.sqrt(n_in)
-                                
-                                if power > best_power:
-                                    best_power = power
-                                    best_depth = depth
-                                    best_duration = duration_frac * period
-                                    best_t0 = phase_offset * period
-            
-            powers[i] = best_power
-            
-            # Store stats for best period
-            if i == 0 or best_power > best_stats.get('power', 0):
-                best_stats = {
-                    'power': best_power,
-                    'depth': best_depth,
-                    'duration': best_duration,
-                    'period': period,
-                    't0': best_t0
-                }
+                        n_in = np.sum(in_transit)
+                        n_out = n_points - n_in
+                        
+                        if n_in < 5 or n_out < 20:
+                            continue
+                        
+                        # Calculate statistics
+                        in_flux = np.mean(flux_sorted[in_transit])
+                        out_flux = np.mean(flux_sorted[~in_transit])
+                        in_std = np.std(flux_sorted[in_transit]) if n_in > 1 else flux_std
+                        out_std = np.std(flux_sorted[~in_transit]) if n_out > 1 else flux_std
+                        
+                        if out_flux > 0 and in_std > 0 and out_std > 0:
+                            depth = (out_flux - in_flux) / out_flux
+                            
+                            if depth > 0:
+                                # Enhanced power calculation with proper statistics
+                                depth_err = np.sqrt((in_std**2 / n_in) + (out_std**2 / n_out)) / out_flux
+                                if depth_err > 0:
+                                    snr = depth / depth_err
+                                    power = snr * np.sqrt(n_in)
+                                    
+                                    if power > best_power:
+                                        best_power = power
+                                        best_depth = depth
+                                        best_duration = duration_frac * period
+                                        best_t0 = phase_offset * period
+                
+                powers[start+i] = best_power
+                
+                # Store stats for best period
+                if start+i == 0 or best_power > best_stats.get('power', 0):
+                    best_stats = {
+                        'power': best_power,
+                        'depth': best_depth,
+                        'duration': best_duration,
+                        'period': period,
+                        't0': best_t0
+                    }
         
         return powers, best_stats
     
