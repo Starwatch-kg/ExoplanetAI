@@ -75,3 +75,26 @@ coverage.xml
 
 # pyenv
 .python-version
+
+# Additional cache directories
+.mypy_cache/
+.ruff_cache/
+.tox/
+
+# Package managers
+package-lock.json
+yarn.lock
+
+# Build artifacts
+*.pyc
+*.pyo
+*.pyd
+.cache/
+
+# Backup files
+*.bak
+*.backup
+
+# System files
+*.DS_Store
+*Thumbs.db

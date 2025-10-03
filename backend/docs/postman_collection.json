@@ -1,0 +1,472 @@
+{
+  "info": {
+    "name": "ExoplanetAI Backend v2.0",
+    "description": "Professional Exoplanet Research API - Real astronomical data only",
+    "version": "2.0.0",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{jwt_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8001",
+      "type": "string"
+    },
+    {
+      "key": "jwt_token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Login - Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.data && response.data.access_token) {",
+                  "        pm.collectionVariables.set('jwt_token', response.data.access_token);",
+                  "        console.log('JWT token saved:', response.data.access_token.substring(0, 20) + '...');",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"admin123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Login - Researcher",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"researcher\",\n  \"password\": \"research123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Get Current User",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/me",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "me"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Exoplanets (Public)",
+      "item": [
+        {
+          "name": "Search Exoplanets - TOI-715",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/exoplanets/search?q=TOI-715&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "exoplanets", "search"],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "TOI-715"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Search Exoplanets - TRAPPIST",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/exoplanets/search?q=TRAPPIST&limit=20&confirmed_only=true",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "exoplanets", "search"],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "TRAPPIST"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "confirmed_only",
+                  "value": "true"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Planet Info - Kepler-452b",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/exoplanets/Kepler-452b",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "exoplanets", "Kepler-452b"]
+            }
+          }
+        },
+        {
+          "name": "Validate Planet - TOI-715",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/exoplanets/TOI-715/validate",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "exoplanets", "TOI-715", "validate"]
+            }
+          }
+        },
+        {
+          "name": "Recent Discoveries",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/exoplanets/?limit=20&discovery_year=2024",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "exoplanets", ""],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "discovery_year",
+                  "value": "2024"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Light Curves (Protected)",
+      "item": [
+        {
+          "name": "Get TESS Light Curve - TOI-715",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/lightcurve/TOI-715?mission=TESS&normalize=true&remove_outliers=true",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "lightcurve", "TOI-715"],
+              "query": [
+                {
+                  "key": "mission",
+                  "value": "TESS"
+                },
+                {
+                  "key": "normalize",
+                  "value": "true"
+                },
+                {
+                  "key": "remove_outliers",
+                  "value": "true"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Analyze Light Curve - BLS",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/lightcurve/TOI-715/analysis?period_min=1.0&period_max=20.0&snr_threshold=7.0",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "lightcurve", "TOI-715", "analysis"],
+              "query": [
+                {
+                  "key": "period_min",
+                  "value": "1.0"
+                },
+                {
+                  "key": "period_max",
+                  "value": "20.0"
+                },
+                {
+                  "key": "snr_threshold",
+                  "value": "7.0"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Statistics (Protected)",
+      "item": [
+        {
+          "name": "Global Statistics",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/statistics/?include_sources=true",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "statistics", ""],
+              "query": [
+                {
+                  "key": "include_sources",
+                  "value": "true"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Discovery Statistics",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/statistics/discoveries?year_min=2020&year_max=2024&method=Transit",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "statistics", "discoveries"],
+              "query": [
+                {
+                  "key": "year_min",
+                  "value": "2020"
+                },
+                {
+                  "key": "year_max",
+                  "value": "2024"
+                },
+                {
+                  "key": "method",
+                  "value": "Transit"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Physical Properties - Radius",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/statistics/physical-properties?property_type=radius",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "statistics", "physical-properties"],
+              "query": [
+                {
+                  "key": "property_type",
+                  "value": "radius"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Habitability Statistics",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/statistics/habitability",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "statistics", "habitability"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin (Admin Only)",
+      "item": [
+        {
+          "name": "System Status",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/system-status",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "system-status"]
+            }
+          }
+        },
+        {
+          "name": "List Users",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/users",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "users"]
+            }
+          }
+        },
+        {
+          "name": "Clear Cache",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/cache/clear?namespace=planets",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "cache", "clear"],
+              "query": [
+                {
+                  "key": "namespace",
+                  "value": "planets"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "System Endpoints",
+      "item": [
+        {
+          "name": "Root - Welcome",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": ["{{base_url}}"],
+              "path": [""]
+            }
+          }
+        },
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": ["{{base_url}}"],
+              "path": ["health"]
+            }
+          }
+        },
+        {
+          "name": "Prometheus Metrics",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/metrics",
+              "host": ["{{base_url}}"],
+              "path": ["metrics"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
