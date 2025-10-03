@@ -1,4 +1,6 @@
 import React, { useState } from 'react'
+import { motion } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
 import { AlertCircle, Zap, Settings, BarChart3, Download, Info } from 'lucide-react'
 
 interface GPIParameters {
@@ -23,6 +25,7 @@ interface GPIResult {
 }
 
 const GPIPage: React.FC = () => {
+  const { t } = useTranslation()
   const [parameters, setParameters] = useState<GPIParameters>({
     target_name: '',
     use_ai: true,
@@ -95,9 +98,9 @@ const GPIPage: React.FC = () => {
         target_name: `Synthetic-${Date.now()}`
       }))
       
-      alert('Synthetic GPI data generated! You can now run analysis on synthetic target.')
+      alert(t('gpi.syntheticGenerated'))
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to generate synthetic data')
+      setError(err instanceof Error ? err.message : t('gpi.failedGenerate'))
     } finally {
       setLoading(false)
     }
@@ -107,38 +110,69 @@ const GPIPage: React.FC = () => {
     <div className="min-h-screen py-8 px-4">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-600 rounded-full mb-4">
+        <motion.div 
+          initial={{ opacity: 0, y: 50 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
+          className="text-center mb-8"
+        >
+          <motion.div 
+            initial={{ scale: 0, rotate: -180 }}
+            animate={{ scale: 1, rotate: 0 }}
+            transition={{ 
+              duration: 1,
+              delay: 0.2,
+              type: "spring",
+              stiffness: 200,
+              damping: 20
+            }}
+            className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-600 rounded-full mb-4"
+          >
             <Zap className="w-8 h-8 text-white" />
-          </div>
-          <h1 className="text-4xl font-bold text-white mb-2">
-            Gravitational Phase Interferometry
-          </h1>
-          <p className="text-xl text-gray-300">
-            Advanced exoplanet detection using gravitational phase shifts
-          </p>
-        </div>
+          </motion.div>
+          <motion.h1 
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+            className="text-4xl font-bold text-white mb-2"
+          >
+            {t('gpi.title')}
+          </motion.h1>
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.6 }}
+            className="text-xl text-gray-300"
+          >
+            {t('gpi.subtitle')}
+          </motion.p>
+        </motion.div>
 
         <div className="grid lg:grid-cols-2 gap-8">
           {/* Parameters Panel */}
-          <div className="bg-white/10 dark:bg-gray-800/50 backdrop-blur-sm rounded-lg p-6 border border-white/20 dark:border-gray-700/50">
+          <motion.div 
+            initial={{ opacity: 0, x: -50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8, delay: 0.8 }}
+            className="bg-white/10 dark:bg-gray-800/50 backdrop-blur-sm rounded-lg p-6 border border-white/20 dark:border-gray-700/50"
+          >
             <div className="flex items-center gap-2 mb-6">
               <Settings className="w-5 h-5 text-purple-400" />
-              <h2 className="text-xl font-semibold text-white">GPI Parameters</h2>
+              <h2 className="text-xl font-semibold text-white">{t('gpi.parameters')}</h2>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Basic Parameters */}
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Target Name
+                  {t('gpi.targetName')}
                 </label>
                 <input
                   type="text"
                   value={parameters.target_name}
                   onChange={(e) => handleParameterChange('target_name', e.target.value)}
                   className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  placeholder="e.g., TIC 441420236"
+                  placeholder={t('gpi.targetPlaceholder')}
                   required
                 />
               </div>
@@ -153,7 +187,7 @@ const GPIPage: React.FC = () => {
                   className="w-4 h-4 text-purple-600 bg-white/10 border-white/20 rounded focus:ring-purple-500"
                 />
                 <label htmlFor="use_ai" className="text-sm font-medium text-gray-300">
-                  Use AI Enhancement
+                  {t('gpi.aiEnhancement')}
                 </label>
               </div>
 
@@ -165,7 +199,7 @@ const GPIPage: React.FC = () => {
                   className="flex items-center gap-2 text-purple-400 hover:text-purple-300 text-sm font-medium"
                 >
                   <Settings className="w-4 h-4" />
-                  Advanced Parameters
+                  {showAdvanced ? t('gpi.hideAdvanced') : t('gpi.showAdvanced')}
                 </button>
               </div>
 
@@ -173,7 +207,7 @@ const GPIPage: React.FC = () => {
                 <div className="space-y-4 p-4 bg-white/5 rounded-lg border border-white/10">
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Phase Sensitivity (scientific notation)
+                      {t('gpi.phaseSensitivity')}
                     </label>
                     <input
                       type="number"
@@ -186,7 +220,7 @@ const GPIPage: React.FC = () => {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">
-                      SNR Threshold
+                      {t('gpi.snrThreshold')}
                     </label>
                     <input
                       type="number"
@@ -200,7 +234,7 @@ const GPIPage: React.FC = () => {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-300 mb-2">
-                        Min Period (days)
+                        {t('gpi.minPeriod')}
                       </label>
                       <input
                         type="number"
@@ -213,7 +247,7 @@ const GPIPage: React.FC = () => {
 
                     <div>
                       <label className="block text-sm font-medium text-gray-300 mb-2">
-                        Max Period (days)
+                        {t('gpi.maxPeriod')}
                       </label>
                       <input
                         type="number"
@@ -234,7 +268,7 @@ const GPIPage: React.FC = () => {
                   disabled={loading}
                   className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:opacity-50 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-300"
                 >
-                  {loading ? 'Analyzing...' : 'Start GPI Analysis'}
+                  {loading ? t('gpi.analyzing') : t('gpi.startAnalysis')}
                 </button>
                 
                 <button
@@ -243,17 +277,22 @@ const GPIPage: React.FC = () => {
                   disabled={loading}
                   className="bg-white/10 hover:bg-white/20 disabled:opacity-50 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-300"
                 >
-                  Generate Synthetic Data
+                  {t('gpi.generateSynthetic')}
                 </button>
               </div>
             </form>
-          </div>
+          </motion.div>
 
           {/* Results Panel */}
-          <div className="bg-white/10 dark:bg-gray-800/50 backdrop-blur-sm rounded-lg p-6 border border-white/20 dark:border-gray-700/50">
+          <motion.div 
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8, delay: 1.0 }}
+            className="bg-white/10 dark:bg-gray-800/50 backdrop-blur-sm rounded-lg p-6 border border-white/20 dark:border-gray-700/50"
+          >
             <div className="flex items-center gap-2 mb-6">
               <BarChart3 className="w-5 h-5 text-purple-400" />
-              <h2 className="text-xl font-semibold text-white">Analysis Results</h2>
+              <h2 className="text-xl font-semibold text-white">{t('gpi.results')}</h2>
             </div>
 
             {error && (
@@ -360,11 +399,16 @@ const GPIPage: React.FC = () => {
                 <p>Configure parameters and start GPI analysis</p>
               </div>
             )}
-          </div>
+          </motion.div>
         </div>
 
         {/* Info Section */}
-        <div className="mt-8 bg-blue-500/10 border border-blue-500/30 rounded-lg p-6">
+        <motion.div 
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 1.2 }}
+          className="mt-8 bg-blue-500/10 border border-blue-500/30 rounded-lg p-6"
+        >
           <div className="flex items-start gap-3">
             <Info className="w-6 h-6 text-blue-400 flex-shrink-0 mt-0.5" />
             <div>
@@ -377,7 +421,7 @@ const GPIPage: React.FC = () => {
               </p>
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
     </div>
   )

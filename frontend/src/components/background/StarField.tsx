@@ -2,7 +2,7 @@ import React, { useCallback, useMemo } from 'react'
 import Particles from 'react-tsparticles'
 import { loadSlim } from 'tsparticles-slim'
 import type { Container, Engine } from 'tsparticles-engine'
-import { useTheme } from '../../contexts/ThemeContext'
+import { useTheme } from '../../../../front/frontend/src/contexts/ThemeContext'
 
 const StarField: React.FC = React.memo(() => {
   const { theme } = useTheme()

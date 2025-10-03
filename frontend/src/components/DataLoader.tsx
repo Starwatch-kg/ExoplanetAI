@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Upload, FileText, AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
-import { exoplanetApi, type LightcurveData } from '../api/exoplanetApi';
+import { exoplanetApi, type LightcurveData } from '../../../front/frontend/src/api/exoplanetApi';
 
 interface DataLoaderProps {
   onDataLoaded: (data: LightcurveData) => void;

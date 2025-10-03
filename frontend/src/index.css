@@ -50,11 +50,10 @@
   }
   
   body {
-    @apply text-white;
+    @apply text-gray-900 bg-white;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
     font-feature-settings: "cv11", "ss01";
     font-variation-settings: "opsz" 32;
-    background: linear-gradient(to bottom right, #0f172a, #581c87, #0f172a);
     min-height: 100vh;
     overflow-x: hidden;
   }
