@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { Routes, Route } from 'react-router-dom'
 import ApiService from './services/api'
 import Header from './components/layout/Header'
-import StarField from './components/background/StarField'
 import HomePage from './pages/HomePage'
 import AboutPage from './pages/AboutPage'
 import AITrainingPage from './pages/AITrainingPage'
@@ -30,10 +29,7 @@ function App() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 dark:from-gray-900 dark:via-blue-900 dark:to-gray-900 light:from-blue-50 light:via-indigo-100 light:to-blue-50 transition-colors duration-500">
-      {/* Animated Star Field Background */}
-      <StarField />
-      
+    <div className="min-h-screen bg-black transition-colors duration-500">
       {/* Main Content */}
       <div className="relative z-10 min-h-screen">
         {/* Header */}

@@ -4,7 +4,7 @@ import { Clock, CheckCircle, XCircle, TrendingUp } from 'lucide-react'
 import TargetInfo from './TargetInfo'
 import LightCurveGraph from './LightCurveGraph'
 import BLSDetails from './BLSDetails'
-import type { SearchResult } from '../../types/api'
+import type { SearchResult } from '../../../../front/frontend/src/types/api'
 
 interface ResultsPageProps {
   result: SearchResult

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
-import { Database, BarChart3, Clock, TrendingUp, Search, Trash2, RefreshCw } from 'lucide-react'
+import { Database, BarChart3, Clock, TrendingUp, Search, Trash2, RefreshCw, Target, Activity, Zap, CheckCircle } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { motion } from 'framer-motion'
 
 interface DatabaseStats {
   total_exoplanets: number
@@ -140,22 +141,71 @@ const DatabasePage: React.FC = () => {
     <div className="min-h-screen py-8 px-4">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full mb-4">
-            <Database className="w-8 h-8 text-white" />
-          </div>
-          <h1 className="text-4xl font-bold text-white mb-2">
+        <motion.div 
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          className="text-center mb-12"
+        >
+          <motion.div 
+            initial={{ scale: 0, rotate: -180 }}
+            animate={{ scale: 1, rotate: 0 }}
+            transition={{ 
+              duration: 1,
+              delay: 0.2,
+              type: "spring",
+              stiffness: 200,
+              damping: 20
+            }}
+            className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-indigo-500 via-purple-600 to-pink-600 rounded-full mb-6 shadow-lg"
+          >
+            <Database className="w-10 h-10 text-white" />
+          </motion.div>
+          
+          <motion.h1 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+            className="text-5xl font-bold bg-gradient-to-r from-white via-indigo-200 to-purple-200 bg-clip-text text-transparent mb-4"
+          >
             {t('database.title')}
-          </h1>
-          <p className="text-xl text-gray-300">
+          </motion.h1>
+          
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.6 }}
+            className="text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed"
+          >
             {t('database.subtitle')}
-          </p>
-        </div>
+          </motion.p>
+          
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 1, delay: 0.8 }}
+            className="flex justify-center items-center gap-4 mt-6"
+          >
+            <div className="flex items-center gap-2 bg-indigo-500/20 backdrop-blur-sm border border-indigo-500/30 rounded-full px-4 py-2">
+              <Target className="w-4 h-4 text-indigo-400" />
+              <span className="text-indigo-300 text-sm font-medium">Data Analytics</span>
+            </div>
+            <div className="flex items-center gap-2 bg-purple-500/20 backdrop-blur-sm border border-purple-500/30 rounded-full px-4 py-2">
+              <Activity className="w-4 h-4 text-purple-400" />
+              <span className="text-purple-300 text-sm font-medium">Real-time Monitoring</span>
+            </div>
+          </motion.div>
+        </motion.div>
 
         {/* Tab Navigation */}
-        <div className="flex justify-center mb-8">
-          <div className="bg-white/10 backdrop-blur-sm rounded-lg p-1 border border-white/20">
-            <div className="flex gap-1">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.2 }}
+          className="flex justify-center mb-12"
+        >
+          <div className="bg-gradient-to-r from-white/10 to-white/5 backdrop-blur-sm rounded-2xl p-2 border border-white/20 shadow-xl">
+            <div className="flex gap-2">
               {[
                 { id: 'stats', label: t('database.statistics'), icon: BarChart3 },
                 { id: 'history', label: t('database.searchHistory'), icon: Clock },
@@ -163,23 +213,25 @@ const DatabasePage: React.FC = () => {
               ].map((tab) => {
                 const Icon = tab.icon
                 return (
-                  <button
+                  <motion.button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id as any)}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-md transition-all duration-300 ${
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className={`flex items-center gap-2 px-6 py-3 rounded-xl transition-all duration-300 font-medium ${
                       activeTab === tab.id
-                        ? 'bg-white/20 text-white'
+                        ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg'
                         : 'text-gray-300 hover:text-white hover:bg-white/10'
                     }`}
                   >
-                    <Icon className="w-4 h-4" />
+                    <Icon className="w-5 h-5" />
                     {tab.label}
-                  </button>
+                  </motion.button>
                 )
               })}
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {/* Loading State */}
         {loading && (
@@ -201,57 +253,102 @@ const DatabasePage: React.FC = () => {
           <div className="space-y-8">
             {/* Overview Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 border border-white/20">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-blue-500/20 rounded-lg flex items-center justify-center">
-                    <Database className="w-6 h-6 text-blue-400" />
-                  </div>
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.1 }}
+                whileHover={{ scale: 1.05, y: -5 }}
+                className="group bg-gradient-to-br from-blue-500/10 to-cyan-500/10 backdrop-blur-sm rounded-2xl p-8 border border-blue-500/20 hover:border-blue-400/50 transition-all duration-500 shadow-xl"
+              >
+                <div className="flex items-center gap-4">
+                  <motion.div 
+                    whileHover={{ rotate: 360, scale: 1.1 }}
+                    transition={{ duration: 0.6 }}
+                    className="w-16 h-16 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 rounded-xl flex items-center justify-center shadow-lg"
+                  >
+                    <Database className="w-8 h-8 text-blue-400" />
+                  </motion.div>
                   <div>
-                    <p className="text-2xl font-bold text-white">{stats.total_exoplanets}</p>
-                    <p className="text-gray-300 text-sm">Total Exoplanets</p>
+                    <p className="text-3xl font-bold text-white group-hover:text-blue-300 transition-colors">{stats.total_exoplanets}</p>
+                    <p className="text-gray-300 text-sm font-medium">Total Exoplanets</p>
                   </div>
                 </div>
-              </div>
+              </motion.div>
 
-              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 border border-white/20">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-green-500/20 rounded-lg flex items-center justify-center">
-                    <BarChart3 className="w-6 h-6 text-green-400" />
-                  </div>
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+                whileHover={{ scale: 1.05, y: -5 }}
+                className="group bg-gradient-to-br from-green-500/10 to-emerald-500/10 backdrop-blur-sm rounded-2xl p-8 border border-green-500/20 hover:border-green-400/50 transition-all duration-500 shadow-xl"
+              >
+                <div className="flex items-center gap-4">
+                  <motion.div 
+                    whileHover={{ rotate: 360, scale: 1.1 }}
+                    transition={{ duration: 0.6 }}
+                    className="w-16 h-16 bg-gradient-to-br from-green-500/20 to-emerald-500/20 rounded-xl flex items-center justify-center shadow-lg"
+                  >
+                    <CheckCircle className="w-8 h-8 text-green-400" />
+                  </motion.div>
                   <div>
-                    <p className="text-2xl font-bold text-white">{stats.confirmed_exoplanets}</p>
-                    <p className="text-gray-300 text-sm">Confirmed</p>
+                    <p className="text-3xl font-bold text-white group-hover:text-green-300 transition-colors">{stats.confirmed_exoplanets}</p>
+                    <p className="text-gray-300 text-sm font-medium">Confirmed</p>
                   </div>
                 </div>
-              </div>
+              </motion.div>
 
-              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 border border-white/20">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-purple-500/20 rounded-lg flex items-center justify-center">
-                    <Search className="w-6 h-6 text-purple-400" />
-                  </div>
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.3 }}
+                whileHover={{ scale: 1.05, y: -5 }}
+                className="group bg-gradient-to-br from-purple-500/10 to-pink-500/10 backdrop-blur-sm rounded-2xl p-8 border border-purple-500/20 hover:border-purple-400/50 transition-all duration-500 shadow-xl"
+              >
+                <div className="flex items-center gap-4">
+                  <motion.div 
+                    whileHover={{ rotate: 360, scale: 1.1 }}
+                    transition={{ duration: 0.6 }}
+                    className="w-16 h-16 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-xl flex items-center justify-center shadow-lg"
+                  >
+                    <Search className="w-8 h-8 text-purple-400" />
+                  </motion.div>
                   <div>
-                    <p className="text-2xl font-bold text-white">{stats.total_searches}</p>
-                    <p className="text-gray-300 text-sm">Total Searches</p>
+                    <p className="text-3xl font-bold text-white group-hover:text-purple-300 transition-colors">{stats.total_searches}</p>
+                    <p className="text-gray-300 text-sm font-medium">Total Searches</p>
                   </div>
                 </div>
-              </div>
+              </motion.div>
 
-              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 border border-white/20">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-orange-500/20 rounded-lg flex items-center justify-center">
-                    <Clock className="w-6 h-6 text-orange-400" />
-                  </div>
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.4 }}
+                whileHover={{ scale: 1.05, y: -5 }}
+                className="group bg-gradient-to-br from-orange-500/10 to-red-500/10 backdrop-blur-sm rounded-2xl p-8 border border-orange-500/20 hover:border-orange-400/50 transition-all duration-500 shadow-xl"
+              >
+                <div className="flex items-center gap-4">
+                  <motion.div 
+                    whileHover={{ rotate: 360, scale: 1.1 }}
+                    transition={{ duration: 0.6 }}
+                    className="w-16 h-16 bg-gradient-to-br from-orange-500/20 to-red-500/20 rounded-xl flex items-center justify-center shadow-lg"
+                  >
+                    <Zap className="w-8 h-8 text-orange-400" />
+                  </motion.div>
                   <div>
-                    <p className="text-2xl font-bold text-white">{stats.searches_last_24h}</p>
-                    <p className="text-gray-300 text-sm">Last 24h</p>
+                    <p className="text-3xl font-bold text-white group-hover:text-orange-300 transition-colors">{stats.searches_last_24h}</p>
+                    <p className="text-gray-300 text-sm font-medium">Last 24h</p>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             </div>
 
             {/* Search Methods Chart */}
-            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 border border-white/20">
+            <motion.div 
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.6 }}
+              className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/20 shadow-xl"
+            >
               <h3 className="text-xl font-semibold text-white mb-6">Searches by Method</h3>
               <div className="space-y-4">
                 {Object.entries(stats.searches_by_method).map(([method, count]) => {
@@ -274,25 +371,34 @@ const DatabasePage: React.FC = () => {
                   )
                 })}
               </div>
-            </div>
+            </motion.div>
 
             {/* Action Buttons */}
-            <div className="flex justify-center gap-4">
-              <button
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.8 }}
+              className="flex justify-center gap-4"
+            >
+              <motion.button
                 onClick={fetchData}
-                className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+                whileHover={{ scale: 1.05, y: -2 }}
+                whileTap={{ scale: 0.95 }}
+                className="group flex items-center gap-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold py-4 px-8 rounded-xl transition-all duration-300 shadow-lg hover:shadow-indigo-500/25"
               >
-                <RefreshCw className="w-4 h-4" />
-                Refresh Data
-              </button>
-              <button
+                <RefreshCw className="w-5 h-5 group-hover:rotate-180 transition-transform duration-500" />
+                <span>Refresh Data</span>
+              </motion.button>
+              <motion.button
                 onClick={cleanupOldData}
-                className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+                whileHover={{ scale: 1.05, y: -2 }}
+                whileTap={{ scale: 0.95 }}
+                className="group flex items-center gap-3 bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white font-bold py-4 px-8 rounded-xl transition-all duration-300 shadow-lg hover:shadow-red-500/25"
               >
-                <Trash2 className="w-4 h-4" />
-                Cleanup Old Data
-              </button>
-            </div>
+                <Trash2 className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" />
+                <span>Cleanup Old Data</span>
+              </motion.button>
+            </motion.div>
           </div>
         )}
 

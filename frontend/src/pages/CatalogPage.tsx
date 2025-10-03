@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
-import { Search, Filter, Globe, Star, Thermometer, Ruler, Clock, MapPin } from 'lucide-react'
+import { Search, Globe, Star, Thermometer, Ruler, Clock, MapPin, Sparkles, Target, TrendingUp } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { motion } from 'framer-motion'
 
 interface ExoplanetData {
   id: string
@@ -115,75 +116,153 @@ const CatalogPage: React.FC = () => {
     <div className="min-h-screen py-8 px-4">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-green-500 to-blue-600 rounded-full mb-4">
-            <Globe className="w-8 h-8 text-white" />
-          </div>
-          <h1 className="text-4xl font-bold text-white mb-2">
+        <motion.div 
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          className="text-center mb-12"
+        >
+          <motion.div 
+            initial={{ scale: 0, rotate: -180 }}
+            animate={{ scale: 1, rotate: 0 }}
+            transition={{ 
+              duration: 1,
+              delay: 0.2,
+              type: "spring",
+              stiffness: 200,
+              damping: 20
+            }}
+            className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-green-500 via-blue-600 to-purple-600 rounded-full mb-6 shadow-lg"
+          >
+            <Globe className="w-10 h-10 text-white" />
+          </motion.div>
+          
+          <motion.h1 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+            className="text-5xl font-bold bg-gradient-to-r from-white via-green-200 to-blue-200 bg-clip-text text-transparent mb-4"
+          >
             {t('catalog.title')}
-          </h1>
-          <p className="text-xl text-gray-300">
+          </motion.h1>
+          
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.6 }}
+            className="text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed"
+          >
             {t('catalog.subtitle')}
-          </p>
-        </div>
+          </motion.p>
+          
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 1, delay: 0.8 }}
+            className="flex justify-center items-center gap-4 mt-6"
+          >
+            <div className="flex items-center gap-2 bg-green-500/20 backdrop-blur-sm border border-green-500/30 rounded-full px-4 py-2">
+              <Target className="w-4 h-4 text-green-400" />
+              <span className="text-green-300 text-sm font-medium">Exoplanet Database</span>
+            </div>
+            <div className="flex items-center gap-2 bg-blue-500/20 backdrop-blur-sm border border-blue-500/30 rounded-full px-4 py-2">
+              <Sparkles className="w-4 h-4 text-blue-400" />
+              <span className="text-blue-300 text-sm font-medium">Real NASA Data</span>
+            </div>
+          </motion.div>
+        </motion.div>
 
         {/* Statistics */}
         {statistics && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 border border-white/20">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-green-500/20 rounded-lg flex items-center justify-center">
-                  <Globe className="w-6 h-6 text-green-400" />
-                </div>
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12"
+          >
+            <motion.div 
+              whileHover={{ scale: 1.05, y: -5 }}
+              className="group bg-gradient-to-br from-green-500/10 to-emerald-500/10 backdrop-blur-sm rounded-2xl p-8 border border-green-500/20 hover:border-green-400/50 transition-all duration-500 shadow-xl"
+            >
+              <div className="flex items-center gap-4">
+                <motion.div 
+                  whileHover={{ rotate: 360, scale: 1.1 }}
+                  transition={{ duration: 0.6 }}
+                  className="w-16 h-16 bg-gradient-to-br from-green-500/20 to-emerald-500/20 rounded-xl flex items-center justify-center shadow-lg"
+                >
+                  <Globe className="w-8 h-8 text-green-400" />
+                </motion.div>
                 <div>
-                  <p className="text-2xl font-bold text-white">{statistics.confirmed_planets}</p>
-                  <p className="text-gray-300 text-sm">Confirmed Planets</p>
+                  <p className="text-3xl font-bold text-white group-hover:text-green-300 transition-colors">{statistics.confirmed_planets}</p>
+                  <p className="text-gray-300 text-sm font-medium">Confirmed Planets</p>
                 </div>
               </div>
-            </div>
+            </motion.div>
 
-            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 border border-white/20">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-blue-500/20 rounded-lg flex items-center justify-center">
-                  <Star className="w-6 h-6 text-blue-400" />
-                </div>
+            <motion.div 
+              whileHover={{ scale: 1.05, y: -5 }}
+              className="group bg-gradient-to-br from-blue-500/10 to-cyan-500/10 backdrop-blur-sm rounded-2xl p-8 border border-blue-500/20 hover:border-blue-400/50 transition-all duration-500 shadow-xl"
+            >
+              <div className="flex items-center gap-4">
+                <motion.div 
+                  whileHover={{ rotate: 360, scale: 1.1 }}
+                  transition={{ duration: 0.6 }}
+                  className="w-16 h-16 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 rounded-xl flex items-center justify-center shadow-lg"
+                >
+                  <Star className="w-8 h-8 text-blue-400" />
+                </motion.div>
                 <div>
-                  <p className="text-2xl font-bold text-white">{statistics.habitable_zone_planets}</p>
-                  <p className="text-gray-300 text-sm">Habitable Zone</p>
+                  <p className="text-3xl font-bold text-white group-hover:text-blue-300 transition-colors">{statistics.habitable_zone_planets}</p>
+                  <p className="text-gray-300 text-sm font-medium">Habitable Zone</p>
                 </div>
               </div>
-            </div>
+            </motion.div>
 
-            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 border border-white/20">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-purple-500/20 rounded-lg flex items-center justify-center">
-                  <Filter className="w-6 h-6 text-purple-400" />
-                </div>
+            <motion.div 
+              whileHover={{ scale: 1.05, y: -5 }}
+              className="group bg-gradient-to-br from-purple-500/10 to-pink-500/10 backdrop-blur-sm rounded-2xl p-8 border border-purple-500/20 hover:border-purple-400/50 transition-all duration-500 shadow-xl"
+            >
+              <div className="flex items-center gap-4">
+                <motion.div 
+                  whileHover={{ rotate: 360, scale: 1.1 }}
+                  transition={{ duration: 0.6 }}
+                  className="w-16 h-16 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-xl flex items-center justify-center shadow-lg"
+                >
+                  <TrendingUp className="w-8 h-8 text-purple-400" />
+                </motion.div>
                 <div>
-                  <p className="text-2xl font-bold text-white">{(statistics.average_confidence * 100).toFixed(1)}%</p>
-                  <p className="text-gray-300 text-sm">Avg Confidence</p>
+                  <p className="text-3xl font-bold text-white group-hover:text-purple-300 transition-colors">{(statistics.average_confidence * 100).toFixed(1)}%</p>
+                  <p className="text-gray-300 text-sm font-medium">Avg Confidence</p>
                 </div>
               </div>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         )}
 
         {/* Filters */}
-        <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 border border-white/20 mb-8">
+        <motion.div 
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.4 }}
+          className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/20 shadow-xl mb-12"
+        >
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
                 {t('catalog.search')}
               </label>
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
                   type="text"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full pl-12 pr-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-400 transition-all duration-300"
                   placeholder={t('catalog.searchPlaceholder')}
                 />
+                <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                </div>
               </div>
             </div>
 
@@ -233,7 +312,7 @@ const CatalogPage: React.FC = () => {
               </label>
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {/* Loading State */}
         {loading && (
@@ -254,9 +333,14 @@ const CatalogPage: React.FC = () => {
         {!loading && !error && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredExoplanets.map((planet) => (
-              <div
+              <motion.div
                 key={planet.id}
-                className="bg-white/10 backdrop-blur-sm rounded-lg p-6 border border-white/20 hover:border-white/40 transition-all duration-300 cursor-pointer"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: Math.random() * 0.3 }}
+                whileHover={{ scale: 1.05, y: -10 }}
+                whileTap={{ scale: 0.95 }}
+                className="group bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/20 hover:border-white/40 transition-all duration-500 cursor-pointer shadow-xl hover:shadow-2xl"
                 onClick={() => setSelectedPlanet(planet)}
               >
                 <div className="flex items-start justify-between mb-4">
@@ -320,7 +404,7 @@ const CatalogPage: React.FC = () => {
                     {(planet.confidence * 100).toFixed(0)}% confidence
                   </span>
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
         )}
@@ -328,23 +412,27 @@ const CatalogPage: React.FC = () => {
         {/* Pagination */}
         {!loading && !error && filteredExoplanets.length > 0 && (
           <div className="flex justify-center mt-8 gap-2">
-            <button
+            <motion.button
               onClick={() => setCurrentPage(Math.max(0, currentPage - 1))}
               disabled={currentPage === 0}
-              className="px-4 py-2 bg-white/10 hover:bg-white/20 disabled:opacity-50 text-white rounded-lg transition-colors"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="px-6 py-3 bg-gradient-to-r from-blue-600/20 to-purple-600/20 hover:from-blue-600/30 hover:to-purple-600/30 border border-blue-500/30 hover:border-blue-400/50 disabled:opacity-50 text-white rounded-xl transition-all duration-300 backdrop-blur-sm"
             >
               Previous
-            </button>
-            <span className="px-4 py-2 text-gray-300">
+            </motion.button>
+            <span className="px-6 py-3 text-gray-300 font-medium">
               Page {currentPage + 1}
             </span>
-            <button
+            <motion.button
               onClick={() => setCurrentPage(currentPage + 1)}
               disabled={filteredExoplanets.length < itemsPerPage}
-              className="px-4 py-2 bg-white/10 hover:bg-white/20 disabled:opacity-50 text-white rounded-lg transition-colors"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="px-6 py-3 bg-gradient-to-r from-blue-600/20 to-purple-600/20 hover:from-blue-600/30 hover:to-purple-600/30 border border-blue-500/30 hover:border-blue-400/50 disabled:opacity-50 text-white rounded-xl transition-all duration-300 backdrop-blur-sm"
             >
               Next
-            </button>
+            </motion.button>
           </div>
         )}
 
