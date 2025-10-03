@@ -24,20 +24,40 @@ def _get_lib_extension() -> str:
     return ".so"
 
 def load_cpp_library(cpp_dir: Path, lib_basename: str):
-    # FIX: [FINDING_001] Безопасная загрузка C++ библиотеки
+    """Secure C++ library loading with strict path validation and integrity checks"""
     lib_ext = _get_lib_extension()
     lib_path = (Path(cpp_dir) / f"{lib_basename}{lib_ext}").resolve()
     allowed_dir = Path(__file__).parent.resolve()
-    if allowed_dir not in lib_path.parents:
-        raise FileNotFoundError(f"Library {lib_path} is outside allowed directory")
+    
+    # SECURITY: Strict path validation
+    if not lib_path.is_relative_to(allowed_dir):
+        raise SecurityError(f"Library {lib_path} is outside allowed directory {allowed_dir}")
+    
+    # SECURITY: Check for path traversal attempts
+    if ".." in str(lib_path) or lib_path.name != f"{lib_basename}{lib_ext}":
+        raise SecurityError(f"Invalid library path: {lib_path}")
+    
     if not lib_path.exists():
         raise FileNotFoundError(f"Library not found: {lib_path}")
-    # Используем ctypes для динамической загрузки
+    
+    # SECURITY: Basic file integrity check
+    if lib_path.stat().st_size == 0:
+        raise SecurityError(f"Library file is empty: {lib_path}")
+    
+    # SECURITY: Check file permissions (should not be world-writable)
+    if lib_path.stat().st_mode & 0o002:
+        raise SecurityError(f"Library file is world-writable: {lib_path}")
+    
     try:
         return ctypes.CDLL(str(lib_path))
     except OSError as e:
-        logger.exception("Failed to load native lib")
-        raise
+        logger.exception("Failed to load native library: %s", e)
+        raise SecurityError(f"Failed to load library {lib_path}: {e}") from e
+
+
+class SecurityError(Exception):
+    """Raised when security validation fails"""
+    pass
 
 class CPPModuleManager:
     """Manager for C++ acceleration modules"""
@@ -175,113 +195,61 @@ class CPPModuleManager:
             self.search_lib = None
 
 def safe_compile_cpp(source_path: Path, output_path: Path, allowed_dir: Path, extra_flags: List[str] = None, timeout: int = 300):
-    # FIX: [FINDING_002] Безопасная компиляция C++ через g++
+    """Secure C++ compilation with strict validation and sandboxing"""
     source_path = Path(source_path).resolve()
     output_path = Path(output_path).resolve()
     allowed_dir = Path(allowed_dir).resolve()
-    if allowed_dir not in source_path.parents:
-        raise ValueError("Source path is outside allowed directory")
     
-    # Build command with safe parameters
-    cmd = ["g++", "-shared", "-fPIC", "-O3", "-fopenmp"]
+    # SECURITY: Validate all paths are within allowed directory
+    if not source_path.is_relative_to(allowed_dir):
+        raise SecurityError("Source path is outside allowed directory")
+    if not output_path.is_relative_to(allowed_dir):
+        raise SecurityError("Output path is outside allowed directory")
+    
+    # SECURITY: Validate source file exists and has reasonable size
+    if not source_path.exists():
+        raise FileNotFoundError(f"Source file not found: {source_path}")
+    if source_path.stat().st_size > 10 * 1024 * 1024:  # 10MB limit
+        raise SecurityError("Source file too large")
+    
+    # SECURITY: Whitelist allowed compiler flags
+    allowed_flags = {"-lfftw3", "-lfftw3_threads", "-lm", "-lpthread", "-O2", "-O3"}
+    if extra_flags:
+        for flag in extra_flags:
+            if flag not in allowed_flags:
+                raise SecurityError(f"Compiler flag not allowed: {flag}")
+    
+    # Build command with safe parameters (NO shell=True)
+    cmd = ["/usr/bin/g++", "-shared", "-fPIC", "-O3", "-fopenmp", "-Wall", "-Wextra"]
     cmd.append(str(source_path))
     cmd.extend(["-o", str(output_path)])
     if extra_flags:
         cmd.extend(extra_flags)
     
     try:
-        result = subprocess.run(cmd, check=True, capture_output=True, cwd=str(allowed_dir), timeout=timeout)
+        # SECURITY: Run with timeout, capture output, no shell
+        result = subprocess.run(
+            cmd, 
+            check=True, 
+            capture_output=True, 
+            cwd=str(allowed_dir), 
+            timeout=timeout,
+            shell=False,  # CRITICAL: Never use shell=True
+            env={"PATH": "/usr/bin:/bin"}  # Minimal environment
+        )
         logger.info("Compile stdout: %s", result.stdout.decode('utf-8', errors='ignore'))
+    except subprocess.TimeoutExpired as e:
+        logger.error("Compilation timeout after %d seconds", timeout)
+        raise SecurityError(f"Compilation timeout: {e}") from e
     except subprocess.CalledProcessError as e:
         logger.error("Compile failed: %s", e.stderr.decode('utf-8', errors='ignore'))
-        raise
+        raise SecurityError(f"Compilation failed: {e}") from e
+    except FileNotFoundError as e:
+        logger.error("Compiler not found: %s", e)
+        raise SecurityError(f"Compiler not available: {e}") from e
 
-class GPIDataGenerator:
-    """High-performance GPI data generator"""
-    
-    def __init__(self, cpp_manager: CPPModuleManager):
-        self.cpp_manager = cpp_manager
-        self.generator_handle = None
-        
-        if cpp_manager.modules_loaded and hasattr(cpp_manager, 'gpi_lib'):
-            self.generator_handle = cpp_manager.gpi_lib.create_gpi_generator(0)
-    
-    def generate_synthetic_data(self, num_points: int = 10000, observation_time: float = 365.0) -> Dict[str, Any]:
-        """Generate synthetic GPI data"""
-        
-        if self.generator_handle and self.cpp_manager.modules_loaded:
-            # Use C++ implementation
-            try:
-                result_ptr = self.cpp_manager.gpi_lib.generate_gpi_data(
-                    self.generator_handle, num_points, observation_time
-                )
-                
-                if result_ptr:
-                    json_str = ctypes.string_at(result_ptr).decode('utf-8')
-                    self.cpp_manager.gpi_lib.free_string(result_ptr)
-                    return json.loads(json_str)
-                
-            except Exception as e:
-                logger.warning(f"C++ GPI generation failed: {e}, falling back to Python")
-        
-        # Python fallback implementation
-        return self._generate_python_fallback(num_points, observation_time)
-    
-    def _generate_python_fallback(self, num_points: int, observation_time: float) -> Dict[str, Any]:
-        """Python fallback for GPI data generation"""
-        
-        # Generate realistic planetary system
-        np.random.seed()
-        
-        system_params = {
-            "star_mass": 0.5 + np.random.random() * 1.5,
-            "planet_mass": 0.1 + np.random.random() * 20.0,
-            "orbital_period": 1.0 + np.random.random() * 999.0,
-            "distance_to_system": 10.0 + np.random.random() * 490.0
-        }
-        
-        # Generate time series
-        time_points = np.linspace(0, observation_time, num_points)
-        
-        # Calculate phase shifts (simplified model)
-        orbital_phase = 2 * np.pi * time_points / system_params["orbital_period"]
-        
-        # Gravitational phase shift amplitude
-        phase_amplitude = 1e-12 * system_params["planet_mass"] / (system_params["distance_to_system"]**2)
-        
-        # Generate phase shifts with orbital modulation
-        phase_shifts = phase_amplitude * np.sin(orbital_phase)
-        
-        # Add noise
-        noise_level = 1e-15 * system_params["distance_to_system"] / system_params["planet_mass"]
-        noise = np.random.normal(0, noise_level, num_points)
-        phase_shifts += noise
-        
-        # Calculate amplitude variations (gravitational lensing)
-        amplitude_variations = 1e-6 * system_params["planet_mass"] * np.cos(orbital_phase) / (system_params["distance_to_system"]**2)
-        
-        # Calculate detection metrics
-        snr = np.std(phase_shifts) / noise_level
-        confidence = np.tanh(snr * np.log10(system_params["planet_mass"]) / 10.0)
-        confidence = max(0.0, min(1.0, confidence))
-        
-        return {
-            "system_parameters": system_params,
-            "detection_metrics": {
-                "snr": float(snr),
-                "confidence": float(confidence),
-                "data_points": num_points
-            },
-            "time_series": {
-                "time": time_points.tolist(),
-                "phase_shifts": phase_shifts.tolist(),
-                "amplitude_variations": amplitude_variations.tolist()
-            }
-        }
-    
-    def __del__(self):
-        if self.generator_handle and self.cpp_manager.modules_loaded:
-            self.cpp_manager.gpi_lib.destroy_gpi_generator(self.generator_handle)
+# GPIDataGenerator class removed - no synthetic data generation
+# Only real astronomical data processing is supported
 
 class SearchAccelerator:
     """High-performance search algorithms"""
@@ -466,14 +434,13 @@ class SearchAccelerator:
         if self.accelerator_handle and self.cpp_manager.modules_loaded:
             self.cpp_manager.search_lib.destroy_search_accelerator(self.accelerator_handle)
 
-# Global instances
+# Global instances - only real data processing
 cpp_manager = CPPModuleManager()
-gpi_generator = GPIDataGenerator(cpp_manager)
 search_accelerator = SearchAccelerator(cpp_manager)
 
-def get_gpi_generator() -> GPIDataGenerator:
-    """Get global GPI generator instance"""
-    return gpi_generator
+def get_gpi_generator():
+    """GPI generator removed - no synthetic data generation"""
+    return None
 
 def get_search_accelerator() -> SearchAccelerator:
     """Get global search accelerator instance"""

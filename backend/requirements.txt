@@ -9,9 +9,10 @@ numpy==2.1.3
 scipy==1.14.1
 pandas==2.2.3
 
-# Astronomy and Signal Processing
+# Real Astronomical Data Sources
 astropy==6.1.6
 lightkurve==2.5.0
+astroquery==0.4.7
 pywavelets==1.7.0
 
 # Data Processing and HTTP

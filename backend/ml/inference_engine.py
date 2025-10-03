@@ -268,93 +268,9 @@ class MLExoplanetClassifier:
         self.is_trained = False
         self.model_path = model_path
     
-    def train_default_model(self):
-        """Train a default model with synthetic data"""
-        if not ML_AVAILABLE:
-            logger.warning("ML libraries not available, cannot train model")
-            return False
-        
-        try:
-            logger.info("Training default ML model with synthetic data")
-            
-            # Generate synthetic training data
-            n_samples = 1000
-            X, y = self._generate_synthetic_data(n_samples)
-            
-            # Split data
-            X_train, X_test, y_train, y_test = train_test_split(
-                X, y, test_size=0.2, random_state=42
-            )
-            
-            # Scale features
-            self.scaler = StandardScaler()
-            X_train_scaled = self.scaler.fit_transform(X_train)
-            X_test_scaled = self.scaler.transform(X_test)
-            
-            # Train model
-            self.model = RandomForestClassifier(
-                n_estimators=100,
-                max_depth=10,
-                random_state=42
-            )
-            self.model.fit(X_train_scaled, y_train)
-            
-            # Evaluate
-            y_pred = self.model.predict(X_test_scaled)
-            accuracy = accuracy_score(y_test, y_pred)
-            
-            logger.info(f"Model trained with accuracy: {accuracy:.3f}")
-            
-            self.is_trained = True
-            return True
-            
-        except Exception as e:
-            logger.error(f"Failed to train model: {e}")
-            return False
-    
-    def _generate_synthetic_data(self, n_samples: int):
-        """Generate synthetic training data"""
-        np.random.seed(42)
-        
-        X = []
-        y = []
-        
-        for i in range(n_samples):
-            # Generate features for non-planet (label 0)
-            if i < n_samples // 2:
-                features = LightcurveFeatures(
-                    mean_flux=np.random.normal(1.0, 0.01),
-                    std_flux=np.random.uniform(0.001, 0.02),
-                    skewness=np.random.normal(0, 0.5),
-                    kurtosis=np.random.normal(0, 1),
-                    amplitude=np.random.uniform(0.005, 0.05),
-                    period_estimate=np.random.uniform(0.1, 100),
-                    transit_depth=np.random.uniform(0, 0.002)
-                )
-                label = 0
-            # Generate features for planet (label 1)
-            else:
-                features = LightcurveFeatures(
-                    mean_flux=np.random.normal(1.0, 0.005),
-                    std_flux=np.random.uniform(0.005, 0.03),
-                    skewness=np.random.normal(-0.2, 0.3),
-                    kurtosis=np.random.normal(0.5, 0.8),
-                    amplitude=np.random.uniform(0.01, 0.08),
-                    period_estimate=np.random.uniform(0.5, 20),
-                    transit_depth=np.random.uniform(0.002, 0.02)
-                )
-                label = 1
-            
-            X.append(features.to_array())
-            y.append(label)
-        
-        return np.array(X), np.array(y)
-    
     def predict(self, features: LightcurveFeatures) -> InferenceResult:
         """
         Predict using ML model
-        
-        Args:
             features: Extracted lightcurve features
             
         Returns:
@@ -363,11 +279,10 @@ class MLExoplanetClassifier:
         start_time = time.time()
         
         if not self.is_trained or self.model is None:
-            logger.warning("Model not trained, training default model")
-            if not self.train_default_model():
-                # Fallback to simple classifier
-                simple_classifier = SimpleExoplanetClassifier()
-                return simple_classifier.predict(features)
+            logger.warning("Model not trained, using simple classifier fallback")
+            # Fallback to simple classifier - no synthetic training
+            simple_classifier = SimpleExoplanetClassifier()
+            return simple_classifier.predict(features)
         
         try:
             # Prepare features

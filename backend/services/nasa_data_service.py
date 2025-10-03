@@ -282,67 +282,8 @@ class NASADataService:
         self.data_cache[key] = data
         self.cache_expiry[key] = datetime.now() + self.cache_duration
     
-    async def get_synthetic_data_for_demo(self, target_name: str) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-        """Генерация реалистичных данных для демонстрации"""
-        logger.info(f"🔄 Generating realistic demo data for {target_name}")
-        
-        # Создаем более реалистичные данные чем простой random
-        time_points = 2000
-        time = np.linspace(0, 27.4, time_points)  # TESS sector length
-        
-        # Базовая кривая блеска с инструментальными эффектами
-        base_flux = 1.0
-        
-        # Добавляем долгосрочный тренд (инструментальный дрейф)
-        trend = 0.002 * np.exp(-time / 10.0)
-        
-        # Добавляем периодические вариации (звездная активность)
-        stellar_rotation = 0.0005 * np.sin(2 * np.pi * time / 12.5)  # 12.5 дней период вращения
-        
-        # Детерминированный реалистичный шум TESS
-        noise_level = 0.0002  # 200 ppm
-        # Используем детерминированный шум на основе target_name
-        target_seed = hash(target_name) % 10000
-        np.random.seed(target_seed)
-        noise = np.random.normal(0, noise_level, time_points)
-        
-        # Возможный планетный транзит
-        has_planet = target_name.upper().startswith('TIC')  # Для TIC объектов добавляем транзит
-        
-        if has_planet:
-            # Детерминированные параметры планеты на основе имени
-            seed = hash(target_name) % 1000
-            # Используем математические функции вместо random для детерминированности
-            period = 2.0 + (seed % 180) / 10.0  # 2.0-20.0 дней
-            depth = 0.001 + (seed % 70) / 10000.0  # 1-8 mmag
-            duration = 0.05 + (seed % 15) / 100.0  # 1-5 часов
-            
-            # Добавляем транзиты
-            for cycle in range(int(27.4 / period) + 1):
-                transit_time = cycle * period
-                if transit_time > 27.4:
-                    break
-                
-                # Создаем транзитную кривую
-                for i, t in enumerate(time):
-                    dt = abs(t - transit_time)
-                    if dt < duration:
-                        # Простая модель транзита
-                        ingress_egress = duration * 0.1
-                        if dt < duration - ingress_egress:
-                            # Полный транзит
-                            base_flux -= depth
-                        else:
-                            # Ingress/egress
-                            partial_depth = depth * (duration - dt) / ingress_egress
-                            base_flux -= partial_depth
-        
-        # Собираем финальную кривую блеска
-        flux = base_flux + trend + stellar_rotation + noise
-        flux_err = np.full_like(flux, noise_level)
-        
-        logger.info(f"✅ Generated realistic demo data: {len(time)} points, planet={has_planet}")
-        return time, flux, flux_err
+    # REMOVED: Synthetic data generation method
+    # Only real NASA data is supported
 
 # Глобальный экземпляр
 nasa_data_service = NASADataService()
