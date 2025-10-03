@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Search, Loader, X } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import type { SearchFormData } from '../types/api'
+import type { SearchFormData } from '../../../front/frontend/src/types/api'
 
 interface SearchFormProps {
   onSearch: (data: SearchFormData) => void

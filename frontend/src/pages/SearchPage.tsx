@@ -1,5 +1,7 @@
 import React, { useState } from 'react'
-import { AlertCircle, Search, BarChart3, Settings, TrendingUp, Download, Info, Zap, Layers, Activity } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
+import { motion } from 'framer-motion'
+import { AlertCircle, Search, BarChart3, Settings, TrendingUp, Download, Info, Layers, Activity, Sparkles, Target, Clock, CheckCircle, Play, Star, ArrowRight } from 'lucide-react'
 
 interface SearchParameters {
   target_name: string
@@ -18,7 +20,7 @@ interface SearchResult {
 }
 
 const SearchPage: React.FC = () => {
-  const [searchMode, setSearchMode] = useState<'bls' | 'ensemble' | 'hybrid'>('bls')
+  const { t } = useTranslation()
   const [parameters, setParameters] = useState<SearchParameters>({
     target_name: '',
     period_min: 0.5,
@@ -34,50 +36,35 @@ const SearchPage: React.FC = () => {
   const searchMethods = [
     {
       id: 'bls',
-      name: 'Box Least Squares',
+      name: t('search.methods.bls.name'),
       icon: BarChart3,
-      description: 'Быстрый классический поиск транзитов',
-      features: [
-        'Высокая скорость обработки',
-        'Статистическая значимость',
-        'C++ ускорение',
-        'Проверенный алгоритм'
-      ],
-      bestFor: 'Обычные транзиты, чистые кривые блеска',
-      processingTime: '< 30 секунд',
-      accuracy: '~90%',
+      description: t('search.methods.bls.description'),
+      features: t('search.methods.bls.features', { returnObjects: true }) as string[],
+      bestFor: t('search.methods.bls.bestFor'),
+      processingTime: t('search.methods.bls.processingTime'),
+      accuracy: t('search.methods.bls.accuracy'),
       color: 'blue'
     },
     {
       id: 'ensemble',
-      name: 'Ultimate Ensemble',
+      name: t('search.methods.ensemble.name'),
       icon: Layers,
-      description: 'Супер-мощный поиск с 6 методами одновременно',
-      features: [
-        '6 методов параллельно (BLS, GPI, TLS, Wavelet, Fourier, ML)',
-        '89 признаков из 6 категорий',
-        'Теория хаоса и информации',
-        'Bootstrap валидация'
-      ],
-      bestFor: 'Сложные случаи, максимальная точность',
-      processingTime: '< 120 секунд',
-      accuracy: '~95%',
+      description: t('search.methods.ensemble.description'),
+      features: t('search.methods.ensemble.features', { returnObjects: true }) as string[],
+      bestFor: t('search.methods.ensemble.bestFor'),
+      processingTime: t('search.methods.ensemble.processingTime'),
+      accuracy: t('search.methods.ensemble.accuracy'),
       color: 'purple'
     },
     {
       id: 'hybrid',
-      name: 'Hybrid Search',
+      name: t('search.methods.hybrid.name'),
       icon: Activity,
-      description: 'Умное объединение BLS и Ensemble с автовыбором',
-      features: [
-        'Параллельное выполнение BLS и Ensemble',
-        'Автоматический выбор лучшего',
-        'Сравнительный анализ',
-        'Объяснение выбора метода'
-      ],
-      bestFor: 'Универсальное решение для всех случаев',
-      processingTime: '< 90 секунд',
-      accuracy: '~93%',
+      description: t('search.methods.hybrid.description'),
+      features: t('search.methods.hybrid.features', { returnObjects: true }) as string[],
+      bestFor: t('search.methods.hybrid.bestFor'),
+      processingTime: t('search.methods.hybrid.processingTime'),
+      accuracy: t('search.methods.hybrid.accuracy'),
       color: 'green'
     }
   ]
@@ -161,7 +148,6 @@ const SearchPage: React.FC = () => {
 
   const handleParameterChange = (key: keyof SearchParameters, value: any) => {
     setParameters(prev => ({ ...prev, [key]: value }))
-    if (key === 'search_mode') setSearchMode(value)
   }
 
   const getColorClasses = (color: string) => {
@@ -191,102 +177,189 @@ const SearchPage: React.FC = () => {
     <div className="min-h-screen py-8 px-4">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full mb-4">
-            <Search className="w-8 h-8 text-white" />
-          </div>
-          <h1 className="text-4xl font-bold text-white mb-2">
-            Unified Exoplanet Search
-          </h1>
-          <p className="text-xl text-gray-300">
-            Переключаемый поиск: BLS, Ensemble или Hybrid режим
-          </p>
-        </div>
+        <motion.div 
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          className="text-center mb-12"
+        >
+          <motion.div 
+            initial={{ scale: 0, rotate: -180 }}
+            animate={{ scale: 1, rotate: 0 }}
+            transition={{ 
+              duration: 1,
+              delay: 0.2,
+              type: "spring",
+              stiffness: 200,
+              damping: 20
+            }}
+            className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-blue-500 via-purple-600 to-blue-700 rounded-full mb-6 shadow-lg"
+          >
+            <Search className="w-10 h-10 text-white" />
+          </motion.div>
+          
+          <motion.h1 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+            className="text-5xl font-bold bg-gradient-to-r from-white via-blue-200 to-purple-200 bg-clip-text text-transparent mb-4"
+          >
+            {t('search.title')}
+          </motion.h1>
+          
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.6 }}
+            className="text-xl text-gray-300 max-w-2xl mx-auto leading-relaxed"
+          >
+            {t('search.subtitle')}
+          </motion.p>
+          
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 1, delay: 0.8 }}
+            className="flex justify-center items-center gap-4 mt-6"
+          >
+            <div className="flex items-center gap-2 bg-blue-500/20 backdrop-blur-sm border border-blue-500/30 rounded-full px-4 py-2">
+              <Star className="w-4 h-4 text-blue-400" />
+              <span className="text-blue-300 text-sm font-medium">Multi-Method Analysis</span>
+            </div>
+            <div className="flex items-center gap-2 bg-purple-500/20 backdrop-blur-sm border border-purple-500/30 rounded-full px-4 py-2">
+              <Sparkles className="w-4 h-4 text-purple-400" />
+              <span className="text-purple-300 text-sm font-medium">AI-Enhanced</span>
+            </div>
+          </motion.div>
+        </motion.div>
 
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Method Selection & Parameters */}
-          <div className="bg-white/10 dark:bg-gray-800/50 backdrop-blur-sm rounded-lg p-6 border border-white/20 dark:border-gray-700/50">
-            <div className="flex items-center gap-2 mb-6">
-              <Settings className="w-5 h-5 text-blue-400" />
-              <h2 className="text-xl font-semibold text-white">Search Configuration</h2>
+          <div className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/20 shadow-xl">
+            <div className="flex items-center gap-3 mb-8">
+              <motion.div
+                whileHover={{ rotate: 180 }}
+                transition={{ duration: 0.3 }}
+                className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center"
+              >
+                <Settings className="w-5 h-5 text-white" />
+              </motion.div>
+              <h2 className="text-2xl font-bold text-white">{t('search.configuration')}</h2>
             </div>
 
             {/* Method Selection */}
-            <div className="space-y-3 mb-6">
-              <h3 className="text-lg font-semibold text-white">Search Mode</h3>
-              {searchMethods.map((method) => {
-                const Icon = method.icon
-                const colors = getColorClasses(method.color)
-                const isSelected = parameters.search_mode === method.id
+            <div className="space-y-4 mb-8">
+              <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                <Target className="w-5 h-5 text-blue-400" />
+                {t('search.searchMode')}
+              </h3>
+              <div className="space-y-3">
+                {searchMethods.map((method, index) => {
+                  const Icon = method.icon
+                  const colors = getColorClasses(method.color)
+                  const isSelected = parameters.search_mode === method.id
 
-                return (
-                  <div
-                    key={method.id}
-                    className={`
-                      relative bg-white/5 backdrop-blur-sm rounded-lg p-4 
-                      border-2 transition-all duration-300 cursor-pointer
-                      ${isSelected 
-                        ? `${colors.border} ${colors.bg}` 
-                        : 'border-white/10 hover:border-white/20'
-                      }
-                    `}
-                    onClick={() => handleParameterChange('search_mode', method.id)}
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className={`flex-shrink-0 w-10 h-10 ${colors.bg} rounded-lg flex items-center justify-center`}>
-                        <Icon className={`w-5 h-5 ${colors.text}`} />
-                      </div>
-                      <div className="flex-1">
-                        <h4 className="text-lg font-semibold text-white mb-1">
-                          {method.name}
-                        </h4>
-                        <p className="text-gray-300 text-sm mb-2">
-                          {method.description}
-                        </p>
-                        <div className="text-xs text-gray-400">
-                          {method.processingTime} • {method.accuracy}
+                  return (
+                    <motion.div
+                      key={method.id}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.5, delay: index * 0.1 }}
+                      whileHover={{ scale: 1.02, y: -2 }}
+                      whileTap={{ scale: 0.98 }}
+                      className={`
+                        group relative overflow-hidden backdrop-blur-sm rounded-xl p-5 
+                        border-2 transition-all duration-500 cursor-pointer
+                        ${isSelected 
+                          ? `${colors.border} ${colors.bg} shadow-lg` 
+                          : 'border-white/10 hover:border-white/20 bg-white/5 hover:bg-white/10'
+                        }
+                      `}
+                      onClick={() => handleParameterChange('search_mode', method.id)}
+                    >
+                      <div className="absolute top-0 right-0 w-20 h-20 bg-white/5 rounded-full -translate-y-10 translate-x-10 group-hover:scale-110 transition-transform duration-500"></div>
+                      <div className="relative flex items-start gap-4">
+                        <motion.div 
+                          whileHover={{ rotate: 360, scale: 1.1 }}
+                          transition={{ duration: 0.6 }}
+                          className={`flex-shrink-0 w-12 h-12 ${colors.bg} rounded-xl flex items-center justify-center shadow-lg`}
+                        >
+                          <Icon className={`w-6 h-6 ${colors.text}`} />
+                        </motion.div>
+                        <div className="flex-1">
+                          <h4 className="text-lg font-bold text-white mb-2 group-hover:${colors.text.replace('text-', 'text-')} transition-colors">
+                            {method.name}
+                          </h4>
+                          <p className="text-gray-300 text-sm mb-3 leading-relaxed">
+                            {method.description}
+                          </p>
+                          <div className="flex items-center gap-4 text-xs">
+                            <div className="flex items-center gap-1 text-gray-400">
+                              <Clock className="w-3 h-3" />
+                              <span>{method.processingTime}</span>
+                            </div>
+                            <div className="flex items-center gap-1 text-gray-400">
+                              <TrendingUp className="w-3 h-3" />
+                              <span>{method.accuracy}</span>
+                            </div>
+                          </div>
                         </div>
+                        {isSelected && (
+                          <motion.div 
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            className={`w-6 h-6 ${colors.bg} rounded-full flex items-center justify-center shadow-lg`}
+                          >
+                            <CheckCircle className={`w-4 h-4 ${colors.text}`} />
+                          </motion.div>
+                        )}
                       </div>
-                      {isSelected && (
-                        <div className={`w-5 h-5 ${colors.bg} rounded-full flex items-center justify-center`}>
-                          <div className={`w-2 h-2 ${colors.text.replace('text-', 'bg-')} rounded-full`} />
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )
-              })}
+                    </motion.div>
+                  )
+                })}
+              </div>
             </div>
 
             {/* Parameters Form */}
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+                <label className="flex items-center gap-2 text-sm font-semibold text-gray-300 mb-3">
+                  <Target className="w-4 h-4 text-blue-400" />
                   Target Name
                 </label>
-                <input
-                  type="text"
-                  value={parameters.target_name}
-                  onChange={(e) => handleParameterChange('target_name', e.target.value)}
-                  className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="e.g., TIC 441420236"
-                  required
-                />
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={parameters.target_name}
+                    onChange={(e) => handleParameterChange('target_name', e.target.value)}
+                    className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-400 transition-all duration-300"
+                    placeholder="e.g., TIC 441420236"
+                    required
+                  />
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                  </div>
+                </div>
                 
                 {/* Preset Targets */}
-                <div className="mt-2">
-                  <p className="text-xs text-gray-400 mb-2">Quick select:</p>
+                <div className="mt-3">
+                  <p className="text-xs font-medium text-gray-400 mb-2">Quick select:</p>
                   <div className="flex flex-wrap gap-2">
                     {presetTargets.map((target) => (
-                      <button
+                      <motion.button
                         key={target.name}
                         type="button"
                         onClick={() => handleParameterChange('target_name', target.name)}
-                        className="text-xs bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 px-2 py-1 rounded border border-blue-500/30 transition-colors"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        className="text-xs bg-gradient-to-r from-blue-500/20 to-purple-500/20 hover:from-blue-500/30 hover:to-purple-500/30 text-blue-300 px-3 py-2 rounded-lg border border-blue-500/30 hover:border-blue-400/50 transition-all duration-300 backdrop-blur-sm"
                         title={target.description}
                       >
-                        {target.name}
-                      </button>
+                        <div className="flex items-center gap-1">
+                          <Star className="w-3 h-3" />
+                          <span>{target.name}</span>
+                        </div>
+                      </motion.button>
                     ))}
                   </div>
                 </div>
@@ -333,21 +406,48 @@ const SearchPage: React.FC = () => {
                 />
               </div>
 
-              <button
+              <motion.button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-300"
+                whileHover={{ scale: 1.02, y: -2 }}
+                whileTap={{ scale: 0.98 }}
+                className="group relative overflow-hidden w-full bg-gradient-to-r from-blue-600 via-purple-600 to-blue-700 hover:from-blue-700 hover:via-purple-700 hover:to-blue-800 disabled:opacity-50 text-white font-bold py-4 px-6 rounded-xl transition-all duration-500 shadow-lg hover:shadow-blue-500/25"
               >
-                {loading ? 'Searching...' : `Start ${searchMethods.find(m => m.id === parameters.search_mode)?.name} Search`}
-              </button>
+                <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                <div className="relative flex items-center justify-center gap-3">
+                  {loading ? (
+                    <>
+                      <div className="animate-spin w-5 h-5 border-2 border-white/30 border-t-white rounded-full"></div>
+                      <span className="text-lg">{t('search.searching')}</span>
+                    </>
+                  ) : (
+                    <>
+                      <Play className="w-5 h-5" />
+                      <span className="text-lg">{t('search.startSearch', { method: searchMethods.find(m => m.id === parameters.search_mode)?.name })}</span>
+                      <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                    </>
+                  )}
+                </div>
+              </motion.button>
             </form>
           </div>
 
           {/* Results Panel */}
-          <div className="lg:col-span-2 bg-white/10 dark:bg-gray-800/50 backdrop-blur-sm rounded-lg p-6 border border-white/20 dark:border-gray-700/50">
-            <div className="flex items-center gap-2 mb-6">
-              <TrendingUp className="w-5 h-5 text-blue-400" />
-              <h2 className="text-xl font-semibold text-white">Search Results</h2>
+          <motion.div 
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+            className="lg:col-span-2 bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/20 shadow-xl"
+          >
+            <div className="flex items-center gap-3 mb-8">
+              <motion.div
+                animate={{ rotate: [0, 360] }}
+                transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center"
+              >
+                <TrendingUp className="w-5 h-5 text-white" />
+              </motion.div>
+              <h2 className="text-2xl font-bold text-white">Search Results</h2>
             </div>
 
             {error && (
@@ -362,8 +462,8 @@ const SearchPage: React.FC = () => {
             {loading && (
               <div className="text-center py-12">
                 <div className="animate-spin w-8 h-8 border-2 border-blue-400 border-t-transparent rounded-full mx-auto mb-4"></div>
-                <p className="text-gray-300">Running {searchMethods.find(m => m.id === parameters.search_mode)?.name} analysis...</p>
-                <p className="text-gray-400 text-sm mt-2">This may take up to {searchMethods.find(m => m.id === parameters.search_mode)?.processingTime}</p>
+                <p className="text-gray-300">{t('search.runningAnalysis', { method: searchMethods.find(m => m.id === parameters.search_mode)?.name })}</p>
+                <p className="text-gray-400 text-sm mt-2">{t('search.mayTakeTime', { time: searchMethods.find(m => m.id === parameters.search_mode)?.processingTime })}</p>
               </div>
             )}
 
@@ -419,20 +519,49 @@ const SearchPage: React.FC = () => {
             )}
 
             {!result && !loading && !error && (
-              <div className="text-center py-12 text-gray-400">
-                <Search className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                <p>Configure search mode and parameters to start analysis</p>
-                <div className="mt-4 text-sm">
-                  <p className="mb-2">Available modes:</p>
-                  <div className="flex justify-center gap-4">
-                    <span className="text-blue-400">🔍 BLS (Fast)</span>
-                    <span className="text-purple-400">🔥 Ensemble (Powerful)</span>
-                    <span className="text-green-400">⚡ Hybrid (Smart)</span>
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+                className="text-center py-16 text-gray-400"
+              >
+                <motion.div
+                  animate={{ 
+                    rotate: [0, 360],
+                    scale: [1, 1.1, 1]
+                  }}
+                  transition={{ 
+                    duration: 4,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }}
+                  className="relative mx-auto mb-6 w-20 h-20"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-full"></div>
+                  <Search className="w-12 h-12 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-blue-400" />
+                </motion.div>
+                <h3 className="text-lg font-semibold text-white mb-2">Ready for Analysis</h3>
+                <p className="text-gray-400 mb-6">Configure search mode and parameters to start analysis</p>
+                <div className="space-y-3">
+                  <p className="text-sm font-medium text-gray-300">Available modes:</p>
+                  <div className="flex flex-col sm:flex-row justify-center gap-3">
+                    <div className="flex items-center gap-2 bg-blue-500/20 backdrop-blur-sm border border-blue-500/30 rounded-lg px-4 py-2">
+                      <BarChart3 className="w-4 h-4 text-blue-400" />
+                      <span className="text-blue-300 text-sm font-medium">BLS (Fast)</span>
+                    </div>
+                    <div className="flex items-center gap-2 bg-purple-500/20 backdrop-blur-sm border border-purple-500/30 rounded-lg px-4 py-2">
+                      <Layers className="w-4 h-4 text-purple-400" />
+                      <span className="text-purple-300 text-sm font-medium">Ensemble (Powerful)</span>
+                    </div>
+                    <div className="flex items-center gap-2 bg-green-500/20 backdrop-blur-sm border border-green-500/30 rounded-lg px-4 py-2">
+                      <Activity className="w-4 h-4 text-green-400" />
+                      <span className="text-green-300 text-sm font-medium">Hybrid (Smart)</span>
+                    </div>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             )}
-          </div>
+          </motion.div>
         </div>
 
         {/* Info Section */}

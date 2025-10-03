@@ -1,0 +1,279 @@
+{
+  "app": {
+    "title": "Exoplanet AI",
+    "subtitle": "AI-Powered Exoplanet Discovery Platform",
+    "description": "Advanced machine learning algorithms for detecting exoplanets in photometric data from space missions like TESS, Kepler, and K2.",
+    "footer": {
+      "powered": "Powered by Advanced AI and Modern Astronomy",
+      "description": "Democratizing access to exoplanet discovery through artificial intelligence and open science."
+    }
+  },
+  "navigation": {
+    "home": "Home",
+    "aiTraining": "AI Training",
+    "gpi": "GPI Method",
+    "search": "Search",
+    "catalog": "Catalog",
+    "database": "Database",
+    "about": "About",
+    "descriptions": {
+      "aiTraining": "Neural network training",
+      "catalog": "Exoplanet overview",
+      "database": "System metrics",
+      "about": "Our mission"
+    }
+  },
+  "pages": {
+    "home": {
+      "features": "Key Features",
+      "getStarted": "Get Started",
+      "techStack": "Technology Stack"
+    },
+    "features": {
+      "bls": {
+        "title": "BLS Analysis",
+        "description": "Advanced Box Least Squares algorithm for fast and accurate detection of periodic transit signals in photometric data."
+      },
+      "gpi": {
+        "title": "GPI Method",
+        "description": "Generalized Periodogram with AI enhancement for detecting small planets and improving signal-to-noise ratio."
+      },
+      "database": {
+        "title": "Smart Database",
+        "description": "Comprehensive database with real NASA data, analytics, and search history for enhanced discovery workflows."
+      }
+    }
+  },
+  "about": {
+    "title": "About Exoplanet AI",
+    "missionText": "Our mission is to democratize access to modern exoplanet discovery methods and accelerate scientific discoveries in astronomy.",
+    "missionTitle": "Our Mission",
+    "missionDescription": "Democratize access to modern exoplanet discovery methods and accelerate scientific discoveries in astronomy. We strive to make light curve analysis accessible to researchers of all levels — from students to professional astronomers.",
+    "stats": {
+      "starsAnalyzed": "Stars Analyzed",
+      "candidatesFound": "Candidates Found",
+      "systemAccuracy": "System Accuracy",
+      "averageTime": "Average Analysis Time"
+    },
+    "howItWorks": "How It Works",
+    "dataLoading": "Data Loading",
+    "dataLoadingDesc": "The system automatically downloads light curves from MAST archives for the specified target and performs data preprocessing.",
+    "blsAnalysis": "BLS Analysis",
+    "blsAnalysisDesc": "The Box Least Squares algorithm searches for periodic transit signals, evaluating various combinations of period, epoch, and duration.",
+    "aiValidation": "AI Validation",
+    "aiValidationDesc": "An ensemble of neural networks analyzes the found signals and filters out false positives, providing confidence estimates.",
+    "systemComponents": "System Components",
+    "aiSystem": "AI System",
+    "dataAnalysis": "Data Analysis",
+    "aiSystemDesc": "Automatic light curve analysis using modern machine learning algorithms",
+    "blsAlgorithm": "BLS Algorithm",
+    "signalSearch": "Signal Search",
+    "blsAlgorithmDesc": "Fast and accurate search for periodic transit signals in photometric data",
+    "database": "Database",
+    "knowledgeStorage": "Knowledge Storage",
+    "databaseDesc": "Accumulation and structuring of results to improve analysis quality",
+    "resourcesTitle": "Resources and Documentation",
+    "resourcesDesc": "Explore documentation, usage examples, and scientific publications for a deeper understanding of the system's methods and algorithms.",
+    "documentation": "Documentation",
+    "github": "GitHub",
+    "contacts": "Contacts"
+  },
+  "aiTraining": {
+    "title": "AI Training",
+    "subtitle": "Train neural networks for exoplanet detection",
+    "parameters": "Training Parameters",
+    "modelType": "Model Type",
+    "learningRate": "Learning Rate",
+    "batchSize": "Batch Size",
+    "epochs": "Epochs",
+    "validationSplit": "Validation Split",
+    "useAugmentation": "Use Data Augmentation",
+    "earlyStopping": "Early Stopping",
+    "startTraining": "Start Training",
+    "status": "Training Status",
+    "progress": "Progress",
+    "accuracy": "Accuracy",
+    "loss": "Loss",
+    "valAccuracy": "Validation Accuracy",
+    "training": "Training in progress...",
+    "idle": "Ready to train",
+    "logs": "Training Logs",
+    "noLogs": "No training logs available"
+  },
+  "catalog": {
+    "title": "Exoplanet Catalog",
+    "subtitle": "Explore discovered exoplanets and their properties"
+  },
+  "gpi": {
+    "title": "Gravitational Phase Interferometry",
+    "subtitle": "Advanced exoplanet detection using gravitational phase shifts",
+    "parameters": "GPI Parameters",
+    "targetName": "Target Name",
+    "targetPlaceholder": "e.g., TIC 441420236",
+    "aiEnhancement": "AI Enhancement",
+    "phaseSensitivity": "Phase Sensitivity",
+    "snrThreshold": "SNR Threshold",
+    "periodRange": "Period Range (days)",
+    "minPeriod": "Min Period",
+    "maxPeriod": "Max Period",
+    "advancedSettings": "Advanced Settings",
+    "showAdvanced": "Show Advanced",
+    "hideAdvanced": "Hide Advanced",
+    "generateSynthetic": "Generate Synthetic Data",
+    "startAnalysis": "Start GPI Analysis",
+    "analyzing": "Analyzing...",
+    "results": "GPI Results",
+    "syntheticGenerated": "Synthetic GPI data generated! You can now run analysis on synthetic target.",
+    "failedGenerate": "Failed to generate synthetic data"
+  },
+  "search": {
+    "title": "Unified Exoplanet Search",
+    "subtitle": "Switchable search: BLS, Ensemble or Hybrid mode",
+    "configuration": "Search Configuration",
+    "searchMode": "Search Mode",
+    "methods": {
+      "bls": {
+        "name": "Box Least Squares",
+        "description": "Fast classical transit search",
+        "features": [
+          "High processing speed",
+          "Statistical significance",
+          "C++ acceleration",
+          "Proven algorithm"
+        ],
+        "bestFor": "Regular transits, clean light curves",
+        "processingTime": "< 30 seconds",
+        "accuracy": "~90%"
+      },
+      "ensemble": {
+        "name": "Ultimate Ensemble",
+        "description": "Super-powerful search with 6 methods simultaneously",
+        "features": [
+          "6 methods in parallel (BLS, GPI, TLS, Wavelet, Fourier, ML)",
+          "89 features from 6 categories",
+          "Chaos and information theory",
+          "Bootstrap validation"
+        ],
+        "bestFor": "Complex cases, maximum accuracy",
+        "processingTime": "< 120 seconds",
+        "accuracy": "~95%"
+      },
+      "hybrid": {
+        "name": "Hybrid Search",
+        "description": "Smart combination of BLS and Ensemble with auto-selection",
+        "features": [
+          "Parallel execution of BLS and Ensemble",
+          "Automatic selection of the best",
+          "Comparative analysis",
+          "Method selection explanation"
+        ],
+        "bestFor": "Universal solution for all cases",
+        "processingTime": "< 90 seconds",
+        "accuracy": "~93%"
+      }
+    },
+    "searching": "Searching...",
+    "startSearch": "Start {{method}} Search",
+    "runningAnalysis": "Running {{method}} analysis...",
+    "mayTakeTime": "This may take up to {{time}}"
+  },
+  "database": {
+    "title": "Database Analytics",
+    "subtitle": "System metrics and search analytics",
+    "statistics": "Statistics",
+    "searchHistory": "Search History",
+    "systemMetrics": "System Metrics"
+  },
+  "systemStatus": {
+    "title": "System Status",
+    "api": "API",
+    "version": "Version",
+    "database": "Database",
+    "connected": "Connected",
+    "offline": "Offline",
+    "connecting": "Connecting...",
+    "unknown": "Unknown",
+    "apiStatus": "API Status",
+    "performance": "Performance",
+    "activeUsers": "Active Users",
+    "totalSearches": "Total Searches",
+    "uptime": "Uptime",
+    "cppStatus": "C++ Status",
+    "loaded": "⚡ Loaded",
+    "fallback": "🐍 Fallback",
+    "active": "⚡ Active",
+    "searches": "searches"
+  },
+  "notFound": {
+    "title": "Page Not Found",
+    "subtitle": "The page you're looking for doesn't exist.",
+    "description": "It might have been moved, deleted, or you entered the wrong URL.",
+    "backHome": "Back to Home",
+    "explore": "Explore"
+  },
+  "common": {
+    "welcome": "Welcome to Exoplanet AI",
+    "search": "Search",
+    "loading": "Loading...",
+    "error": "Error",
+    "noResults": "No results found",
+    "exoplanet": "Exoplanet",
+    "exoplanets": "Exoplanets",
+    "planet": "Planet",
+    "planets": "Planets",
+    "discover": "Discover",
+    "explore": "Explore",
+    "analysis": "Analysis",
+    "data": "Data",
+    "results": "Results",
+    "filter": "Filter",
+    "filters": "Filters",
+    "clear": "Clear",
+    "apply": "Apply",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "view": "View",
+    "details": "Details",
+    "name": "Name",
+    "type": "Type",
+    "distance": "Distance",
+    "mass": "Mass",
+    "radius": "Radius",
+    "temperature": "Temperature",
+    "star": "Star",
+    "system": "System",
+    "habitable": "Habitable",
+    "zone": "Zone",
+    "atmosphere": "Atmosphere",
+    "composition": "Composition",
+    "discovery": "Discovery",
+    "year": "Year",
+    "method": "Method",
+    "telescope": "Telescope",
+    "observatory": "Observatory",
+    "mission": "Mission",
+    "catalog": "Catalog",
+    "database": "Database",
+    "visualization": "Visualization",
+    "chart": "Chart",
+    "graph": "Graph",
+    "map": "Map",
+    "settings": "Settings",
+    "preferences": "Preferences",
+    "language": "Language",
+    "theme": "Theme",
+    "about": "About",
+    "help": "Help",
+    "contact": "Contact",
+    "home": "Home",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "close": "Close",
+    "open": "Open",
+    "menu": "Menu",
+    "navigation": "Navigation"
+  }
+}

@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react'
 import Plot from 'react-plotly.js'
 import { useTranslation } from 'react-i18next'
-import { useTheme } from '../../contexts/ThemeContext'
+import { useTheme } from '../../../../front/frontend/src/contexts/ThemeContext'
 
 interface LightCurveData {
   time: number[]

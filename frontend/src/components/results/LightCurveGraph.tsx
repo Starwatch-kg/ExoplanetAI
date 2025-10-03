@@ -1,7 +1,7 @@
 import React, { useMemo, memo } from 'react'
 import Plot from 'react-plotly.js'
 // import { useTranslation } from 'react-i18next' // Для будущих переводов
-import { useTheme } from '../../contexts/ThemeContext'
+import { useTheme } from '../../../../front/frontend/src/contexts/ThemeContext'
 import { BarChart3, Download, ZoomIn, Info } from 'lucide-react'
 
 interface LightCurveData {
