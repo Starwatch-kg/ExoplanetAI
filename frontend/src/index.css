@@ -1,0 +1,265 @@
+/*
+  IMPORTANT: This file uses Tailwind CSS directives (@tailwind, @apply, @layer)
+  
+  IDE warnings about "Unknown at rule" are EXPECTED and can be SAFELY IGNORED.
+  These directives are processed by PostCSS with Tailwind CSS plugin during build.
+  
+  The project is correctly configured with:
+  - tailwind.config.js ✓
+  - postcss.config.js ✓  
+  - Tailwind CSS installed in package.json ✓
+  
+  To suppress IDE warnings, you can:
+  1. Install Tailwind CSS IntelliSense extension
+  2. Configure your IDE to recognize Tailwind directives
+  3. Or simply ignore these warnings as they don't affect functionality
+*/
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+/* Tailwind CSS Base Styles */
+@tailwind base;
+/* Tailwind CSS Component Classes */
+@tailwind components;
+/* Tailwind CSS Utility Classes */
+@tailwind utilities;
+
+/* NASA Space Theme Variables */
+:root {
+  --nasa-blue: #0B3D91;
+  --nasa-red: #FC3D21;
+  --nasa-white: #FFFFFF;
+  --space-black: #000000;
+  --deep-space: #0a0a0a;
+  --nebula-purple: #1a1a2e;
+  --cosmic-blue: #16213e;
+  --stellar-blue: #0f3460;
+  --galaxy-purple: #533a7b;
+  --neon-cyan: #00FFFF;
+  --plasma-pink: #FF006E;
+  --solar-orange: #FF8500;
+  --aurora-green: #39FF14;
+  --starlight: #E6E6FA;
+}
+
+@layer base {
+  * {
+    @apply border-slate-700;
+    box-sizing: border-box;
+  }
+  
+  body {
+    @apply text-white;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-feature-settings: "cv11", "ss01";
+    font-variation-settings: "opsz" 32;
+    background: linear-gradient(to bottom right, #0f172a, #581c87, #0f172a);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+@layer components {
+  /* Космические кнопки */
+  .btn-space {
+    @apply px-6 py-3 rounded-lg font-semibold transition-all duration-300;
+    @apply bg-gradient-to-r from-blue-600 to-purple-600;
+    @apply hover:from-blue-500 hover:to-purple-500;
+    @apply active:scale-95 transform;
+    @apply shadow-lg hover:shadow-xl;
+  }
+  
+  .btn-nasa {
+    @apply px-6 py-3 rounded-lg font-semibold transition-all duration-300;
+    background: var(--nasa-blue);
+    @apply text-white hover:brightness-110;
+    @apply active:scale-95 transform;
+    @apply shadow-lg hover:shadow-xl;
+  }
+  
+  /* Карточки */
+  .card-space {
+    @apply bg-white/5 backdrop-blur-lg rounded-xl p-6;
+    @apply border border-white/10;
+    @apply shadow-xl hover:shadow-2xl transition-all duration-300;
+  }
+  
+  .card-glass {
+    @apply bg-gradient-to-br from-white/10 to-white/5;
+    @apply backdrop-blur-md rounded-xl p-6;
+    @apply border border-white/20;
+    @apply shadow-2xl;
+  }
+  
+  /* Анимации */
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+  
+  .animate-pulse-slow {
+    animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  
+  .animate-glow {
+    animation: glow 2s ease-in-out infinite alternate;
+  }
+  
+  /* Градиенты */
+  .gradient-space {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  }
+  
+  .gradient-nasa {
+    background: linear-gradient(135deg, var(--nasa-blue) 0%, var(--stellar-blue) 100%);
+  }
+  
+  .gradient-cosmic {
+    background: linear-gradient(135deg, var(--nebula-purple) 0%, var(--galaxy-purple) 50%, var(--cosmic-blue) 100%);
+  }
+  
+  /* Текстовые эффекты */
+  .text-gradient {
+    @apply bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-blue-400 to-purple-600;
+  }
+  
+  .text-glow {
+    text-shadow: 0 0 20px rgba(147, 51, 234, 0.5);
+  }
+  
+  /* Scrollbar стили */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    @apply bg-gray-900;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    @apply bg-purple-600 rounded-full;
+    @apply hover:bg-purple-500;
+  }
+}
+
+@layer utilities {
+  /* Утилиты для backdrop фильтров */
+  .backdrop-blur-xs {
+    backdrop-filter: blur(2px);
+  }
+  
+  .backdrop-blur-3xl {
+    backdrop-filter: blur(64px);
+  }
+  
+  /* Неоновые тени */
+  .neon-blue {
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.5),
+                0 0 40px rgba(59, 130, 246, 0.3),
+                0 0 60px rgba(59, 130, 246, 0.1);
+  }
+  
+  .neon-purple {
+    box-shadow: 0 0 20px rgba(147, 51, 234, 0.5),
+                0 0 40px rgba(147, 51, 234, 0.3),
+                0 0 60px rgba(147, 51, 234, 0.1);
+  }
+  
+  /* Анимация звезд */
+  .stars {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+  
+  .star {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    background: white;
+    border-radius: 50%;
+    animation: twinkle 3s infinite;
+  }
+}
+
+/* Keyframes для анимаций */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+@keyframes glow {
+  0% {
+    box-shadow: 0 0 5px #0ea5e9, 0 0 10px #0ea5e9, 0 0 15px #0ea5e9;
+  }
+  100% {
+    box-shadow: 0 0 10px #0ea5e9, 0 0 20px #0ea5e9, 0 0 30px #0ea5e9;
+  }
+}
+
+@keyframes twinkle {
+  0% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.3;
+  }
+}
+
+@keyframes orbit {
+  0% {
+    transform: rotate(0deg) translateX(100px) rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg) translateX(100px) rotate(-360deg);
+  }
+}
+
+/* Темная тема (по умолчанию) */
+.dark {
+  color-scheme: dark;
+}
+
+/* Светлая тема */
+.light {
+  --nasa-blue: #0B3D91;
+  --space-black: #1e293b;
+  --deep-space: #f8fafc;
+  --nebula-purple: #e0e7ff;
+  --cosmic-blue: #dbeafe;
+  
+  body {
+    @apply bg-gradient-to-br from-blue-50 via-indigo-100 to-blue-50 text-gray-900;
+    color: #1e293b;
+  }
+  
+  .card-space {
+    @apply bg-white/80 border-gray-200/50;
+    backdrop-filter: blur(10px);
+  }
+  
+  .text-gradient {
+    @apply bg-gradient-to-r from-blue-600 to-purple-700;
+  }
+  
+  .star {
+    background: #64748b;
+    opacity: 0.4;
+  }
+}

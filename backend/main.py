@@ -8,6 +8,7 @@ import time
 import logging
 import hashlib
 import json
+import re
 from contextlib import asynccontextmanager
 from typing import Dict, List, Optional, Any
 from datetime import datetime
@@ -205,17 +206,72 @@ app.add_middleware(
     allow_origins=config.security.allowed_origins,
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allow_headers=["*"],
+    allow_headers=["Content-Type", "Authorization", "X-Requested-With"],
 )
 
 # Global cache for API responses
 api_cache = {}
 CACHE_TTL = 300  # 5 minutes
-
 def get_cache_key(endpoint: str, params: Dict) -> str:
     """Generate cache key for API responses"""
-    cache_data = {"endpoint": endpoint, "params": params}
-    return hashlib.md5(json.dumps(cache_data, sort_keys=True).encode()).hexdigest()
+    # Sanitize parameters to prevent cache pollution and injection
+    sanitized_params = {}
+    for k, v in params.items():
+        if isinstance(v, str):
+            # Remove potentially dangerous characters using regex
+            sanitized_params[k] = re.sub(r'[<>"\';&\x00-\x1f\x7f-\x9f]', '', v)
+        else:
+            sanitized_params[k] = v
+    # Use a safer method to generate cache key
+    cache_data = {"endpoint": endpoint, "params": sanitized_params}
+    return hashlib.sha256(json.dumps(cache_data, sort_keys=True).encode()).hexdigest()
+
+# Input validation functions
+def validate_target_name(target_name: str) -> str:
+    """Validate and sanitize target name to prevent path traversal and injection"""
+    if not target_name or not isinstance(target_name, str):
+        raise ValueError("Target name must be a non-empty string")
+    
+    # Normalize the target name to prevent path traversal
+    target_name = target_name.strip()
+    
+    # Remove any path traversal attempts
+    if '..' in target_name or '/' in target_name or '\\' in target_name:
+        raise ValueError("Invalid characters in target name")
+    
+    # Additional validation to prevent other injection attempts
+    dangerous_patterns = ['<', '>', 'script', 'alert', 'eval', 'exec', 'import', 'require']
+    for pattern in dangerous_patterns:
+        if pattern in target_name.lower():
+            raise ValueError(f"Invalid characters in target name: {pattern}")
+    
+    # Only allow alphanumeric characters, spaces, hyphens, underscores, and periods
+    if not re.match(r'^[a-zA-Z0-9\s\-_\.]+$', target_name):
+        raise ValueError("Target name contains invalid characters")
+    
+    # Limit length to prevent cache pollution
+    if len(target_name) > 100:
+        raise ValueError("Target name too long")
+    
+    # Additional sanitization to remove potentially harmful characters
+    sanitized_name = re.sub(r'[^\w\s\-_\.]', '', target_name)
+    
+    return sanitized_name.strip()
+
+def validate_catalog(catalog: str) -> str:
+    """Validate catalog parameter"""
+    allowed_catalogs = ['TIC', 'KIC', 'EPIC']
+    if catalog not in allowed_catalogs:
+        raise ValueError(f"Invalid catalog. Must be one of: {allowed_catalogs}")
+    return catalog
+
+def validate_mission(mission: str) -> str:
+    """Validate mission parameter"""
+    allowed_missions = ['TESS', 'Kepler', 'K2']
+    if mission not in allowed_missions:
+        raise ValueError(f"Invalid mission. Must be one of: {allowed_missions}")
+    return mission
+
 
 def is_cache_valid(cache_entry: Dict) -> bool:
     """Check if cache entry is still valid"""
@@ -266,24 +322,32 @@ async def search_exoplanets(request_data: SearchRequest):
     """
     start_time = time.time()
     
-    logger.info(f"🔍 Starting search for {request_data.target_name}")
+    # Input validation
+    try:
+        validated_target_name = validate_target_name(request_data.target_name)
+        validated_catalog = validate_catalog(request_data.catalog)
+        validated_mission = validate_mission(request_data.mission)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    
+    logger.info(f"🔍 Starting search for {validated_target_name}")
     
     try:
         # 1. Получаем реальные данные от NASA
         star_info = await data_service.get_star_info(
-            request_data.target_name, 
-            request_data.catalog
+            validated_target_name,
+            validated_catalog
         )
         
         lightcurve = await data_service.get_lightcurve(
-            request_data.target_name,
-            request_data.mission
+            validated_target_name,
+            validated_mission
         )
         
         if not lightcurve:
             raise HTTPException(
                 status_code=404,
-                detail=f"No lightcurve data found for {request_data.target_name}"
+                detail=f"No lightcurve data found for {validated_target_name}"
             )
         
         # Debug: check lightcurve type
@@ -292,7 +356,7 @@ async def search_exoplanets(request_data: SearchRequest):
         
         # 2. Выполняем BLS анализ (Python fallback, C++ temporarily disabled)
         try:
-            logger.info(f"Running BLS analysis for {request_data.target_name}")
+            logger.info(f"Running BLS analysis for {validated_target_name}")
             
             # Use Python BLS service (C++ temporarily disabled)
             if search_accelerator:
@@ -338,7 +402,7 @@ async def search_exoplanets(request_data: SearchRequest):
                     period_min=request_data.period_min,
                     period_max=request_data.period_max,
                     snr_threshold=request_data.snr_threshold,
-                    target_name=request_data.target_name
+                    target_name=validated_target_name
                 )
             
         except Exception as bls_error:
@@ -353,9 +417,9 @@ async def search_exoplanets(request_data: SearchRequest):
         # Store search result in database
         try:
             db_search_result = DBSearchResult(
-                target_name=request_data.target_name,
-                catalog=request_data.catalog,
-                mission=request_data.mission,
+                target_name=validated_target_name,
+                catalog=validated_catalog,
+                mission=validated_mission,
                 method="bls",
                 exoplanet_detected=bls_result.is_significant,
                 detection_confidence=min(bls_result.snr / 10.0, 1.0),
@@ -378,9 +442,9 @@ async def search_exoplanets(request_data: SearchRequest):
         logger.info(f"✅ Search completed in {processing_time_ms:.1f}ms")
         
         return SearchResponse(
-            target_name=request_data.target_name,
-            catalog=request_data.catalog,
-            mission=request_data.mission,
+            target_name=validated_target_name,
+            catalog=validated_catalog,
+            mission=validated_mission,
             bls_result=bls_result.to_dict(),
             lightcurve_info={
                 "points_count": int(len(lightcurve.time)),
@@ -395,6 +459,8 @@ async def search_exoplanets(request_data: SearchRequest):
             status="success"
         )
         
+    except HTTPException:
+        raise
     except Exception as e:
         processing_time_ms = (time.time() - start_time) * 1000
         logger.error(f"❌ Search failed: {e}")
@@ -432,29 +498,35 @@ async def gpi_search_exoplanets(request_data: GPISearchRequest):
     """
     start_time = time.time()
     
-    logger.info(f"🧬 Starting GPI analysis for {request_data.target_name}")
+    # Input validation
+    try:
+        validated_target_name = validate_target_name(request_data.target_name)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    
+    logger.info(f"🧬 Starting GPI analysis for {validated_target_name}")
     
     try:
         # 1. Получаем реальные данные от NASA (используем TIC/TESS по умолчанию для GPI)
         star_info = await data_service.get_star_info(
-            request_data.target_name, 
+            validated_target_name,
             "TIC"  # Default catalog for GPI analysis
         )
         
         lightcurve = await data_service.get_lightcurve(
-            request_data.target_name,
+            validated_target_name,
             "TESS"  # Default mission for GPI analysis
         )
         
         if not lightcurve or len(lightcurve.get('time', [])) == 0:
             raise HTTPException(
-                status_code=404, 
-                detail=f"No lightcurve data found for {request_data.target_name}"
+                status_code=404,
+                detail=f"No lightcurve data found for {validated_target_name}"
             )
         
         # 2. Подготавливаем данные для GPI анализа
         target_data = {
-            'target_name': request_data.target_name,
+            'target_name': validated_target_name,
             'time': lightcurve['time'],
             'flux': lightcurve['flux'],
             'flux_err': lightcurve.get('flux_err', [])
@@ -463,12 +535,24 @@ async def gpi_search_exoplanets(request_data: GPISearchRequest):
         # 3. Настраиваем параметры GPI
         custom_params = {}
         if request_data.phase_sensitivity is not None:
+            # Validate phase_sensitivity is within reasonable range
+            if not 1e-15 <= request_data.phase_sensitivity <= 1e-9:
+                raise HTTPException(status_code=400, detail="phase_sensitivity must be between 1e-15 and 1e-9")
             custom_params['phase_sensitivity'] = request_data.phase_sensitivity
         if request_data.snr_threshold is not None:
+            # Validate snr_threshold is within reasonable range
+            if not 3.0 <= request_data.snr_threshold <= 20.0:
+                raise HTTPException(status_code=400, detail="snr_threshold must be between 3.0 and 20.0")
             custom_params['snr_threshold'] = request_data.snr_threshold
         if request_data.period_min is not None:
+            # Validate period_min is within reasonable range
+            if not 0.01 <= request_data.period_min <= 100.0:
+                raise HTTPException(status_code=400, detail="period_min must be between 0.01 and 1000.0")
             custom_params['min_period_days'] = request_data.period_min
         if request_data.period_max is not None:
+            # Validate period_max is within reasonable range
+            if not 0.01 <= request_data.period_max <= 1000.0:
+                raise HTTPException(status_code=400, detail="period_max must be between 0.01 and 10000.0")
             custom_params['max_period_days'] = request_data.period_max
         
         # 4. Запускаем улучшенный GPI анализ с C++ ускорением
@@ -530,7 +614,7 @@ async def gpi_search_exoplanets(request_data: GPISearchRequest):
         # Store GPI search result in database
         try:
             db_search_result = DBSearchResult(
-                target_name=request_data.target_name,
+                target_name=validated_target_name,
                 catalog="GPI",  # Default catalog for GPI analysis
                 mission="GPI",  # Default mission for GPI analysis
                 method="gpi",
@@ -552,10 +636,10 @@ async def gpi_search_exoplanets(request_data: GPISearchRequest):
         except Exception as db_error:
             logger.warning(f"Failed to store GPI result in database: {db_error}")
         
-        logger.info(f"✅ GPI analysis completed for {request_data.target_name} in {processing_time:.1f}ms")
+        logger.info(f"✅ GPI analysis completed for {validated_target_name} in {processing_time:.1f}ms")
         
         return GPISearchResponse(
-            target_name=request_data.target_name,
+            target_name=validated_target_name,
             method=gpi_result['summary']['method'],
             exoplanet_detected=gpi_result['summary']['exoplanet_detected'],
             detection_confidence=gpi_result['summary']['detection_confidence'],
@@ -570,7 +654,7 @@ async def gpi_search_exoplanets(request_data: GPISearchRequest):
         raise
     except Exception as e:
         processing_time = (time.time() - start_time) * 1000
-        logger.error(f"❌ GPI analysis failed for {request_data.target_name}: {e}")
+        logger.error(f"❌ GPI analysis failed for {validated_target_name}: {e}")
         
         raise HTTPException(
             status_code=500,
@@ -1392,6 +1476,13 @@ async def get_lightcurve_data(
     📡 ЗАГРУЗКА РЕАЛЬНЫХ ДАННЫХ ИЗ NASA
     Получает кривую блеска из NASA MAST или генерирует реалистичные данные для демо
     """
+    # Input validation
+    try:
+        validated_target_name = validate_target_name(target_name)
+        validated_mission = validate_mission(mission)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    
     try:
         from services.nasa_data_service import nasa_data_service
         
@@ -1400,20 +1491,20 @@ async def get_lightcurve_data(
             await nasa_data_service.initialize()
         
         # Пытаемся получить реальные данные
-        lightcurve_data = await nasa_data_service.get_lightcurve_data(target_name, mission)
+        lightcurve_data = await nasa_data_service.get_lightcurve_data(validated_target_name, validated_mission)
         
         if not lightcurve_data:
             # Если реальные данные недоступны, генерируем реалистичные для демо
-            logger.info(f"Real data not available for {target_name}, generating realistic demo data")
-            lightcurve_data = await nasa_data_service.get_synthetic_data_for_demo(target_name)
+            logger.info(f"Real data not available for {validated_target_name}, generating realistic demo data")
+            lightcurve_data = await nasa_data_service.get_synthetic_data_for_demo(validated_target_name)
         
         if lightcurve_data:
             time_data, flux_data, flux_err_data = lightcurve_data
             
             response = {
                 "success": True,
-                "target_name": target_name,
-                "mission": mission,
+                "target_name": validated_target_name,
+                "mission": validated_mission,
                 "time_data": time_data.tolist(),
                 "flux_data": flux_data.tolist(),
                 "flux_err_data": flux_err_data.tolist(),
@@ -1423,11 +1514,13 @@ async def get_lightcurve_data(
                 "timestamp": datetime.now().isoformat()
             }
             
-            logger.info(f"✅ Lightcurve data provided for {target_name}: {len(time_data)} points")
+            logger.info(f"✅ Lightcurve data provided for {validated_target_name}: {len(time_data)} points")
             return response
         else:
-            raise HTTPException(status_code=404, detail=f"No lightcurve data available for {target_name}")
+            raise HTTPException(status_code=404, detail=f"No lightcurve data available for {validated_target_name}")
             
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"❌ Failed to get lightcurve data: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to get lightcurve data: {str(e)}")
@@ -1435,29 +1528,37 @@ async def get_lightcurve_data(
 @app.get("/api/v1/data/target-info/{target_name}")
 async def get_target_info(target_name: str):
     """Получить информацию о цели из NASA Exoplanet Archive"""
+    # Input validation
+    try:
+        validated_target_name = validate_target_name(target_name)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    
     try:
         from services.nasa_data_service import nasa_data_service
         
         if not hasattr(nasa_data_service, 'session') or not nasa_data_service.session:
             await nasa_data_service.initialize()
         
-        target_info = await nasa_data_service.get_target_info(target_name)
+        target_info = await nasa_data_service.get_target_info(validated_target_name)
         
         if target_info:
             return {
                 "success": True,
-                "target_name": target_name,
+                "target_name": validated_target_name,
                 "target_info": target_info,
                 "timestamp": datetime.now().isoformat()
             }
         else:
             return {
                 "success": False,
-                "target_name": target_name,
+                "target_name": validated_target_name,
                 "message": "Target not found in NASA Exoplanet Archive",
                 "timestamp": datetime.now().isoformat()
             }
             
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Failed to get target info: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to get target info: {str(e)}")
@@ -1480,6 +1581,37 @@ async def unified_search(
     🚀 ЕДИНЫЙ МОЩНЫЙ ПОИСК ЭКЗОПЛАНЕТ
     Поддерживает переключение между BLS, Ensemble и Hybrid режимами
     """
+    # Input validation
+    try:
+        validated_target_name = validate_target_name(target_name)
+        
+        # Validate search_mode
+        allowed_modes = ["bls", "ensemble", "hybrid"]
+        if search_mode.lower() not in allowed_modes:
+            raise HTTPException(status_code=400, detail=f"search_mode must be one of: {allowed_modes}")
+        
+        # Validate period parameters
+        if period_min <= 0 or period_max <= 0 or period_min > period_max:
+            raise HTTPException(status_code=400, detail="period_min and period_max must be positive with period_min <= period_max")
+        
+        # Validate SNR threshold
+        if snr_threshold < 0:
+            raise HTTPException(status_code=400, detail="snr_threshold must be non-negative")
+        
+        # Validate data arrays
+        if len(time_data) != len(flux_data):
+            raise HTTPException(status_code=400, detail="time_data and flux_data must have the same length")
+        
+        if len(time_data) == 0:
+            raise HTTPException(status_code=400, detail="time_data and flux_data cannot be empty")
+        
+        # Limit data size to prevent resource exhaustion
+        if len(time_data) > 100000:  # Max 100k data points
+            raise HTTPException(status_code=400, detail="Data arrays too large. Maximum 100000 points allowed")
+        
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    
     try:
         from services.unified_search_service import unified_search_service, UnifiedSearchRequest, SearchMode
         
@@ -1507,7 +1639,7 @@ async def unified_search(
         
         # Создание запроса
         search_request = UnifiedSearchRequest(
-            target_name=target_name,
+            target_name=validated_target_name,
             time=time_array,
             flux=flux_array,
             flux_err=flux_err_array,
@@ -1538,9 +1670,11 @@ async def unified_search(
             "timestamp": datetime.now().isoformat()
         }
         
-        logger.info(f"✅ Unified search completed for {target_name} in {mode.value} mode")
+        logger.info(f"✅ Unified search completed for {validated_target_name} in {mode.value} mode")
         return response
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"❌ Unified search failed: {e}")
         raise HTTPException(status_code=500, detail=f"Unified search failed: {str(e)}")

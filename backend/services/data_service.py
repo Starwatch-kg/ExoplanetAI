@@ -30,21 +30,33 @@ logger = get_logger(__name__)
 
 def normalize_tic_id(raw: str) -> str:
     # FIX: [FINDING_003] Нормализация и валидация TIC id
+    if not raw:
+        raise ValueError("TIC ID cannot be empty")
+    # Очищаем от потенциально опасных символов
     s = raw.upper().replace("TIC", "").strip()
+    # Проверяем, что осталась только цифровая строка
     if not re.match(r'^\d{1,10}$', s):
         raise ValueError("Invalid TIC ID format")
     return s
 
 def normalize_kic_id(raw: str) -> str:
     # FIX: [FINDING_003] Нормализация и валидация KIC id
+    if not raw:
+        raise ValueError("KIC ID cannot be empty")
+    # Очищаем от потенциально опасных символов
     s = raw.upper().replace("KIC", "").strip()
+    # Проверяем, что осталась только цифровая строка
     if not re.match(r'^\d{1,10}$', s):
         raise ValueError("Invalid KIC ID format")
     return s
 
 def normalize_epic_id(raw: str) -> str:
     # FIX: [FINDING_003] Нормализация и валидация EPIC id
+    if not raw:
+        raise ValueError("EPIC ID cannot be empty")
+    # Очищаем от потенциально опасных символов
     s = raw.upper().replace("EPIC", "").strip()
+    # Проверяем, что осталась только цифровая строка
     if not re.match(r'^\d{1,10}$', s):
         raise ValueError("Invalid EPIC ID format")
     return s

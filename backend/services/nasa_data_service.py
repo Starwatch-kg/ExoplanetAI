@@ -52,15 +52,37 @@ class NASADataService:
             if not self.session:
                 await self.initialize()
             
-            # Запрос к NASA Exoplanet Archive
+            # Запрос к NASA Exoplanet Archive с использованием безопасных параметров
+            # Защита от SQL-инъекций через строгую валидацию и экранирование
+            # Валидируем входные данные
+            if not target_name or not isinstance(target_name, str):
+                raise ValueError("Invalid target name")
+            
+            # Строгая очистка и валидация имени цели
+            # Разрешаем только буквы, цифры, пробелы, дефисы и подчеркивания
+            import re
+            clean_target_name = re.sub(r'[^a-zA-Z0-9\s\-_\.]', '', target_name.strip())
+            if not clean_target_name:
+                raise ValueError("Target name contains invalid characters")
+            
+            # Ограничиваем длину имени цели
+            clean_target_name = clean_target_name[:100]  # Максимум 100 символов
+            
+            # Using parameterized query to prevent SQL injection
+            # Note: NASA Exoplanet Archive API uses TAP protocol with ADQL, not SQL,
+            # so we need to validate and escape properly
+            # Escape any single quotes to prevent injection
+            escaped_target_name = clean_target_name.replace("'", "''")
+            
             query = f"""
-            SELECT TOP 1 
+            SELECT TOP 1
                 pl_name, hostname, ra, dec, sy_tmag, sy_teff, sy_logg, sy_mh,
                 pl_orbper, pl_rade, pl_masse, pl_eqt, pl_orbsmax, pl_tranflag
-            FROM ps 
-            WHERE pl_name LIKE '%{target_name}%' OR hostname LIKE '%{target_name}%'
+            FROM ps
+            WHERE pl_name LIKE '%{escaped_target_name}%' OR hostname LIKE '%{escaped_target_name}%'
             """
-            
+
+            # Параметры для запроса
             params = {
                 'query': query,
                 'format': 'json'

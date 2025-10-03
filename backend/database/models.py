@@ -325,13 +325,17 @@ class DatabaseManager:
         """Get exoplanets with filtering"""
         async with self._lock:
             conn = self._get_connection()
-            
             query = "SELECT * FROM exoplanets WHERE 1=1"
             params = []
             
             if method:
-                query += " AND discovery_method = ?"
-                params.append(method)
+                # Validate method parameter to prevent SQL injection
+                allowed_methods = ['transit', 'radial_velocity', 'imaging', 'microlensing', 'astrometry']
+                if method in allowed_methods:
+                    query += " AND discovery_method = ?"
+                    params.append(method)
+                else:
+                    raise ValueError(f"Invalid discovery method: {method}")
             
             if min_confidence is not None:
                 query += " AND confidence >= ?"
@@ -340,8 +344,15 @@ class DatabaseManager:
             if habitable_only:
                 query += " AND habitable_zone = 1"
             
+            # Validate limit and offset to prevent resource exhaustion
+            if limit > 10000:  # Maximum 10k results
+                limit = 10000
+            if offset < 0:
+                offset = 0
+                
             query += " ORDER BY confidence DESC LIMIT ? OFFSET ?"
             params.extend([limit, offset])
+    
             
             cursor = conn.execute(query, params)
             rows = cursor.fetchall()
@@ -397,12 +408,21 @@ class DatabaseManager:
             params = []
             
             if method:
-                query += " AND method = ?"
-                params.append(method)
+                # Validate method parameter to prevent SQL injection
+                allowed_methods = ['bls', 'gpi', 'ensemble', 'hybrid']
+                if method in allowed_methods:
+                    query += " AND method = ?"
+                    params.append(method)
+                else:
+                    raise ValueError(f"Invalid search method: {method}")
             
+            # Validate limit to prevent resource exhaustion
+            if limit > 1000:  # Maximum 1k results
+                limit = 100
+                
             query += " ORDER BY created_at DESC LIMIT ?"
             params.append(limit)
-            
+    
             cursor = conn.execute(query, params)
             rows = cursor.fetchall()
             
@@ -449,18 +469,29 @@ class DatabaseManager:
         """Get system metrics"""
         async with self._lock:
             conn = self._get_connection()
-            
             query = """
-                SELECT * FROM system_metrics 
-                WHERE timestamp >= datetime('now', '-{} hours')
-            """.format(hours)
-            params = []
+                SELECT * FROM system_metrics
+                WHERE timestamp >= datetime('now', '-? hours')
+            """
+            params = [hours]
             
             if service_name:
-                query += " AND service_name = ?"
-                params.append(service_name)
+                # Validate service_name to prevent SQL injection
+                allowed_services = ['bls_service', 'gpi_service', 'cpp_accelerated', 'python_fallback', 'gpi_generator', 'search_accelerator']
+                if service_name in allowed_services:
+                    query += " AND service_name = ?"
+                    params.append(service_name)
+                else:
+                    # Only allow service names that follow the expected pattern
+                    import re
+                    if re.match(r'^[a-zA-Z0-9_-]+$', service_name):
+                        query += " AND service_name = ?"
+                        params.append(service_name)
+                    else:
+                        raise ValueError(f"Invalid service name: {service_name}")
             
             query += " ORDER BY timestamp DESC"
+
             
             cursor = conn.execute(query, params)
             rows = cursor.fetchall()
@@ -523,15 +554,15 @@ class DatabaseManager:
             
             # Clean old search results
             cursor = conn.execute("""
-                DELETE FROM search_results 
-                WHERE created_at < datetime('now', '-{} days')
-            """.format(days))
+                DELETE FROM search_results
+                WHERE created_at < datetime('now', ? || ' days')
+            """, (f"-{days}",))
             
             # Clean old metrics
             cursor = conn.execute("""
-                DELETE FROM system_metrics 
-                WHERE timestamp < datetime('now', '-{} days')
-            """.format(days))
+                DELETE FROM system_metrics
+                WHERE timestamp < datetime('now', ? || ' days')
+            """, (f"-{days}",))
             
             conn.commit()
             logger.info(f"✅ Cleaned up data older than {days} days")
