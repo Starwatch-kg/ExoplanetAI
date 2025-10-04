@@ -102,7 +102,9 @@
   },
   "catalog": {
     "title": "Exoplanet Catalog",
-    "subtitle": "Explore discovered exoplanets and their properties"
+    "subtitle": "Explore discovered exoplanets and their properties",
+    "search": "Search",
+    "searchPlaceholder": "Search exoplanets..."
   },
   "gpi": {
     "title": "Gravitational Phase Interferometry",
@@ -210,6 +212,9 @@
     "description": "It might have been moved, deleted, or you entered the wrong URL.",
     "backHome": "Back to Home",
     "explore": "Explore"
+  },
+  "language": {
+    "toggle": "Toggle Language"
   },
   "common": {
     "welcome": "Welcome to Exoplanet AI",

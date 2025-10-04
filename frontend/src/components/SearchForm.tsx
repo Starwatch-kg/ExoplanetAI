@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Search, Loader, X } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import type { SearchFormData } from '../../../front/frontend/src/types/api'
+import type { SearchFormData } from '../types/api'
 
 interface SearchFormProps {
   onSearch: (data: SearchFormData) => void
@@ -43,7 +43,7 @@ export default function SearchForm({ onSearch, loading, onClear, hasResults }: S
   }
 
   const handleChange = (field: keyof SearchFormData, value: string | number) => {
-    setFormData(prev => ({ ...prev, [field]: value }))
+    setFormData((prev: SearchFormData) => ({ ...prev, [field]: value }))
   }
 
   return (

@@ -72,39 +72,27 @@ const team = [
   }
 ]
 
-interface SystemStats {
-  stars_analyzed: number
-  candidates_found: number
-  system_accuracy: number
-  average_time_seconds: number
-  total_searches: number
-  uptime_hours: number
-}
-
-const defaultStats: SystemStats = {
-  stars_analyzed: 0,
-  candidates_found: 0,
-  system_accuracy: 0,
-  average_time_seconds: 0,
-  total_searches: 0,
-  uptime_hours: 0
-}
+// Removed unused SystemStats interface - using mock data instead
 
 export default function AboutPage() {
   const { t } = useTranslation()
-  const [stats, setStats] = useState<SystemStats>(defaultStats)
   const [loading, setLoading] = useState(true)
+  const [stats, setStats] = useState<any>(null)
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const response = await fetch('/api/v1/system/stats')
-        if (response.ok) {
-          const data = await response.json()
-          setStats(data)
+        // Mock stats for demo
+        const mockStats = {
+          totalExoplanets: 5234,
+          confirmedPlanets: 4892,
+          candidatePlanets: 342,
+          dataSources: 4,
+          lastUpdated: new Date().toISOString()
         }
-      } catch (error) {
-        console.error('Failed to fetch stats:', error)
+        setStats(mockStats)
+      } catch (err) {
+        console.error('Failed to fetch stats:', err)
       } finally {
         setLoading(false)
       }

@@ -1,12 +1,17 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Upload, FileText, AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
-import { exoplanetApi, type LightcurveData } from '../../../front/frontend/src/api/exoplanetApi';
+import { typedApiClient } from '../utils/typedApiClient';
+
+interface LightcurveData {
+  time: number[];
+  flux: number[];
+  flux_err?: number[];
+}
 
 interface DataLoaderProps {
   onDataLoaded: (data: LightcurveData) => void;
 }
-
 const DataLoader: React.FC<DataLoaderProps> = ({ onDataLoaded }) => {
   const [ticId, setTicId] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -22,15 +27,11 @@ const DataLoader: React.FC<DataLoaderProps> = ({ onDataLoaded }) => {
     setSuccess(false);
 
     try {
-      // Загружаем данные через API
-      const response = await exoplanetApi.loadTICData(ticId);
+      // Загружаем данные через типизированный API клиент
+      const lightcurveData = await typedApiClient.get<LightcurveData>(`/api/v1/lightcurve/${ticId}`);
       
-      if (response.success) {
-        onDataLoaded(response.data);
-        setSuccess(true);
-      } else {
-        setError('Ошибка загрузки данных. Попробуйте другой TIC ID.');
-      }
+      onDataLoaded(lightcurveData);
+      setSuccess(true);
     } catch (err) {
       console.error('API Error:', err);
       setError('Ошибка загрузки данных. Проверьте подключение к серверу.');
@@ -67,7 +68,10 @@ const DataLoader: React.FC<DataLoaderProps> = ({ onDataLoaded }) => {
         });
 
         if (times.length > 0) {
-          onDataLoaded({ tic_id: 'UPLOADED', times, fluxes });
+          onDataLoaded({ 
+            time: times, 
+            flux: fluxes 
+          });
           setSuccess(true);
         } else {
           setError('Неверный формат файла. Ожидается CSV с колонками time,flux');

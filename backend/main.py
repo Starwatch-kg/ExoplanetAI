@@ -411,10 +411,10 @@ if __name__ == "__main__":
 
     try:
         uvicorn.run(
-            "main_v2:app",
+            "main:app",
             host=config.server.host,
             port=config.server.port,
-            reload=getattr(config, "reload", True),
+            reload=getattr(config, "reload", False),
             log_level="info",
             access_log=True,
         )

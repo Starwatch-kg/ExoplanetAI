@@ -205,7 +205,11 @@ async def analyze_light_curve(
                     lc_obj = await source.fetch_light_curve(target_name, mission)
                     if lc_obj:
                         break
-                except Exception:
+                except (ConnectionError, TimeoutError) as e:
+                    logger.warning(f"Network error from {source.__class__.__name__}: {e}")
+                    continue
+                except ValueError as e:
+                    logger.warning(f"Invalid data from {source.__class__.__name__}: {e}")
                     continue
 
             if not lc_obj:

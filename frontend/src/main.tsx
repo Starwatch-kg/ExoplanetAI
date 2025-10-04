@@ -38,3 +38,6 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     </ThemeProvider>
   </React.StrictMode>,
 )
+
+// Показываем контент после загрузки React
+document.getElementById('root')?.classList.add('loaded')

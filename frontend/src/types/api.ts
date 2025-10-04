@@ -58,22 +58,46 @@ export interface SearchResult {
 }
 
 export interface HealthStatus {
-  status: string
-  timestamp: string
-  version: string
-  services: Record<string, string>
+  status: 'healthy' | 'degraded' | 'unhealthy'
+  uptime?: number
+  version?: string
+  services?: Record<string, string>
+  components?: {
+    data_sources?: {
+      status: 'healthy' | 'unhealthy'
+      initialized: number
+      total: number
+    }
+    cache?: {
+      status: 'healthy' | 'unhealthy'
+      redis_connected: boolean
+    }
+    authentication?: {
+      status: 'healthy' | 'unhealthy'
+    }
+  }
+  timestamp?: number
+}
+
+export interface ApiError {
+  message: string
+  status: number
+  code?: string
+  details?: Record<string, any>
+  requestId?: string
+}
+
+export interface ApiErrorResponse {
+  message: string
+  code?: string
+  details?: Record<string, any>
+  requestId?: string
 }
 
 export interface CatalogsResponse {
   catalogs: string[]
   missions: string[]
   descriptions: Record<string, string>
-}
-
-// === UTILITY TYPES ===
-export interface ApiError {
-  detail: string
-  status_code?: number
 }
 
 export interface LoadingState {

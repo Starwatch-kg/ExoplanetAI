@@ -5,16 +5,12 @@ services:
     plan: starter
     buildCommand: pip install -r requirements.txt
     startCommand: python main.py
+    healthCheckPath: /api/v1/health
     envVars:
       - key: ENVIRONMENT
         value: production
       - key: SERVER_HOST
         value: 0.0.0.0
-      - key: PORT
-        fromService:
-          type: web
-          name: exoplanet-ai-backend
-          property: port
       - key: CACHE_REDIS_URL
         fromService:
           type: redis
@@ -22,7 +18,7 @@ services:
           property: connectionString
       - key: NASA_API_KEY
         sync: false
-      - key: NASA_ESA_API_KEY
+      - key: NASA_ESA_API_KEY  
         sync: false
       - key: LOG_LEVEL
         value: INFO
@@ -30,6 +26,12 @@ services:
         value: true
       - key: ML_ENABLED
         value: true
+      - key: ENABLE_AI_FEATURES
+        value: true
+      - key: ENABLE_REAL_NASA_DATA
+        value: true
+      - key: DEBUG
+        value: false
 
   - type: redis
     name: exoplanet-ai-redis

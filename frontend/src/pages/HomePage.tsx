@@ -374,7 +374,7 @@ const HomePage: React.FC = () => {
               <div className="text-center">
                 <div className="w-4 h-4 bg-blue-400 rounded-full mx-auto mb-3 animate-pulse" />
                 <p className="text-white font-medium">{t('systemStatus.version')}</p>
-                <p className="text-gray-300 text-sm">{healthStatus.version}</p>
+                <p className="text-gray-300 text-sm">{healthStatus.version || 'Unknown'}</p>
               </div>
               <div className="text-center">
                 <div className="w-4 h-4 bg-purple-400 rounded-full mx-auto mb-3 animate-pulse" />

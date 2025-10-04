@@ -182,7 +182,8 @@ class FeatureExtractor:
             else:
                 return 5.0  # Default period
 
-        except Exception:
+        except (ValueError, ZeroDivisionError, IndexError) as e:
+            logger.warning(f"Period calculation failed: {e}")
             return 5.0  # Default period if calculation fails
 
     @staticmethod
@@ -194,7 +195,8 @@ class FeatureExtractor:
             minimum = np.min(flux)
             depth = (baseline - minimum) / baseline
             return max(0.0, min(depth, 0.1))  # Clamp to reasonable range
-        except Exception:
+        except (ValueError, ZeroDivisionError) as e:
+            logger.warning(f"Transit depth calculation failed: {e}")
             return 0.001  # Default depth
 
 

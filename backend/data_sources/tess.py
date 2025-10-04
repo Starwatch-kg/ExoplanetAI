@@ -224,7 +224,11 @@ class TESSDataSource(BaseDataSource):
             try:
                 catalog_result = Catalogs.query_object(target_name, catalog="TIC")
                 catalog_info = catalog_result[0] if len(catalog_result) > 0 else None
-            except Exception:
+            except (ConnectionError, TimeoutError) as e:
+                logger.warning(f"TIC catalog query failed for {target_name}: {e}")
+                catalog_info = None
+            except (ValueError, KeyError) as e:
+                logger.warning(f"Invalid TIC catalog response for {target_name}: {e}")
                 catalog_info = None
 
             return {

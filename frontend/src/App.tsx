@@ -1,51 +1,73 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, lazy, Suspense } from 'react'
 import { Routes, Route } from 'react-router-dom'
-import ApiService from './services/api'
-import Header from './components/layout/Header'
-import HomePage from './pages/HomePage'
-import AboutPage from './pages/AboutPage'
-import AITrainingPage from './pages/AITrainingPage'
-import GPIPage from './pages/GPIPage'
-import SearchPage from './pages/SearchPage'
-import CatalogPage from './pages/CatalogPage'
-import DatabasePage from './pages/DatabasePage'
-import NotFoundPage from './pages/NotFoundPage'
+import { typedApiClient } from './utils/typedApiClient'
 import type { HealthStatus } from './types/api'
+import Header from './components/layout/Header'
+import StarBackground from './components/StarBackground'
+
+// Lazy loading для оптимизации
+const HomePage = lazy(() => import('./pages/HomePage'))
+const AboutPage = lazy(() => import('./pages/AboutPage'))
+const AITrainingPage = lazy(() => import('./pages/AITrainingPage'))
+const GPIPage = lazy(() => import('./pages/GPIPage'))
+const SearchPage = lazy(() => import('./pages/SearchPage'))
+const CatalogPage = lazy(() => import('./pages/CatalogPage'))
+const DatabasePage = lazy(() => import('./pages/DatabasePage'))
+const NotFoundPage = lazy(() => import('./pages/NotFoundPage'))
 
 function App() {
   const [healthStatus, setHealthStatus] = useState<HealthStatus | null>(null)
 
-  // Check API health on mount
+  // Check API health with improved error handling
   useEffect(() => {
     const checkHealth = async () => {
       try {
-        const health = await ApiService.getHealth()
+        const health = await typedApiClient.getHealth()
         setHealthStatus(health)
-      } catch (err) {
-        console.warn('API health check failed:', err)
+      } catch (error) {
+        if (import.meta.env.DEV) {
+          console.warn('API health check failed:', error)
+        }
+        // Set degraded status on error
+        setHealthStatus({ status: 'unhealthy', uptime: 0 })
       }
     }
+
     checkHealth()
+    
+    // Set up periodic health checks
+    const interval = setInterval(checkHealth, 60000) // Every minute
+    
+    return () => clearInterval(interval)
   }, [])
 
   return (
     <div className="min-h-screen bg-black transition-colors duration-500">
+      {/* Анимированный звездный фон */}
+      <StarBackground />
+      
       {/* Main Content */}
-      <div className="relative z-10 min-h-screen">
+      <div className="relative z-20 min-h-screen">
         {/* Header */}
         <Header healthStatus={healthStatus} />
 
-        {/* Routes */}
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/about" element={<AboutPage />} />
-          <Route path="/ai-training" element={<AITrainingPage />} />
-          <Route path="/gpi" element={<GPIPage />} />
-          <Route path="/search" element={<SearchPage />} />
-          <Route path="/catalog" element={<CatalogPage />} />
-          <Route path="/database" element={<DatabasePage />} />
-          <Route path="*" element={<NotFoundPage />} />
-        </Routes>
+        {/* Routes с Suspense для lazy loading */}
+        <Suspense fallback={
+          <div className="flex items-center justify-center min-h-screen">
+            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500"></div>
+          </div>
+        }>
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/about" element={<AboutPage />} />
+            <Route path="/ai-training" element={<AITrainingPage />} />
+            <Route path="/gpi" element={<GPIPage />} />
+            <Route path="/search" element={<SearchPage />} />
+            <Route path="/catalog" element={<CatalogPage />} />
+            <Route path="/database" element={<DatabasePage />} />
+            <Route path="*" element={<NotFoundPage />} />
+          </Routes>
+        </Suspense>
       </div>
     </div>
   )

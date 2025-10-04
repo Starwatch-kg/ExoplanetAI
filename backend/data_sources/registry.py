@@ -313,10 +313,10 @@ def register_source(source: BaseDataSource) -> None:
 
 async def initialize_default_sources():
     """Initialize default data sources"""
-    from .esa_service import ESADataSource
-    from .kepler_service import KeplerDataSource
-    from .nasa_service import NASADataSource
-    from .tess_service import TESSDataSource
+    from .esa import ESADataSource
+    from .kepler import KeplerDataSource
+    from .nasa import NASADataSource
+    from .tess import TESSDataSource
 
     # Register default sources
     register_source(NASADataSource())

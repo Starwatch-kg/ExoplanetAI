@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, memo } from 'react';
 
 interface Star {
   x: number;
@@ -38,10 +38,17 @@ const StarBackground: React.FC = () => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Настройка canvas
+    // Настройка canvas с оптимизацией
     const resizeCanvas = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      canvas.style.width = rect.width + 'px';
+      canvas.style.height = rect.height + 'px';
+      
+      ctx.scale(dpr, dpr);
     };
 
     resizeCanvas();
@@ -52,14 +59,15 @@ const StarBackground: React.FC = () => {
     const shootingStars: ShootingStar[] = [];
     const nebulas: Nebula[] = [];
 
-    // Генерация звезд
-    for (let i = 0; i < 300; i++) {
+    // Генерация звезд (уменьшено для производительности)
+    const starCount = window.innerWidth < 768 ? 150 : 200; // Меньше звезд на мобильных
+    for (let i = 0; i < starCount; i++) {
       stars.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        size: Math.random() * 3 + 0.5,
+        x: Math.random() * window.innerWidth,
+        y: Math.random() * window.innerHeight,
+        size: Math.random() * 2 + 0.5,
         opacity: Math.random() * 0.8 + 0.2,
-        twinkleSpeed: Math.random() * 0.03 + 0.005,
+        twinkleSpeed: Math.random() * 0.02 + 0.005,
         twinklePhase: Math.random() * Math.PI * 2
       });
     }
@@ -73,14 +81,16 @@ const StarBackground: React.FC = () => {
       'rgba(251, 146, 60, 0.3)'  // orange
     ];
 
-    for (let i = 0; i < 8; i++) {
+    // Уменьшаем количество туманностей для производительности
+    const nebulaCount = window.innerWidth < 768 ? 3 : 5;
+    for (let i = 0; i < nebulaCount; i++) {
       nebulas.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        size: Math.random() * 200 + 100,
-        opacity: Math.random() * 0.4 + 0.1,
+        x: Math.random() * window.innerWidth,
+        y: Math.random() * window.innerHeight,
+        size: Math.random() * 150 + 80,
+        opacity: Math.random() * 0.3 + 0.1,
         color: nebulaColors[Math.floor(Math.random() * nebulaColors.length)],
-        pulseSpeed: Math.random() * 0.01 + 0.005,
+        pulseSpeed: Math.random() * 0.008 + 0.003,
         pulsePhase: Math.random() * Math.PI * 2
       });
     }
@@ -99,9 +109,19 @@ const StarBackground: React.FC = () => {
       }
     };
 
-    // Анимация
+    // Анимация с оптимизацией FPS
     let animationId: number;
-    const animate = () => {
+    let lastTime = 0;
+    const targetFPS = 30; // Ограничиваем FPS для экономии ресурсов
+    const frameInterval = 1000 / targetFPS;
+    
+    const animate = (currentTime: number) => {
+      if (currentTime - lastTime < frameInterval) {
+        animationId = requestAnimationFrame(animate);
+        return;
+      }
+      lastTime = currentTime;
+      
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       // Фон космоса
@@ -207,7 +227,7 @@ const StarBackground: React.FC = () => {
       animationId = requestAnimationFrame(animate);
     };
 
-    animate();
+    animate(0);
 
     return () => {
       window.removeEventListener('resize', resizeCanvas);
@@ -218,12 +238,13 @@ const StarBackground: React.FC = () => {
   return (
     <canvas
       ref={canvasRef}
-      className="fixed top-0 left-0 w-full h-full -z-10"
+      className="fixed top-0 left-0 w-full h-full z-0"
       style={{
-        background: 'radial-gradient(ellipse at center, #0a0b1e 0%, #1a0b2e 50%, #000 100%)'
+        background: 'radial-gradient(ellipse at center, #0a0b1e 0%, #1a0b2e 50%, #000 100%)',
+        pointerEvents: 'none' // Позволяет кликать через фон
       }}
     />
   );
 };
 
-export default StarBackground;
+export default memo(StarBackground);

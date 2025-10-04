@@ -2,11 +2,25 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/telescope.svg" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ExoplanetAI - AI-Powered Exoplanet Detection</title>
-    <meta name="description" content="Advanced AI system for detecting exoplanets using NASA TESS data and machine learning" />
-    <meta name="keywords" content="exoplanet, AI, NASA, TESS, machine learning, astronomy, space" />
+    <title>ExoplanetAI - AI-Powered Exoplanet Discovery</title>
+    <style>
+      /* Предотвращаем FOUC */
+      #root {
+        visibility: hidden;
+      }
+      #root.loaded {
+        visibility: visible;
+      }
+      /* Базовые стили для загрузки */
+      body {
+        margin: 0;
+        background: #000;
+        color: #fff;
+        font-family: system-ui, -apple-system, sans-serif;
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>

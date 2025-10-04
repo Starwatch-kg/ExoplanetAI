@@ -1,7 +1,7 @@
 import React, { useMemo, memo } from 'react'
 import Plot from 'react-plotly.js'
 // import { useTranslation } from 'react-i18next' // Для будущих переводов
-import { useTheme } from '../../../../front/frontend/src/contexts/ThemeContext'
+import { useTheme } from '../../contexts/ThemeContext'
 import { BarChart3, Download, ZoomIn, Info } from 'lucide-react'
 
 interface LightCurveData {
@@ -52,7 +52,7 @@ const LightCurveGraph: React.FC<LightCurveGraphProps> = memo(({
     return {
       time: indices.map(i => data.time[i]),
       flux: indices.map(i => data.flux[i]),
-      flux_err: data.flux_err ? indices.map(i => data.flux_err[i]) : undefined
+      flux_err: data.flux_err ? indices.map(i => data.flux_err![i]) : undefined
     };
   }, [data]);
 
@@ -261,11 +261,6 @@ const LightCurveGraph: React.FC<LightCurveGraphProps> = memo(({
     responsive: true,
   }), [targetName])
 
-  // Memoize stats calculations to prevent unnecessary recalculations
-  const stats = useMemo(() => ({
-    cadenceMinutes: ((observationDays * 24 * 60) / dataPoints),
-    coveragePercent: ((dataPoints / (observationDays * 24 * 60 / ((observationDays * 24 * 60) / dataPoints))) * 100)
-  }), [observationDays, dataPoints]);
 
   return (
     <div className={`bg-white/10 dark:bg-gray-800/30 backdrop-blur-sm rounded-xl border border-white/20 dark:border-gray-700/50 ${className}`}>
@@ -368,6 +363,6 @@ const LightCurveGraph: React.FC<LightCurveGraphProps> = memo(({
       )}
     </div>
   )
-}
+})
 
 export default LightCurveGraph

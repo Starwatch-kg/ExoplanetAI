@@ -4,7 +4,7 @@ import { Clock, CheckCircle, XCircle, TrendingUp } from 'lucide-react'
 import TargetInfo from './TargetInfo'
 import LightCurveGraph from './LightCurveGraph'
 import BLSDetails from './BLSDetails'
-import type { SearchResult } from '../../../../front/frontend/src/types/api'
+import type { SearchResult } from '../../types/api'
 
 interface ResultsPageProps {
   result: SearchResult
@@ -37,7 +37,7 @@ const ResultsPage: React.FC<ResultsPageProps> = ({ result, className = '' }) => 
     const time = Array.from({ length: points }, (_, i) => (i / points) * days)
     
     // Create deterministic flux based on target name and parameters
-    const seed = result.target_name.split('').reduce((a, b) => a + b.charCodeAt(0), 0)
+    const seed = result.target_name.split('').reduce((a: number, b: string) => a + b.charCodeAt(0), 0)
     const flux = time.map((t, i) => {
       // Deterministic base flux with stellar variability
       let f = 1.0 + 0.001 * Math.sin(2 * Math.PI * t / 12.5) // Stellar rotation

@@ -5,6 +5,7 @@ ESA (European Space Agency) data source implementation
 
 import asyncio
 import logging
+from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 import aiohttp

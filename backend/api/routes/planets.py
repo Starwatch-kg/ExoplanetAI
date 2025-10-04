@@ -12,6 +12,8 @@ from fastapi import APIRouter, Depends, HTTPException, Path, Query
 from auth.dependencies import get_optional_user, require_researcher
 from auth.models import User
 from core.cache import get_cache
+from core.pagination import PaginatedResponse, get_search_pagination_params, SearchPaginationParams
+from core.exceptions import handle_service_error, ValidationError
 from data_sources.registry import get_registry
 from schemas.response import ErrorCode, create_error_response, create_success_response
 
@@ -19,12 +21,11 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
-@router.get("/search")
+@router.get("/search", response_model=PaginatedResponse[Dict[str, Any]])
 async def search_exoplanets(
     q: str = Query(
         ..., description="Search query (planet name, star name, etc.)", min_length=1
     ),
-    limit: int = Query(50, description="Maximum results per source", ge=1, le=200),
     sources: Optional[str] = Query(
         None, description="Comma-separated source types (nasa,tess,kepler)"
     ),
@@ -35,6 +36,7 @@ async def search_exoplanets(
         None, description="Maximum discovery year", le=2030
     ),
     confirmed_only: bool = Query(False, description="Only confirmed planets"),
+    pagination: SearchPaginationParams = Depends(get_search_pagination_params),
     current_user: Optional[User] = Depends(get_optional_user),
 ):
     """

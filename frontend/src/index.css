@@ -19,10 +19,13 @@
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 /* Tailwind CSS Base Styles */
+/* stylelint-disable-next-line at-rule-no-unknown */
 @tailwind base;
 /* Tailwind CSS Component Classes */
+/* stylelint-disable-next-line at-rule-no-unknown */
 @tailwind components;
 /* Tailwind CSS Utility Classes */
+/* stylelint-disable-next-line at-rule-no-unknown */
 @tailwind utilities;
 
 /* NASA Space Theme Variables */
@@ -43,13 +46,16 @@
   --starlight: #E6E6FA;
 }
 
+/* stylelint-disable-next-line at-rule-no-unknown */
 @layer base {
   * {
+    /* stylelint-disable-next-line at-rule-no-unknown */
     @apply border-slate-700;
     box-sizing: border-box;
   }
   
   body {
+    /* stylelint-disable-next-line at-rule-no-unknown */
     @apply text-gray-900 bg-white;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
     font-feature-settings: "cv11", "ss01";
@@ -63,35 +69,52 @@
   }
 }
 
+/* stylelint-disable-next-line at-rule-no-unknown */
 @layer components {
   /* Космические кнопки */
   .btn-space {
+    /* stylelint-disable-next-line at-rule-no-unknown */
     @apply px-6 py-3 rounded-lg font-semibold transition-all duration-300;
+    /* stylelint-disable-next-line at-rule-no-unknown */
     @apply bg-gradient-to-r from-blue-600 to-purple-600;
+    /* stylelint-disable-next-line at-rule-no-unknown */
     @apply hover:from-blue-500 hover:to-purple-500;
+    /* stylelint-disable-next-line at-rule-no-unknown */
     @apply active:scale-95 transform;
+    /* stylelint-disable-next-line at-rule-no-unknown */
     @apply shadow-lg hover:shadow-xl;
   }
   
   .btn-nasa {
+    /* stylelint-disable-next-line at-rule-no-unknown */
     @apply px-6 py-3 rounded-lg font-semibold transition-all duration-300;
     background: var(--nasa-blue);
+    /* stylelint-disable-next-line at-rule-no-unknown */
     @apply text-white hover:brightness-110;
+    /* stylelint-disable-next-line at-rule-no-unknown */
     @apply active:scale-95 transform;
+    /* stylelint-disable-next-line at-rule-no-unknown */
     @apply shadow-lg hover:shadow-xl;
   }
   
   /* Карточки */
   .card-space {
+    /* stylelint-disable-next-line at-rule-no-unknown */
     @apply bg-white/5 backdrop-blur-lg rounded-xl p-6;
+    /* stylelint-disable-next-line at-rule-no-unknown */
     @apply border border-white/10;
+    /* stylelint-disable-next-line at-rule-no-unknown */
     @apply shadow-xl hover:shadow-2xl transition-all duration-300;
   }
   
   .card-glass {
+    /* stylelint-disable-next-line at-rule-no-unknown */
     @apply bg-gradient-to-br from-white/10 to-white/5;
+    /* stylelint-disable-next-line at-rule-no-unknown */
     @apply backdrop-blur-md rounded-xl p-6;
+    /* stylelint-disable-next-line at-rule-no-unknown */
     @apply border border-white/20;
+    /* stylelint-disable-next-line at-rule-no-unknown */
     @apply shadow-2xl;
   }
   
@@ -123,7 +146,9 @@
   
   /* Текстовые эффекты */
   .text-gradient {
+    /* stylelint-disable-next-line at-rule-no-unknown */
     @apply bg-clip-text text-transparent;
+    /* stylelint-disable-next-line at-rule-no-unknown */
     @apply bg-gradient-to-r from-blue-400 to-purple-600;
   }
   
@@ -138,15 +163,19 @@
   }
   
   ::-webkit-scrollbar-track {
+    /* stylelint-disable-next-line at-rule-no-unknown */
     @apply bg-gray-900;
   }
   
   ::-webkit-scrollbar-thumb {
+    /* stylelint-disable-next-line at-rule-no-unknown */
     @apply bg-purple-600 rounded-full;
+    /* stylelint-disable-next-line at-rule-no-unknown */
     @apply hover:bg-purple-500;
   }
 }
 
+/* stylelint-disable-next-line at-rule-no-unknown */
 @layer utilities {
   /* Утилиты для backdrop фильтров */
   .backdrop-blur-xs {
@@ -244,16 +273,19 @@
   --cosmic-blue: #dbeafe;
   
   body {
+    /* stylelint-disable-next-line at-rule-no-unknown */
     @apply bg-gradient-to-br from-blue-50 via-indigo-100 to-blue-50 text-gray-900;
     color: #1e293b;
   }
   
   .card-space {
+    /* stylelint-disable-next-line at-rule-no-unknown */
     @apply bg-white/80 border-gray-200/50;
     backdrop-filter: blur(10px);
   }
   
   .text-gradient {
+    /* stylelint-disable-next-line at-rule-no-unknown */
     @apply bg-gradient-to-r from-blue-600 to-purple-700;
   }
   

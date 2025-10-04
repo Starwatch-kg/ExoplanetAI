@@ -136,11 +136,16 @@ const AITrainingPage: React.FC = () => {
   useEffect(() => {
     const interval = setInterval(async () => {
       try {
-        const response = await fetch('/api/v1/ai/train/status')
-        if (response.ok) {
-          const status = await response.json()
-          setTrainingStatus(status)
+        // Mock training status for demo
+        const mockStatus = {
+          status: 'idle',
+          progress: 0,
+          epoch: 0,
+          loss: 0,
+          accuracy: 0,
+          eta: '00:00:00'
         }
+        setTrainingStatus(mockStatus)
       } catch (err) {
         console.warn('Failed to fetch training status:', err)
       }

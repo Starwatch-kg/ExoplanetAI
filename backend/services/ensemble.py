@@ -487,8 +487,9 @@ class UltimateEnsembleSearchEngine:
                 poly_coeffs = np.polyfit(time_clean, flux_clean, deg=3)
                 trend = np.polyval(poly_coeffs, time_clean)
                 flux_clean = flux_clean / trend
-            except Exception:
-                pass  # Если детрендинг не удался, продолжаем без него
+            except (np.linalg.LinAlgError, np.RankWarning, ValueError) as e:
+                logger.warning(f"Detrending failed for target: {e}. Continuing without detrending.")
+                # Продолжаем без детрендинга
 
         logger.info(f"🧹 Data preprocessing: {len(time)} → {len(time_clean)} points")
 
