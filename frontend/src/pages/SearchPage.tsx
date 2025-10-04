@@ -1,7 +1,8 @@
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { motion } from 'framer-motion'
-import { AlertCircle, Search, BarChart3, Settings, TrendingUp, Download, Info, Layers, Activity, Sparkles, Target, Clock, CheckCircle, Play, Star, ArrowRight, Upload, FileText, X } from 'lucide-react'
+import { AlertCircle, Search, BarChart3, Settings, TrendingUp, Download, Info, Layers, Activity, Sparkles, Target, Clock, CheckCircle, Play, Star, ArrowRight, Upload, FileText, X, Brain } from 'lucide-react'
+import Plot from 'react-plotly.js'
 import SafePageWrapper from '../components/SafePageWrapper'
 
 interface SearchParameters {
@@ -685,52 +686,272 @@ const SearchPageContent: React.FC = () => {
 
             {result && (
               <div className="space-y-6">
-                {/* Detection Summary */}
-                <div className="bg-green-500/20 border border-green-500/50 rounded-lg p-4">
-                  <h3 className="text-lg font-semibold text-white mb-2">
-                    ✅ Search Completed!
-                  </h3>
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <p className="text-gray-300">Period: {result.bls_result?.best_period?.toFixed(3) || 'N/A'} days</p>
-                      <p className="text-gray-300">SNR: {result.bls_result?.snr?.toFixed(2) || 'N/A'}</p>
+                {/* AI Analysis Summary */}
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="bg-gradient-to-br from-green-500/20 to-emerald-500/20 border border-green-500/50 rounded-xl p-6 shadow-lg"
+                >
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-12 h-12 bg-green-500/30 rounded-full flex items-center justify-center">
+                      <Brain className="w-6 h-6 text-green-400" />
                     </div>
                     <div>
-                      <p className="text-gray-300">Confidence: {((result.bls_result?.significance || 0) * 100)?.toFixed(1) || 'N/A'}%</p>
-                      <p className="text-gray-300">Processing: {result.processing_time_ms ? (result.processing_time_ms / 1000).toFixed(1) : 'N/A'}s</p>
+                      <h3 className="text-xl font-bold text-white">AI Analysis Complete</h3>
+                      <p className="text-green-300 text-sm">Exoplanet Detection Results</p>
                     </div>
                   </div>
-                </div>
+
+                  {/* Confidence Score */}
+                  <div className="mb-6">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-gray-300 font-medium">Detection Confidence</span>
+                      <span className="text-2xl font-bold text-green-400">
+                        {((result.bls_result?.significance || 0) * 100).toFixed(1)}%
+                      </span>
+                    </div>
+                    <div className="w-full bg-gray-700/50 rounded-full h-3 overflow-hidden">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${(result.bls_result?.significance || 0) * 100}%` }}
+                        transition={{ duration: 1, ease: "easeOut" }}
+                        className="h-full bg-gradient-to-r from-green-500 to-emerald-400 rounded-full"
+                      />
+                    </div>
+                  </div>
+
+                  {/* AI Interpretation */}
+                  <div className="bg-white/5 rounded-lg p-4 mb-4">
+                    <div className="flex items-start gap-3">
+                      <Sparkles className="w-5 h-5 text-yellow-400 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <h4 className="text-white font-semibold mb-2">AI Interpretation:</h4>
+                        <p className="text-gray-300 text-sm leading-relaxed">
+                          {result.bls_result?.significance >= 0.95 ? (
+                            <>🎯 <strong className="text-green-400">Высокая вероятность обнаружения экзопланеты!</strong> Обнаружен сильный транзитный сигнал с периодом {result.bls_result?.best_period?.toFixed(2)} дней. SNR {result.bls_result?.snr?.toFixed(1)} указывает на четкий сигнал. Рекомендуется дальнейшее наблюдение для подтверждения.</>
+                          ) : result.bls_result?.significance >= 0.85 ? (
+                            <>⭐ <strong className="text-yellow-400">Вероятное обнаружение планеты.</strong> Детектирован транзитный сигнал с периодом {result.bls_result?.best_period?.toFixed(2)} дней. SNR {result.bls_result?.snr?.toFixed(1)} показывает умеренную уверенность. Требуется дополнительный анализ для подтверждения.</>
+                          ) : result.bls_result?.significance >= 0.70 ? (
+                            <>🔍 <strong className="text-orange-400">Возможный кандидат.</strong> Обнаружен слабый периодический сигнал ({result.bls_result?.best_period?.toFixed(2)} дней). SNR {result.bls_result?.snr?.toFixed(1)} требует осторожной интерпретации. Рекомендуется проверка на ложные срабатывания.</>
+                          ) : (
+                            <>⚠️ <strong className="text-gray-400">Низкая уверенность.</strong> Сигнал слабый (SNR {result.bls_result?.snr?.toFixed(1)}). Возможно, это шум или систематическая ошибка. Требуется более качественные данные.</>
+                          )}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Key Metrics */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div className="bg-white/5 rounded-lg p-3">
+                      <div className="text-gray-400 text-xs mb-1">Orbital Period</div>
+                      <div className="text-white font-bold text-lg">{result.bls_result?.best_period?.toFixed(3) || 'N/A'}</div>
+                      <div className="text-gray-400 text-xs">days</div>
+                    </div>
+                    <div className="bg-white/5 rounded-lg p-3">
+                      <div className="text-gray-400 text-xs mb-1">Signal-to-Noise</div>
+                      <div className="text-white font-bold text-lg">{result.bls_result?.snr?.toFixed(1) || 'N/A'}</div>
+                      <div className="text-gray-400 text-xs">ratio</div>
+                    </div>
+                    <div className="bg-white/5 rounded-lg p-3">
+                      <div className="text-gray-400 text-xs mb-1">Transit Depth</div>
+                      <div className="text-white font-bold text-lg">{((result.bls_result?.depth || 0) * 100).toFixed(2)}</div>
+                      <div className="text-gray-400 text-xs">%</div>
+                    </div>
+                    <div className="bg-white/5 rounded-lg p-3">
+                      <div className="text-gray-400 text-xs mb-1">Duration</div>
+                      <div className="text-white font-bold text-lg">{result.bls_result?.best_duration?.toFixed(2) || 'N/A'}</div>
+                      <div className="text-gray-400 text-xs">days</div>
+                    </div>
+                  </div>
+                </motion.div>
+
+                {/* Light Curve Visualization */}
+                {result.lightcurve_data && result.lightcurve_data.time && result.lightcurve_data.flux && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                    className="bg-gradient-to-br from-white/10 to-white/5 border border-white/20 rounded-xl p-6"
+                  >
+                    <div className="flex items-center gap-3 mb-4">
+                      <TrendingUp className="w-6 h-6 text-blue-400" />
+                      <h3 className="text-xl font-bold text-white">Light Curve Visualization</h3>
+                    </div>
+                    <div className="bg-gray-900/50 rounded-lg p-4">
+                      <Plot
+                        data={[
+                          {
+                            x: result.lightcurve_data.time,
+                            y: result.lightcurve_data.flux,
+                            type: 'scatter' as const,
+                            mode: 'markers' as const,
+                            marker: { 
+                              size: 3, 
+                              color: '#60A5FA',
+                              opacity: 0.6
+                            },
+                            name: 'Observed Flux'
+                          } as any
+                        ]}
+                        layout={{
+                          title: {
+                            text: `${result.target_name} - Light Curve`,
+                            font: { color: '#E5E7EB', size: 16 }
+                          },
+                          xaxis: { 
+                            title: { text: 'Time (days)', font: { color: '#9CA3AF' } },
+                            gridcolor: '#374151',
+                            color: '#9CA3AF'
+                          },
+                          yaxis: { 
+                            title: { text: 'Relative Flux', font: { color: '#9CA3AF' } },
+                            gridcolor: '#374151',
+                            color: '#9CA3AF'
+                          },
+                          paper_bgcolor: 'rgba(0,0,0,0)',
+                          plot_bgcolor: 'rgba(17,24,39,0.5)',
+                          font: { color: '#9CA3AF' },
+                          height: 400,
+                          margin: { t: 50, r: 20, b: 50, l: 60 },
+                          hovermode: 'closest',
+                          showlegend: true,
+                          legend: {
+                            x: 0.02,
+                            y: 0.98,
+                            bgcolor: 'rgba(0,0,0,0.5)',
+                            bordercolor: '#374151',
+                            borderwidth: 1
+                          }
+                        } as any}
+                        config={{ 
+                          displayModeBar: true,
+                          displaylogo: false,
+                          modeBarButtonsToRemove: ['lasso2d', 'select2d'],
+                          toImageButtonOptions: {
+                            format: 'png',
+                            filename: `${result.target_name}_lightcurve`,
+                            height: 800,
+                            width: 1200,
+                            scale: 2
+                          }
+                        }}
+                        className="w-full"
+                      />
+                    </div>
+                    <div className="mt-4 grid grid-cols-3 gap-3 text-sm">
+                      <div className="bg-white/5 rounded-lg p-3">
+                        <div className="text-gray-400 mb-1">Data Points</div>
+                        <div className="text-white font-semibold">{result.lightcurve_info?.points_count?.toLocaleString() || 'N/A'}</div>
+                      </div>
+                      <div className="bg-white/5 rounded-lg p-3">
+                        <div className="text-gray-400 mb-1">Time Span</div>
+                        <div className="text-white font-semibold">{result.lightcurve_info?.time_span_days?.toFixed(1) || 'N/A'} days</div>
+                      </div>
+                      <div className="bg-white/5 rounded-lg p-3">
+                        <div className="text-gray-400 mb-1">Noise Level</div>
+                        <div className="text-white font-semibold">{result.lightcurve_info?.noise_level_ppm?.toFixed(0) || 'N/A'} ppm</div>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* Star Information */}
+                {result.star_info && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3 }}
+                    className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 border border-purple-500/30 rounded-xl p-6"
+                  >
+                    <div className="flex items-center gap-3 mb-4">
+                      <Star className="w-6 h-6 text-purple-400" />
+                      <h3 className="text-xl font-bold text-white">Host Star Information</h3>
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                      <div>
+                        <div className="text-gray-400 text-sm mb-1">Target ID</div>
+                        <div className="text-white font-semibold">{result.star_info.target_id || 'N/A'}</div>
+                      </div>
+                      <div>
+                        <div className="text-gray-400 text-sm mb-1">Catalog</div>
+                        <div className="text-white font-semibold">{result.star_info.catalog || 'N/A'}</div>
+                      </div>
+                      <div>
+                        <div className="text-gray-400 text-sm mb-1">Magnitude</div>
+                        <div className="text-white font-semibold">{result.star_info.magnitude?.toFixed(2) || 'N/A'}</div>
+                      </div>
+                      <div>
+                        <div className="text-gray-400 text-sm mb-1">Temperature</div>
+                        <div className="text-white font-semibold">{result.star_info.temperature?.toFixed(0) || 'N/A'} K</div>
+                      </div>
+                      <div>
+                        <div className="text-gray-400 text-sm mb-1">Coordinates</div>
+                        <div className="text-white font-semibold text-xs">
+                          RA: {result.star_info.ra?.toFixed(4) || 'N/A'}°<br/>
+                          Dec: {result.star_info.dec?.toFixed(4) || 'N/A'}°
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-gray-400 text-sm mb-1">Stellar Type</div>
+                        <div className="text-white font-semibold">{result.star_info.stellar_type || 'N/A'}</div>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
 
                 {/* Method Info */}
-                <div className="bg-blue-500/10 rounded-lg p-4 border border-blue-500/30">
-                  <h4 className="text-lg font-semibold text-white mb-2">Analysis Method</h4>
-                  <p className="text-blue-300 text-sm">
-                    Method: BLS (Box Least Squares)
-                  </p>
-                  <p className="text-gray-300 text-sm mt-1">
-                    Data Points: {result.lightcurve_info?.points_count?.toLocaleString() || 'N/A'}
-                  </p>
-                </div>
-
-                {/* Download Results */}
-                <button
-                  onClick={() => {
-                    const dataStr = JSON.stringify(result, null, 2)
-                    const dataBlob = new Blob([dataStr], {type: 'application/json'})
-                    const url = URL.createObjectURL(dataBlob)
-                    const link = document.createElement('a')
-                    link.href = url
-                    // Sanitize the target name for the filename to prevent path traversal
-                    const sanitizedTargetName = parameters.target_name.replace(/[^a-zA-Z0-9\s\-_]/g, '_');
-                    link.download = `unified_search_results_${sanitizedTargetName}_${Date.now()}.json`
-                    link.click()
-                  }}
-                  className="w-full bg-white/10 hover:bg-white/20 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-300 flex items-center justify-center gap-2"
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4 }}
+                  className="bg-blue-500/10 rounded-lg p-4 border border-blue-500/30"
                 >
-                  <Download className="w-4 h-4" />
-                  Download Results
-                </button>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="text-lg font-semibold text-white mb-1">Analysis Method</h4>
+                      <p className="text-blue-300 text-sm">
+                        {searchMethods.find(m => m.id === parameters.search_mode)?.name || 'BLS'} (Box Least Squares)
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-gray-400 text-xs mb-1">Processing Time</div>
+                      <div className="text-white font-bold text-lg">
+                        {result.processing_time_ms ? (result.processing_time_ms / 1000).toFixed(2) : 'N/A'}s
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+
+                {/* Action Buttons */}
+                <div className="grid grid-cols-2 gap-4">
+                  <button
+                    onClick={() => {
+                      const dataStr = JSON.stringify(result, null, 2)
+                      const dataBlob = new Blob([dataStr], {type: 'application/json'})
+                      const url = URL.createObjectURL(dataBlob)
+                      const link = document.createElement('a')
+                      link.href = url
+                      const sanitizedTargetName = parameters.target_name.replace(/[^a-zA-Z0-9\s\-_]/g, '_');
+                      link.download = `exoplanet_analysis_${sanitizedTargetName}_${Date.now()}.json`
+                      link.click()
+                    }}
+                    className="bg-white/10 hover:bg-white/20 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-300 flex items-center justify-center gap-2"
+                  >
+                    <Download className="w-4 h-4" />
+                    Download Results
+                  </button>
+                  <button
+                    onClick={() => {
+                      setResult(null)
+                      setError(null)
+                    }}
+                    className="bg-purple-500/20 hover:bg-purple-500/30 border border-purple-500/50 text-purple-300 font-semibold py-3 px-4 rounded-lg transition-all duration-300 flex items-center justify-center gap-2"
+                  >
+                    <Search className="w-4 h-4" />
+                    New Search
+                  </button>
+                </div>
               </div>
             )}
 
