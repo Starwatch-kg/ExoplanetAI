@@ -10,9 +10,8 @@ import ErrorBoundary from './components/ErrorBoundary'
 // Lazy loading для оптимизации
 const HomePage = lazy(() => import('./pages/HomePage'))
 const AboutPage = lazy(() => import('./pages/AboutPage'))
-const AITrainingPage = lazy(() => import('./pages/AITrainingPage'))
-const GPIPage = lazy(() => import('./pages/GPIPage'))
-const SearchPage = lazy(() => import('./pages/SearchPage'))
+const UnifiedAnalysisPage = lazy(() => import('./pages/UnifiedAnalysisPage'))
+const GPIAnalysisPage = lazy(() => import('./pages/GPIAnalysisPage'))
 const CatalogPage = lazy(() => import('./pages/CatalogPage'))
 const DatabasePage = lazy(() => import('./pages/DatabasePage'))
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'))
@@ -79,9 +78,8 @@ function App() {
             <Routes>
               <Route path="/" element={<HomePage />} />
               <Route path="/about" element={<AboutPage useSimpleBackground={useSimpleBackground} />} />
-              <Route path="/ai-training" element={<AITrainingPage />} />
-              <Route path="/gpi" element={<GPIPage />} />
-              <Route path="/search" element={<SearchPage />} />
+              <Route path="/analyze" element={<UnifiedAnalysisPage />} />
+              <Route path="/gpi" element={<GPIAnalysisPage useSimpleBackground={useSimpleBackground} />} />
               <Route path="/catalog" element={<CatalogPage />} />
               <Route path="/database" element={<DatabasePage />} />
               <Route path="*" element={<NotFoundPage />} />

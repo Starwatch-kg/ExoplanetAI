@@ -69,14 +69,14 @@ const StarBackground: React.FC = () => {
     // Генерация звезд (адаптивное количество для производительности)
     const isMobile = window.innerWidth < 768;
     const isSmallMobile = window.innerWidth < 480;
-    const starCount = isSmallMobile ? 100 : isMobile ? 150 : 200;
+    const starCount = isSmallMobile ? 80 : isMobile ? 120 : 150;
     for (let i = 0; i < starCount; i++) {
       stars.push({
         x: Math.random() * window.innerWidth,
         y: Math.random() * window.innerHeight,
-        size: Math.random() * 2 + 0.5,
-        opacity: Math.random() * 0.8 + 0.2,
-        twinkleSpeed: Math.random() * 0.02 + 0.005,
+        size: Math.random() * 0.8 + 0.2, // Уменьшили размер звезд
+        opacity: Math.random() * 0.4 + 0.1, // Уменьшили яркость
+        twinkleSpeed: Math.random() * 0.008 + 0.002, // Замедлили мерцание
         twinklePhase: Math.random() * Math.PI * 2
       });
     }
@@ -91,28 +91,28 @@ const StarBackground: React.FC = () => {
     ];
 
     // Адаптивное количество туманностей для производительности
-    const nebulaCount = isSmallMobile ? 2 : isMobile ? 3 : 5;
+    const nebulaCount = isSmallMobile ? 1 : isMobile ? 2 : 3;
     for (let i = 0; i < nebulaCount; i++) {
       nebulas.push({
         x: Math.random() * window.innerWidth,
         y: Math.random() * window.innerHeight,
-        size: Math.random() * 150 + 80,
-        opacity: Math.random() * 0.3 + 0.1,
+        size: Math.random() * 120 + 60, // Немного меньше
+        opacity: Math.random() * 0.15 + 0.05, // Менее яркие
         color: nebulaColors[Math.floor(Math.random() * nebulaColors.length)],
-        pulseSpeed: Math.random() * 0.008 + 0.003,
+        pulseSpeed: Math.random() * 0.005 + 0.002, // Медленнее пульсация
         pulsePhase: Math.random() * Math.PI * 2
       });
     }
 
     // Функция создания падающей звезды
     const createShootingStar = () => {
-      if (Math.random() < 0.015) { // 1.5% шанс каждые 50мс
+      if (Math.random() < 0.003) { // 0.3% шанс - гораздо реже
         shootingStars.push({
           x: -20,
           y: Math.random() * window.innerHeight * 0.4,
-          speed: Math.random() * 4 + 2,
+          speed: Math.random() * 3 + 1.5, // Немного медленнее
           life: 0,
-          maxLife: 120,
+          maxLife: 100, // Короче след
           trail: []
         });
       }
@@ -151,7 +151,7 @@ const StarBackground: React.FC = () => {
       // Рисуем туманности
       nebulas.forEach(nebula => {
         const time = Date.now() * nebula.pulseSpeed + nebula.pulsePhase;
-        const pulseOpacity = nebula.opacity + Math.sin(time) * 0.2;
+        const pulseOpacity = Math.max(0.02, nebula.opacity + Math.sin(time) * 0.08); // Более тонкая пульсация
 
         const nebulaGradient = ctx.createRadialGradient(
           nebula.x, nebula.y, 0,
@@ -169,8 +169,8 @@ const StarBackground: React.FC = () => {
       // Рисуем звёзды
       stars.forEach((star) => {
         const time = Date.now() * star.twinkleSpeed + star.twinklePhase;
-        const twinkleOpacity = star.opacity + Math.sin(time) * 0.4;
-        const twinkleSize = star.size + Math.sin(time * 2) * 0.5;
+        const twinkleOpacity = Math.max(0.05, star.opacity + Math.sin(time) * 0.15); // Более плавное и менее интенсивное мерцание
+        const twinkleSize = star.size + Math.sin(time * 1.5) * 0.1; // Меньше изменений размера
 
         // Основная звезда
         ctx.beginPath();
@@ -178,19 +178,15 @@ const StarBackground: React.FC = () => {
         ctx.fillStyle = `rgba(255, 255, 255, ${twinkleOpacity})`;
         ctx.fill();
 
-        // Свечение
-        ctx.beginPath();
-        ctx.arc(star.x, star.y, twinkleSize * 2, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(135, 206, 250, ${twinkleOpacity * 0.3})`;
-        ctx.fill();
-
-        // Блик
-        if (twinkleOpacity > 0.8) {
+        // Очень тонкое свечение только для ярких звезд
+        if (twinkleOpacity > 0.3) {
           ctx.beginPath();
-          ctx.arc(star.x - 1, star.y - 1, twinkleSize * 0.5, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(255, 255, 255, ${twinkleOpacity * 0.8})`;
+          ctx.arc(star.x, star.y, twinkleSize * 1.5, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(135, 206, 250, ${twinkleOpacity * 0.1})`;
           ctx.fill();
         }
+
+        // Убираем блик для более естественного вида
       });
 
       // Рисуем падающие звёзды

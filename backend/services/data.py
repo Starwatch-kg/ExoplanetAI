@@ -25,7 +25,7 @@ except ImportError as e:
     # Don't raise error immediately, only when the NASA data functions are used
     pass
 
-from core.logging_config import get_logger
+from core.logging import get_logger
 
 logger = get_logger(__name__)
 

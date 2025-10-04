@@ -18,10 +18,8 @@ class TypedApiClient {
 
   constructor(baseURL?: string) {
     this.isDevelopment = import.meta.env.DEV
-    // Автоматически определяем URL в зависимости от окружения
-    const apiUrl = baseURL || (this.isDevelopment 
-      ? 'http://localhost:8001/api/v1' 
-      : '/api/v1')
+    // Используем относительные URL для работы с Vite proxy
+    const apiUrl = baseURL || '/api/v1'
     this.client = this.createClient(apiUrl)
     this.setupInterceptors()
   }
@@ -155,7 +153,7 @@ class TypedApiClient {
   }
 
   async getStatistics(): Promise<SystemStatistics> {
-    return this.get<SystemStatistics>('/statistics')
+    return this.get<SystemStatistics>('/statistics/public')
   }
 }
 

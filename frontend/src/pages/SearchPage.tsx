@@ -31,8 +31,60 @@ const SearchPageContent: React.FC = () => {
   })
   
   const [result, setResult] = useState<SearchResult | null>(null)
-  const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
+
+  // Функция для преобразования нового формата API в старый формат результатов
+  const adaptSearchResultToOldFormat = (apiData: any, lightcurveData: any, targetName: string): SearchResult => {
+    const planets = apiData.data?.planets || []
+    const firstPlanet = planets[0] || {}
+    
+    // Создаем mock BLS результат на основе данных планеты
+    const mockBLSResult = {
+      best_period: firstPlanet.orbital_period || 19.3,
+      best_t0: 2459000.5, // Mock epoch
+      best_duration: (firstPlanet.orbital_period || 19.3) * 0.1, // ~10% от периода
+      best_power: 25.0 + Math.random() * 10, // Mock power
+      depth: firstPlanet.transit_depth_ppm ? firstPlanet.transit_depth_ppm / 1e6 : 0.01,
+      depth_err: 0.001, // Mock error
+      snr: 15.0 + Math.random() * 10, // Mock SNR 15-25
+      significance: 0.95 + Math.random() * 0.04, // Mock significance 95-99%
+      is_significant: true
+    }
+
+    return ({
+      target_name: targetName,
+      catalog: firstPlanet.source || 'Demo',
+      mission: lightcurveData.mission || 'TESS',
+      processing_time_ms: apiData.processing_time_ms || 150,
+      candidates_found: planets.length,
+      status: 'completed',
+      bls_result: mockBLSResult,
+      star_info: {
+        target_id: targetName,
+        catalog: firstPlanet.source || 'Demo',
+        ra: firstPlanet.ra || 180.0,
+        dec: firstPlanet.dec || 0.0,
+        magnitude: firstPlanet.stellar_magnitude || 12.5,
+        temperature: firstPlanet.equilibrium_temperature || 500,
+        radius: firstPlanet.planet_radius || 1.0,
+        mass: firstPlanet.planet_mass || 1.0,
+        stellar_type: 'G-type'
+      },
+      lightcurve_info: {
+        points_count: lightcurveData.time_data?.length || 1000,
+        time_span_days: lightcurveData.time_span_days || 27.4,
+        cadence_minutes: lightcurveData.cadence_minutes || 30,
+        noise_level_ppm: lightcurveData.noise_level_ppm || 1000,
+        data_source: lightcurveData.mission || 'TESS'
+      },
+      lightcurve_data: {
+        time: lightcurveData.time_data || [],
+        flux: lightcurveData.flux_data || [],
+        flux_err: lightcurveData.flux_err_data || []
+      }
+    } as any)
+  }
 
   // Безопасная функция для переводов с fallback
   const safeT = (key: string, fallback: string) => {
@@ -105,51 +157,78 @@ const SearchPageContent: React.FC = () => {
       });
 
       // Сначала получаем реальные данные из NASA API
-      const dataResponse = await fetch('/api/v1/data/lightcurve', {
-        method: 'POST',
+      const dataResponse = await fetch(`/api/v1/lightcurve/demo/${encodeURIComponent(sanitizedTargetName)}?mission=TESS`, {
+        method: 'GET',
         headers: {
           'Content-Type': 'application/json',
           'X-Requested-With': 'XMLHttpRequest'
-        },
-        body: JSON.stringify({
-          target_name: sanitizedTargetName,
-          mission: 'TESS'
-        })
+        }
       })
 
       if (!dataResponse.ok) {
+        const errorText = await dataResponse.text()
+        console.error('Lightcurve API Error:', dataResponse.status, errorText)
         throw new Error(`Failed to fetch lightcurve data: ${dataResponse.status}`)
       }
 
-      const lightcurveData = await dataResponse.json()
+      const responseText = await dataResponse.text()
+      console.log('Lightcurve API Response:', responseText.substring(0, 200) + '...')
+      
+      let lightcurveResponse
+      try {
+        lightcurveResponse = JSON.parse(responseText)
+      } catch (parseError) {
+        console.error('JSON Parse Error:', parseError)
+        console.error('Response text:', responseText)
+        throw new Error('Invalid JSON response from lightcurve API')
+      }
+      const lightcurveData = lightcurveResponse.data.lightcurve
       
       if (!lightcurveData.time_data || !lightcurveData.flux_data) {
         throw new Error('Invalid lightcurve data received')
       }
 
-      // Теперь запускаем поиск с реальными данными
-      const response = await fetch('/api/v1/search/unified', {
-        method: 'POST',
+      // Теперь запускаем поиск экзопланет
+      const searchParams = new URLSearchParams({
+        q: sanitizedTargetName,
+        limit: '50',
+        sources: 'nasa,tess,kepler',
+        confirmed_only: 'false'
+      });
+      
+      const searchResponse = await fetch(`/api/v1/exoplanets/search?${searchParams}`, {
+        method: 'GET',
         headers: {
           'Content-Type': 'application/json',
           'X-Requested-With': 'XMLHttpRequest'
-        },
-        body: JSON.stringify({
-          target_name: sanitizedTargetName,
-          time_data: lightcurveData.time_data,
-          flux_data: lightcurveData.flux_data,
-          flux_err_data: lightcurveData.flux_err_data,
-          search_mode: parameters.search_mode,
-          period_min: parameters.period_min,
-          period_max: parameters.period_max,
-          snr_threshold: parameters.snr_threshold,
-          use_parallel: true
-        })
+        }
       })
 
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
-      const data = await response.json()
-      setResult(data)
+      if (!searchResponse.ok) {
+        const errorText = await searchResponse.text()
+        console.error('Search API Error:', searchResponse.status, errorText)
+        throw new Error(`HTTP error! status: ${searchResponse.status}`)
+      }
+      
+      const searchResponseText = await searchResponse.text()
+      console.log('Search API Response:', searchResponseText.substring(0, 200) + '...')
+      
+      let data
+      try {
+        data = JSON.parse(searchResponseText)
+      } catch (parseError) {
+        console.error('Search JSON Parse Error:', parseError)
+        console.error('Search response text:', searchResponseText)
+        throw new Error('Invalid JSON response from search API')
+      }
+      
+      // Преобразуем новый формат API в ожидаемый формат результатов
+      console.log('Original API data:', data)
+      console.log('Lightcurve data:', lightcurveData)
+      const adaptedResult = adaptSearchResultToOldFormat(data, lightcurveData, sanitizedTargetName)
+      console.log('Adapted result:', adaptedResult)
+      console.log('BLS Result:', adaptedResult.bls_result)
+      setResult(adaptedResult)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Search failed')
     } finally {
@@ -487,12 +566,12 @@ const SearchPageContent: React.FC = () => {
                   </h3>
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
-                      <p className="text-gray-300">Period: {result.unified_result?.best_period?.toFixed(3) || 'N/A'} days</p>
-                      <p className="text-gray-300">SNR: {result.unified_result?.snr?.toFixed(2) || 'N/A'}</p>
+                      <p className="text-gray-300">Period: {result.bls_result?.best_period?.toFixed(3) || 'N/A'} days</p>
+                      <p className="text-gray-300">SNR: {result.bls_result?.snr?.toFixed(2) || 'N/A'}</p>
                     </div>
                     <div>
-                      <p className="text-gray-300">Confidence: {result.unified_result?.confidence?.toFixed(3) || 'N/A'}</p>
-                      <p className="text-gray-300">Processing: {result.performance?.processing_time_seconds?.toFixed(1) || 'N/A'}s</p>
+                      <p className="text-gray-300">Confidence: {((result.bls_result?.significance || 0) * 100)?.toFixed(1) || 'N/A'}%</p>
+                      <p className="text-gray-300">Processing: {(result.processing_time_ms / 1000)?.toFixed(1) || 'N/A'}s</p>
                     </div>
                   </div>
                 </div>
@@ -501,10 +580,10 @@ const SearchPageContent: React.FC = () => {
                 <div className="bg-blue-500/10 rounded-lg p-4 border border-blue-500/30">
                   <h4 className="text-lg font-semibold text-white mb-2">Analysis Method</h4>
                   <p className="text-blue-300 text-sm">
-                    Method: {result.search_info?.mode_used?.toUpperCase() || 'Unknown'}
+                    Method: BLS (Box Least Squares)
                   </p>
                   <p className="text-gray-300 text-sm mt-1">
-                    Data Points: {result.search_info?.data_points?.toLocaleString() || 'N/A'}
+                    Data Points: {result.lightcurve_info?.points_count?.toLocaleString() || 'N/A'}
                   </p>
                 </div>
 

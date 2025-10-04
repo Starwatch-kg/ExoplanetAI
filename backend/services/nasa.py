@@ -4,11 +4,12 @@ NASA Data Service
 """
 
 from datetime import datetime, timedelta
+from typing import Dict, List, Optional, Tuple
 
 import aiohttp
 import numpy as np
 
-from core.logging_config import get_logger
+from core.logging import get_logger
 
 logger = get_logger(__name__)
 

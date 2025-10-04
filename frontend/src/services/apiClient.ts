@@ -10,7 +10,7 @@
  * - Retry механизм для failed requests
  */
 
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, AxiosProgressEvent } from 'axios'
+import axios, { AxiosInstance, AxiosProgressEvent } from 'axios'
 
 // ===== TYPE DEFINITIONS =====
 
@@ -172,7 +172,7 @@ export class ExoplanetApiClient {
   constructor(config: Partial<ApiConfig> = {}) {
     this.config = {
       baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8001',
-      timeout: 60000,
+      timeout: 10000, // Уменьшили таймаут до 10 секунд
       retryAttempts: 3,
       retryDelay: 1000,
       ...config
@@ -325,7 +325,7 @@ export class ExoplanetApiClient {
 
   async getHealth(): Promise<HealthStatus> {
     try {
-      const response = await this.client.get<HealthStatus>('/health')
+      const response = await this.client.get<HealthStatus>('/api/v1/health')
       return response.data
     } catch (error) {
       throw this.handleError(error, 'Health check failed')

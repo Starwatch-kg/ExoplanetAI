@@ -20,6 +20,65 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
+@router.get("/demo/{target_name}")
+async def get_light_curve_demo(
+    target_name: str = Path(
+        ..., description="Target name (e.g., 'TOI-715', 'TIC 123456')"
+    ),
+    mission: Optional[str] = Query("TESS", description="Mission (TESS, Kepler, K2)"),
+):
+    """
+    Get light curve data for a target (Demo version - no authentication required)
+    
+    Returns mock photometric time series data for demonstration purposes.
+    """
+    import numpy as np
+    
+    # Generate mock data for demo
+    np.random.seed(hash(target_name) % 2**32)  # Consistent data for same target
+    
+    # Create realistic time series
+    n_points = 1000
+    time_span = 27.4  # TESS sector duration in days
+    time_data = np.linspace(0, time_span, n_points)
+    
+    # Base flux with noise
+    flux_data = np.ones(n_points) + np.random.normal(0, 0.001, n_points)
+    
+    # Add a transit signal if target looks like a planet candidate
+    if any(keyword in target_name.upper() for keyword in ['TOI', 'TIC', 'KEPLER']):
+        period = 19.3  # days
+        transit_depth = 0.01
+        transit_duration = 4.0 / 24.0  # 4 hours in days
+        
+        for i in range(len(time_data)):
+            phase = (time_data[i] % period) / period
+            if phase < transit_duration / period or phase > (1 - transit_duration / period):
+                flux_data[i] -= transit_depth * np.exp(-((phase - 0.5) * period / (transit_duration / 2))**2)
+    
+    flux_err_data = np.full(n_points, 0.001)
+    
+    return {
+        "status": "success",
+        "data": {
+            "lightcurve": {
+                "target_name": target_name,
+                "mission": mission,
+                "time_data": time_data.tolist(),
+                "flux_data": flux_data.tolist(),
+                "flux_err_data": flux_err_data.tolist(),
+                "data_points": n_points,
+                "time_span_days": time_span,
+                "cadence_minutes": (time_span * 24 * 60) / n_points,
+                "noise_level_ppm": 1000
+            },
+            "cached": False
+        },
+        "message": f"Demo light curve data for {target_name}",
+        "processing_time_ms": 50
+    }
+
+
 @router.get("/{target_name}")
 async def get_light_curve(
     target_name: str = Path(

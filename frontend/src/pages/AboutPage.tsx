@@ -31,7 +31,10 @@ export default function AboutPage({ useSimpleBackground = false }: AboutPageProp
     fetchStatistics()
   }, [])
 
-  const formatNumber = (num: number): string => {
+  const formatNumber = (num: number | undefined): string => {
+    if (num === undefined || num === null || isNaN(num)) {
+      return 'N/A'
+    }
     if (num >= 1000000) {
       return (num / 1000000).toFixed(1) + 'M+'
     } else if (num >= 1000) {
@@ -156,7 +159,7 @@ export default function AboutPage({ useSimpleBackground = false }: AboutPageProp
               <HardDrive className="h-6 w-6 text-pink-400" />
             </div>
             <div className="text-2xl md:text-3xl font-bold text-white mb-2">
-              {loading ? '...' : (stats ? `${stats.database_size_gb.toFixed(1)}GB` : 'N/A')}
+              {loading ? '...' : (stats && stats.database_size_gb ? `${stats.database_size_gb.toFixed(1)}GB` : 'N/A')}
             </div>
             <div className="text-sm text-gray-400">
               Размер базы данных

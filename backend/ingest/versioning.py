@@ -29,7 +29,7 @@ class VersionManager:
 
     def __init__(self):
         self.settings = get_settings()
-        self.base_path = Path(self.settings.data_path)
+        self.base_path = Path(self.settings.data.data_path)
         self.versions_path = self.base_path / "versions"
         self.metadata_path = self.base_path / "metadata" / "versions"
         self.git_repo: Optional[git.Repo] = None

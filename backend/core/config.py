@@ -97,7 +97,7 @@ def get_allowed_origins(env: str):
     # FIX: [FINDING_005] make CORS origins environment-specific
     if env == "production":
         return ["https://exoplanet-ai.example.com"]
-    return ["http://localhost:5173", "http://localhost:3000"]
+    return ["http://localhost:5173", "http://localhost:3000", "http://localhost:5176", "http://localhost:5177"]
 
 
 class LoggingConfig(BaseSettings):
@@ -128,6 +128,28 @@ class MonitoringConfig(BaseSettings):
         env_prefix = "MONITORING_"
 
 
+class DataConfig(BaseSettings):
+    """Data management configuration"""
+    
+    data_path: str = Field(default="./data", description="Base data storage path")
+    raw_data_path: str = Field(default="./data/raw", description="Raw data storage path")
+    processed_data_path: str = Field(default="./data/processed", description="Processed data storage path")
+    lightcurves_path: str = Field(default="./data/lightcurves", description="Light curves storage path")
+    cache_path: str = Field(default="./data/cache", description="Cache storage path")
+    backup_path: str = Field(default="./data/backups", description="Backup storage path")
+    
+    # Versioning settings
+    enable_versioning: bool = Field(default=True, description="Enable data versioning")
+    git_repo_path: str = Field(default="./data/.git", description="Git repository path for versioning")
+    
+    # Storage limits
+    max_storage_gb: float = Field(default=100.0, description="Maximum storage in GB")
+    cleanup_threshold_gb: float = Field(default=80.0, description="Cleanup threshold in GB")
+    
+    class Config:
+        env_prefix = "DATA_"
+
+
 class AppConfig(BaseSettings):
     """Main application configuration"""
 
@@ -150,6 +172,7 @@ class AppConfig(BaseSettings):
     security: SecurityConfig = Field(default_factory=SecurityConfig)
     logging: LoggingConfig = Field(default_factory=LoggingConfig)
     monitoring: MonitoringConfig = Field(default_factory=MonitoringConfig)
+    data: DataConfig = Field(default_factory=DataConfig)
 
     def model_post_init(self, __context):
         # Update security config based on environment
@@ -195,6 +218,19 @@ class AppConfig(BaseSettings):
         if self.ml.enabled:
             models_dir = Path(self.ml.models_path)
             models_dir.mkdir(parents=True, exist_ok=True)
+            
+        # Create data directories
+        data_dirs = [
+            self.data.data_path,
+            self.data.raw_data_path,
+            self.data.processed_data_path,
+            self.data.lightcurves_path,
+            self.data.cache_path,
+            self.data.backup_path
+        ]
+        
+        for dir_path in data_dirs:
+            Path(dir_path).mkdir(parents=True, exist_ok=True)
 
 
 # Global configuration instance

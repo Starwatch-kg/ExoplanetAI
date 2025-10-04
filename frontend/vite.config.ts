@@ -26,9 +26,17 @@ export default defineConfig({
   },
   server: {
     // Настройки dev сервера
-    port: 5176,
+    port: 5177,
     host: true,
     open: true,
+    proxy: {
+      // Проксируем API запросы на бэкенд
+      '/api': {
+        target: 'http://localhost:8001',
+        changeOrigin: true,
+        secure: false,
+      }
+    }
   },
   preview: {
     port: 4173,

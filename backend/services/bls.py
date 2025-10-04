@@ -15,7 +15,7 @@ from scipy import optimize, signal, stats
 from sklearn.cluster import DBSCAN
 from sklearn.preprocessing import StandardScaler
 
-from core.logging_config import get_logger
+from core.logging import get_logger
 
 logger = get_logger(__name__)
 

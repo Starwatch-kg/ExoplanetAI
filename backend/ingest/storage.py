@@ -35,13 +35,13 @@ class StorageManager:
 
     def __init__(self):
         self.settings = get_settings()
-        self.base_path = Path(self.settings.data_path)
+        self.base_path = Path(self.settings.data.data_path)
         self.redis_client: Optional[redis.Redis] = None
         
         # Storage paths
-        self.raw_path = self.base_path / "raw"
-        self.processed_path = self.base_path / "processed"
-        self.lightcurves_path = self.base_path / "lightcurves"
+        self.raw_path = Path(self.settings.data.raw_data_path)
+        self.processed_path = Path(self.settings.data.processed_data_path)
+        self.lightcurves_path = Path(self.settings.data.lightcurves_path)
         self.metadata_path = self.base_path / "metadata"
         self.checksums_path = self.base_path / "checksums"
 

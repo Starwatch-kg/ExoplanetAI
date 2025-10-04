@@ -25,6 +25,17 @@ const BLSDetails: React.FC<BLSDetailsProps> = ({
 }) => {
   const { t } = useTranslation()
 
+  // Отладка входных данных
+  console.log('BLSDetails props:', { period, depth, duration, snr, significance, isSignificant, confidence })
+
+  // Безопасное форматирование чисел
+  const safeFormat = (value: number, decimals: number = 1): string => {
+    if (value === null || value === undefined || isNaN(value)) {
+      return 'N/A'
+    }
+    return value.toFixed(decimals)
+  }
+
   const getConfidenceLevel = (conf: number): { label: string; color: string; bgColor: string } => {
     if (conf >= 0.8) return { label: 'High', color: 'text-green-400', bgColor: 'bg-green-500/20 border-green-500/50' }
     if (conf >= 0.6) return { label: 'Medium', color: 'text-yellow-400', bgColor: 'bg-yellow-500/20 border-yellow-500/50' }
@@ -77,7 +88,7 @@ const BLSDetails: React.FC<BLSDetailsProps> = ({
             <p className="text-sm text-gray-400 dark:text-gray-500">Period</p>
           </div>
           <p className="text-2xl font-bold text-white dark:text-gray-100">
-            {period.toFixed(2)}
+            {safeFormat(period, 2)}
           </p>
           <p className="text-xs text-gray-400 dark:text-gray-500">{t('units.days')}</p>
         </div>
@@ -89,19 +100,19 @@ const BLSDetails: React.FC<BLSDetailsProps> = ({
             <p className="text-sm text-gray-400 dark:text-gray-500">Depth</p>
           </div>
           <p className="text-2xl font-bold text-white dark:text-gray-100">
-            {(depth * 100).toFixed(3)}
+            {safeFormat(depth * 100, 3)}%
           </p>
-          <p className="text-xs text-gray-400 dark:text-gray-500">{t('units.percent')}</p>
+          <p className="text-xs text-gray-400 dark:text-gray-500">transit depth</p>
         </div>
 
-        {/* Duration */}
+        {/* Transit Duration */}
         <div className="p-4 bg-white/5 dark:bg-gray-700/30 rounded-lg border border-white/10 dark:border-gray-600/30">
           <div className="flex items-center gap-2 mb-2">
             <Clock size={16} className="text-green-400" />
             <p className="text-sm text-gray-400 dark:text-gray-500">Duration</p>
           </div>
           <p className="text-2xl font-bold text-white dark:text-gray-100">
-            {(duration * 24).toFixed(1)}
+            {safeFormat(duration * 24, 1)}
           </p>
           <p className="text-xs text-gray-400 dark:text-gray-500">{t('units.hours')}</p>
         </div>
@@ -113,7 +124,7 @@ const BLSDetails: React.FC<BLSDetailsProps> = ({
             <p className="text-sm text-gray-400 dark:text-gray-500">SNR</p>
           </div>
           <p className="text-2xl font-bold text-white dark:text-gray-100">
-            {snr.toFixed(1)}
+            {safeFormat(snr, 1)}
           </p>
           <p className="text-xs text-gray-400 dark:text-gray-500">ratio</p>
         </div>
@@ -132,7 +143,7 @@ const BLSDetails: React.FC<BLSDetailsProps> = ({
             <div className="flex items-center justify-between p-3 bg-white/5 dark:bg-gray-700/30 rounded-lg">
               <span className="text-sm text-gray-300 dark:text-gray-400">Significance</span>
               <span className="font-mono text-white dark:text-gray-100">
-                {significance.toFixed(2)}σ
+                {safeFormat(significance, 2)}σ
               </span>
             </div>
             
@@ -178,7 +189,7 @@ const BLSDetails: React.FC<BLSDetailsProps> = ({
                   {confidenceInfo.label}
                 </span>
                 <span className="text-white dark:text-gray-100 font-mono text-sm">
-                  {(confidence * 100).toFixed(1)}%
+                  {safeFormat(confidence * 100, 1)}%
                 </span>
               </div>
             </div>

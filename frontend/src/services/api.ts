@@ -6,8 +6,8 @@ import type {
   CatalogsResponse
 } from '../types/api'
 
-// API configuration
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8001'
+// API configuration - используем относительные URL для Vite proxy
+const API_BASE_URL = import.meta.env.VITE_API_URL || ''
 
 // Create axios instance with default config
 const apiClient = axios.create({

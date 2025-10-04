@@ -14,6 +14,12 @@ interface ResultsPageProps {
 const ResultsPage: React.FC<ResultsPageProps> = ({ result, className = '' }) => {
   const { t } = useTranslation()
 
+  // Отладка результатов
+  React.useEffect(() => {
+    console.log('ResultsPage result.bls_result:', result.bls_result)
+    console.log('ResultsPage full result:', result)
+  }, [result])
+
   const formatTime = (ms: number) => {
     return ms > 1000 ? `${(ms / 1000).toFixed(1)}s` : `${ms.toFixed(0)}ms`
   }
@@ -166,14 +172,14 @@ const ResultsPage: React.FC<ResultsPageProps> = ({ result, className = '' }) => 
       {/* BLS Analysis Results */}
       {result.bls_result && (
         <BLSDetails
-          period={result.bls_result.best_period}
-          depth={result.bls_result.depth}
-          duration={result.bls_result.best_duration}
-          snr={result.bls_result.snr}
-          significance={result.bls_result.significance}
-          isSignificant={result.bls_result.is_significant}
-          confidence={result.bls_result.is_significant ? 0.85 : 0.30}
-        />
+            period={result.bls_result.best_period}
+            depth={result.bls_result.depth}
+            duration={result.bls_result.best_duration}
+            snr={result.bls_result.snr}
+            significance={result.bls_result.significance}
+            isSignificant={result.bls_result.is_significant}
+            confidence={result.bls_result.is_significant ? 0.85 : 0.30}
+          />
       )}
 
       {/* Additional Information */}

@@ -25,7 +25,7 @@ from sklearn.svm import SVR
 
 warnings.filterwarnings("ignore")
 
-from core.logging_config import get_logger
+from core.logging import get_logger
 from services.bls_service import BLSResult, BLSService
 from services.gpi_service import GPIService
 

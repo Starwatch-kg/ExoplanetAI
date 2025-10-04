@@ -147,7 +147,7 @@ class DataSystemInitializer:
     async def _create_directories(self, results: Dict[str, Any]):
         """Create required directory structure"""
         try:
-            base_path = Path(self.settings.data_path)
+            base_path = Path(self.settings.data.data_path)
             
             directories = [
                 "raw/nasa",
@@ -198,7 +198,7 @@ class DataSystemInitializer:
             # This would integrate with your existing database system
             # For now, we'll create file-based metadata storage
             
-            metadata_path = Path(self.settings.data_path) / "metadata"
+            metadata_path = Path(self.settings.data.data_path) / "metadata"
             
             # Create initial metadata files
             initial_files = {
@@ -264,7 +264,7 @@ class DataSystemInitializer:
                 logger.warning(f"Redis not available: {e}")
             
             # Setup file-based cache
-            cache_path = Path(self.settings.data_path) / "cache"
+            cache_path = Path(self.settings.data.data_path) / "cache"
             cache_status["file_cache"]["path"] = str(cache_path)
             
             results["components"]["cache"] = {

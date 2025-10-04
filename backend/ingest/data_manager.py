@@ -113,7 +113,7 @@ class DataManager:
 
     async def _create_directory_structure(self):
         """Create standardized directory structure"""
-        base_path = Path(self.settings.data_path)
+        self.base_path = Path(self.settings.data.data_path)
         
         directories = [
             "raw/nasa",
@@ -132,10 +132,10 @@ class DataManager:
         ]
         
         for directory in directories:
-            dir_path = base_path / directory
+            dir_path = self.base_path / directory
             dir_path.mkdir(parents=True, exist_ok=True)
             
-        logger.info(f"Created directory structure at {base_path}")
+        logger.info(f"Created directory structure at {self.base_path}")
 
     async def ingest_koi_table(self, force_refresh: bool = False) -> Dict[str, Any]:
         """

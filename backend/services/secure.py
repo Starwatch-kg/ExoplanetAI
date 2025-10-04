@@ -24,7 +24,7 @@ except ImportError as e:
     ASTRONOMY_LIBS_AVAILABLE = False
     logging.warning(f"Astronomy libraries not available: {e}")
 
-from core.logging_config import get_logger
+from core.logging import get_logger
 from core.validators import SecurityError, validate_catalog, validate_target_name
 
 logger = get_logger(__name__)

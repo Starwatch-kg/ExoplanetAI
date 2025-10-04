@@ -28,7 +28,7 @@ from core.validation import (
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/api/v1/data", tags=["data_management"])
+router = APIRouter(prefix="/data", tags=["data_management"])
 
 
 async def check_rate_limit_middleware(

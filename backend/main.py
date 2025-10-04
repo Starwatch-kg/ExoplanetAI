@@ -98,10 +98,25 @@ async def lifespan(app: FastAPI):
         else:
             logger.error("❌ No data sources initialized successfully")
 
+        # Initialize auto ML trainer
+        logger.info("Starting auto ML trainer...")
+        try:
+            from services.auto_ml_trainer import get_auto_trainer
+            trainer = get_auto_trainer()
+            
+            # Запускаем автообучение в фоне
+            auto_training_task = asyncio.create_task(trainer.start_auto_training_loop())
+            startup_tasks.append(auto_training_task)
+            
+            logger.info("✅ Auto ML trainer started")
+        except Exception as e:
+            logger.error(f"⚠️ Auto ML trainer failed to start: {e}")
+
         # Store initialization results in app state
         app.state.cache_available = cache_success
         app.state.data_sources_count = successful_sources
         app.state.startup_time = time.time()
+        app.state.background_tasks = startup_tasks
 
         logger.info("🎉 ExoplanetAI Backend v2.0 ready!")
 
@@ -115,6 +130,17 @@ async def lifespan(app: FastAPI):
         logger.info("🛑 Shutting down ExoplanetAI Backend v2.0")
 
         try:
+            # Cancel background tasks
+            if hasattr(app.state, 'background_tasks'):
+                for task in app.state.background_tasks:
+                    if not task.done():
+                        task.cancel()
+                        try:
+                            await task
+                        except asyncio.CancelledError:
+                            pass
+                logger.info("✅ Background tasks cancelled")
+
             # Cleanup data sources
             registry = get_registry()
             await registry.cleanup_all()
@@ -189,13 +215,20 @@ if SLOWAPI_AVAILABLE:
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
+    allow_origins=["*"] if os.getenv("ENVIRONMENT") == "development" else [
         "http://localhost:3000",  # Frontend dev
         "http://127.0.0.1:3000",  # Frontend dev alt
+        "http://localhost:5173",  # Vite dev server
+        "http://127.0.0.1:5173",  # Vite dev server alt
+        "http://localhost:5174",  # Vite dev server alt port
+        "http://localhost:5175",  # Vite dev server alt port
+        "http://localhost:5176",  # Vite dev server alt port
+        "http://localhost:5177",  # Vite dev server alt port
+        "http://localhost:5178",  # Vite dev server alt port
         os.getenv("FRONTEND_URL", "http://localhost:3000")  # Production
     ],
     allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
 

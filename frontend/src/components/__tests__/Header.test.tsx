@@ -54,12 +54,13 @@ describe('Header Component', () => {
         status: 'healthy'
       }
     },
-    timestamp: Date.now()
+    timestamp: new Date().toISOString()
   }
 
   const mockDegradedStatus: HealthStatus = {
     status: 'degraded',
     uptime: 1800,
+    timestamp: new Date().toISOString(),
     components: {
       data_sources: {
         status: 'healthy',

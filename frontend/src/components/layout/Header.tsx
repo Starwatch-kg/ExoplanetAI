@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import {
-  Telescope, Menu, X, Home, Brain, Zap, Database, Globe, Info,
+  Telescope, Menu, X, Home, Brain, Database, Globe, Info, Zap,
   Activity, Cpu, Wifi, WifiOff, AlertTriangle, CheckCircle, Clock,
-  TrendingUp, Users, Search
+  TrendingUp, Users
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import BackgroundToggle from '../ui/ThemeToggle'
@@ -34,9 +34,8 @@ const Header: React.FC<HeaderProps> = React.memo(({ healthStatus, useSimpleBackg
   // Memoized navigation items to prevent recreation on every render
   const navigationItems = useMemo(() => [
     { path: '/', label: t('navigation.home'), icon: Home },
-    { path: '/ai-training', label: t('navigation.aiTraining'), icon: Brain },
-    { path: '/gpi', label: t('navigation.gpi'), icon: Zap },
-    { path: '/search', label: 'Search', icon: Search },
+    { path: '/analyze', label: 'Анализ экзопланет', icon: Brain },
+    { path: '/gpi', label: 'GPI Анализ', icon: Zap },
     { path: '/catalog', label: t('navigation.catalog'), icon: Globe },
     { path: '/database', label: t('navigation.database'), icon: Database },
     { path: '/about', label: t('navigation.about'), icon: Info },
@@ -182,7 +181,7 @@ const Header: React.FC<HeaderProps> = React.memo(({ healthStatus, useSimpleBackg
                 <span>{systemStats.activeUsers}</span>
               </div>
               <div className="flex items-center gap-1 text-xs text-gray-400">
-                <Search size={12} />
+                <TrendingUp size={12} />
                 <span>{systemStats.totalSearches}</span>
               </div>
               <div className="flex items-center gap-1 text-xs text-gray-400">

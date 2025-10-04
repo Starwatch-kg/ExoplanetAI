@@ -58,7 +58,7 @@ export interface SearchResult {
 }
 
 export interface HealthStatus {
-  status: 'healthy' | 'unhealthy'
+  status: 'healthy' | 'unhealthy' | 'degraded'
   timestamp: string
   version?: string
   uptime?: number
@@ -72,6 +72,20 @@ export interface HealthStatus {
     last_updated?: string
   }
   services?: Record<string, 'healthy' | 'unhealthy' | string>
+  components?: {
+    data_sources?: {
+      status: string
+      initialized?: number
+      total?: number
+    }
+    cache?: {
+      status: string
+      redis_connected?: boolean
+    }
+    authentication?: {
+      status: string
+    }
+  }
 }
 
 export interface SystemStatistics {
@@ -121,4 +135,64 @@ export interface SearchFormData {
   period_min: number
   period_max: number
   snr_threshold: number
+}
+
+// === ENHANCED API TYPES ===
+export interface UploadResponse {
+  file_id: string
+  filename: string
+  size: number
+  status: 'uploaded' | 'processing' | 'completed' | 'failed'
+  message?: string
+}
+
+export interface TrainingRequest {
+  model_type: 'detector' | 'classifier' | 'ensemble'
+  dataset_id?: string
+  parameters?: Record<string, any>
+  epochs?: number
+  batch_size?: number
+}
+
+export interface TrainingResponse {
+  training_id: string
+  status: 'started' | 'running' | 'completed' | 'failed'
+  progress?: number
+  metrics?: ModelMetrics
+  message?: string
+}
+
+export interface ModelMetrics {
+  accuracy: number
+  precision: number
+  recall: number
+  f1_score: number
+  loss: number
+  val_accuracy?: number
+  val_loss?: number
+  training_time_seconds?: number
+  model_size_mb?: number
+}
+
+export interface PredictionRequest {
+  model_id?: string
+  data: number[] | number[][]
+  target_name?: string
+  preprocessing?: {
+    normalize?: boolean
+    detrend?: boolean
+    remove_outliers?: boolean
+  }
+}
+
+export interface PredictionResponse {
+  prediction: 'planet' | 'star' | 'noise'
+  confidence: number
+  probabilities: {
+    planet: number
+    star: number
+    noise: number
+  }
+  processing_time_ms: number
+  model_used: string
 }

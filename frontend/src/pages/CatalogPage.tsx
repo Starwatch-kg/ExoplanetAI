@@ -332,9 +332,9 @@ const CatalogPage: React.FC = () => {
         {/* Exoplanet Grid */}
         {!loading && !error && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredExoplanets.map((planet) => (
+            {filteredExoplanets.map((planet, index) => (
               <motion.div
-                key={planet.id}
+                key={planet.id || planet.name || index}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: Math.random() * 0.3 }}
@@ -361,35 +361,35 @@ const CatalogPage: React.FC = () => {
                   <div className="flex items-center gap-2 text-sm">
                     <Clock className="w-4 h-4 text-gray-400" />
                     <span className="text-gray-300">
-                      {planet.orbital_period_days.toFixed(1)} days
+                      {planet.orbital_period_days ? planet.orbital_period_days.toFixed(1) : 'N/A'} days
                     </span>
                   </div>
                   
                   <div className="flex items-center gap-2 text-sm">
                     <Ruler className="w-4 h-4 text-gray-400" />
                     <span className="text-gray-300">
-                      {planet.radius_earth_radii.toFixed(2)} R⊕
+                      {planet.radius_earth_radii ? planet.radius_earth_radii.toFixed(2) : 'N/A'} R⊕
                     </span>
                   </div>
                   
                   <div className="flex items-center gap-2 text-sm">
                     <Thermometer className="w-4 h-4 text-gray-400" />
                     <span className="text-gray-300">
-                      {planet.equilibrium_temperature_k.toFixed(0)} K
+                      {planet.equilibrium_temperature_k ? planet.equilibrium_temperature_k.toFixed(0) : 'N/A'} K
                     </span>
                   </div>
                   
                   <div className="flex items-center gap-2 text-sm">
                     <MapPin className="w-4 h-4 text-gray-400" />
                     <span className="text-gray-300">
-                      {planet.distance_parsecs.toFixed(1)} pc
+                      {planet.distance_parsecs ? planet.distance_parsecs.toFixed(1) : 'N/A'} pc
                     </span>
                   </div>
                 </div>
 
                 <div className="flex flex-wrap gap-2 mb-4">
-                  <span className={`text-xs px-2 py-1 rounded border ${getMethodColor(planet.discovery_method)}`}>
-                    {planet.discovery_method.replace('_', ' ')}
+                  <span className={`text-xs px-2 py-1 rounded border ${getMethodColor(planet.discovery_method || 'Unknown')}`}>
+                    {planet.discovery_method ? planet.discovery_method.replace('_', ' ') : 'Unknown'}
                   </span>
                   <span className={`text-xs px-2 py-1 rounded border ${getStatusColor(planet.status)}`}>
                     {planet.status}

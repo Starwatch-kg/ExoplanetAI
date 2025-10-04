@@ -28,7 +28,7 @@ try:
 except ImportError:
     ML_AVAILABLE = False
 
-from core.logging_config import get_ml_logger
+from core.logging import get_logger
 
 logger = get_ml_logger()
 

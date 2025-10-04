@@ -9,7 +9,7 @@ from enum import Enum
 
 import numpy as np
 
-from core.logging_config import get_logger
+from core.logging import get_logger
 from services.bls_service import BLSResult, BLSService
 from services.ensemble_search_service import (
     EnsembleSearchResult,
