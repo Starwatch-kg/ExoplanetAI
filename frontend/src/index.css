@@ -1,0 +1,407 @@
+/*
+  IMPORTANT: This file uses Tailwind CSS directives (@tailwind, @apply, @layer)
+  
+  IDE warnings about "Unknown at rule" are EXPECTED and can be SAFELY IGNORED.
+  These directives are processed by PostCSS with Tailwind CSS plugin during build.
+  
+  The project is correctly configured with:
+  - tailwind.config.js ✓
+  - postcss.config.js ✓  
+  - Tailwind CSS installed in package.json ✓
+  
+  To suppress IDE warnings, you can:
+  1. Install Tailwind CSS IntelliSense extension
+  2. Configure your IDE to recognize Tailwind directives
+  3. Or simply ignore these warnings as they don't affect functionality
+*/
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+/* Tailwind CSS Base Styles */
+/* stylelint-disable-next-line at-rule-no-unknown */
+@tailwind base;
+/* Tailwind CSS Component Classes */
+/* stylelint-disable-next-line at-rule-no-unknown */
+@tailwind components;
+/* Tailwind CSS Utility Classes */
+/* stylelint-disable-next-line at-rule-no-unknown */
+@tailwind utilities;
+
+/* NASA Space Theme Variables */
+:root {
+  --nasa-blue: #4A5568;
+  --nasa-red: #FC3D21;
+  --nasa-white: #FFFFFF;
+  --space-black: #000000;
+  --deep-space: #0a0a0a;
+  --nebula-purple: #2D3748;
+  --cosmic-blue: #2D3748;
+  --stellar-blue: #4A5568;
+  --galaxy-purple: #718096;
+  --neon-cyan: #FBD38D;
+  --plasma-pink: #FBD38D;
+  --solar-orange: #FF8500;
+  --aurora-green: #39FF14;
+  --starlight: #E6E6FA;
+}
+
+/* stylelint-disable-next-line at-rule-no-unknown */
+@layer base {
+  * {
+    /* stylelint-disable-next-line at-rule-no-unknown */
+    @apply border-slate-700;
+    box-sizing: border-box;
+  }
+  
+  html {
+    scroll-behavior: smooth;
+    width: 100%;
+    height: 100%;
+  }
+  
+  body {
+    /* stylelint-disable-next-line at-rule-no-unknown */
+    @apply text-gray-900 bg-white;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-feature-settings: "cv11", "ss01";
+    font-variation-settings: "opsz" 32;
+    min-height: 100vh;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  #root {
+    width: 100%;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+  }
+}
+
+/* stylelint-disable-next-line at-rule-no-unknown */
+@layer components {
+  /* Космические кнопки */
+  .btn-space {
+    /* stylelint-disable-next-line at-rule-no-unknown */
+    @apply px-6 py-3 rounded-lg font-semibold transition-all duration-300;
+    /* stylelint-disable-next-line at-rule-no-unknown */
+    @apply bg-gradient-to-r from-blue-600 to-purple-600;
+    /* stylelint-disable-next-line at-rule-no-unknown */
+    @apply hover:from-blue-500 hover:to-purple-500;
+    /* stylelint-disable-next-line at-rule-no-unknown */
+    @apply active:scale-95 transform;
+    /* stylelint-disable-next-line at-rule-no-unknown */
+    @apply shadow-lg hover:shadow-xl;
+  }
+  
+  .btn-nasa {
+    /* stylelint-disable-next-line at-rule-no-unknown */
+    @apply px-6 py-3 rounded-lg font-semibold transition-all duration-300;
+    background: var(--nasa-blue);
+    /* stylelint-disable-next-line at-rule-no-unknown */
+    @apply text-white hover:brightness-110;
+    /* stylelint-disable-next-line at-rule-no-unknown */
+    @apply active:scale-95 transform;
+    /* stylelint-disable-next-line at-rule-no-unknown */
+    @apply shadow-lg hover:shadow-xl;
+  }
+  
+  /* Карточки */
+  .card-space {
+    /* stylelint-disable-next-line at-rule-no-unknown */
+    @apply bg-white/5 backdrop-blur-lg rounded-xl p-6;
+    /* stylelint-disable-next-line at-rule-no-unknown */
+    @apply border border-white/10;
+    /* stylelint-disable-next-line at-rule-no-unknown */
+    @apply shadow-xl hover:shadow-2xl transition-all duration-300;
+  }
+  
+  .card-glass {
+    /* stylelint-disable-next-line at-rule-no-unknown */
+    @apply bg-gradient-to-br from-white/10 to-white/5;
+    /* stylelint-disable-next-line at-rule-no-unknown */
+    @apply backdrop-blur-md rounded-xl p-6;
+    /* stylelint-disable-next-line at-rule-no-unknown */
+    @apply border border-white/20;
+    /* stylelint-disable-next-line at-rule-no-unknown */
+    @apply shadow-2xl;
+  }
+  
+  /* Анимации */
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+  
+  .animate-pulse-slow {
+    animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  
+  .animate-glow {
+    animation: glow 2s ease-in-out infinite alternate;
+  }
+  
+  /* Градиенты */
+  .gradient-space {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  }
+  
+  .gradient-nasa {
+    background: linear-gradient(135deg, var(--nasa-blue) 0%, var(--stellar-blue) 100%);
+  }
+  
+  .gradient-cosmic {
+    background: linear-gradient(135deg, var(--nebula-purple) 0%, var(--galaxy-purple) 50%, var(--cosmic-blue) 100%);
+  }
+  
+  /* Текстовые эффекты */
+  .text-gradient {
+    /* stylelint-disable-next-line at-rule-no-unknown */
+    @apply bg-clip-text text-transparent;
+    /* stylelint-disable-next-line at-rule-no-unknown */
+    @apply bg-gradient-to-r from-blue-400 to-purple-600;
+  }
+  
+  .text-glow {
+    text-shadow: 0 0 20px rgba(147, 51, 234, 0.5);
+  }
+  
+  /* Scrollbar стили */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    /* stylelint-disable-next-line at-rule-no-unknown */
+    @apply bg-gray-900;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    /* stylelint-disable-next-line at-rule-no-unknown */
+    @apply bg-purple-600 rounded-full;
+    /* stylelint-disable-next-line at-rule-no-unknown */
+    @apply hover:bg-purple-500;
+  }
+}
+
+/* stylelint-disable-next-line at-rule-no-unknown */
+@layer utilities {
+  .drop-shadow-glow {
+    filter: drop-shadow(0 0 8px rgba(251, 191, 36, 0.6)) drop-shadow(0 0 16px rgba(251, 191, 36, 0.3));
+  }
+  
+  .shadow-amber-glow {
+    box-shadow: 0 0 20px rgba(251, 191, 36, 0.4), 0 0 40px rgba(251, 191, 36, 0.2);
+  }
+
+  .drop-shadow-green-glow {
+    filter: drop-shadow(0 0 8px rgba(34, 197, 94, 0.6)) drop-shadow(0 0 16px rgba(34, 197, 94, 0.3));
+  }
+  
+  .shadow-green-glow {
+    box-shadow: 0 0 20px rgba(34, 197, 94, 0.4), 0 0 40px rgba(34, 197, 94, 0.2);
+  }
+
+  .drop-shadow-blue-glow {
+    filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.6)) drop-shadow(0 0 16px rgba(59, 130, 246, 0.3));
+  }
+  
+  .shadow-blue-glow {
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.4), 0 0 40px rgba(59, 130, 246, 0.2);
+  }
+
+  .drop-shadow-red-glow {
+    filter: drop-shadow(0 0 8px rgba(239, 68, 68, 0.6)) drop-shadow(0 0 16px rgba(239, 68, 68, 0.3));
+  }
+  
+  .shadow-red-glow {
+    box-shadow: 0 0 20px rgba(239, 68, 68, 0.4), 0 0 40px rgba(239, 68, 68, 0.2);
+  }
+
+  .drop-shadow-purple-glow {
+    filter: drop-shadow(0 0 8px rgba(147, 51, 234, 0.6)) drop-shadow(0 0 16px rgba(147, 51, 234, 0.3));
+  }
+  
+  .shadow-purple-glow {
+    box-shadow: 0 0 20px rgba(147, 51, 234, 0.4), 0 0 40px rgba(147, 51, 234, 0.2);
+  }
+  /* Утилиты для backdrop фильтров */
+  .backdrop-blur-xs {
+    backdrop-filter: blur(2px);
+  }
+  
+  .backdrop-blur-3xl {
+    backdrop-filter: blur(64px);
+  }
+  
+  /* Неоновые тени */
+  .neon-blue {
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.5),
+                0 0 40px rgba(59, 130, 246, 0.3),
+                0 0 60px rgba(59, 130, 246, 0.1);
+  }
+  
+  .neon-purple {
+    box-shadow: 0 0 20px rgba(147, 51, 234, 0.5),
+                0 0 40px rgba(147, 51, 234, 0.3),
+                0 0 60px rgba(147, 51, 234, 0.1);
+  }
+  
+  /* Анимация звезд */
+  .stars {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+  
+  .star {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    background: white;
+    border-radius: 50%;
+    animation: twinkle 3s infinite;
+  }
+}
+
+/* Keyframes для анимаций */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+@keyframes glow {
+  0% {
+    box-shadow: 0 0 5px #0ea5e9, 0 0 10px #0ea5e9, 0 0 15px #0ea5e9;
+  }
+  100% {
+    box-shadow: 0 0 10px #0ea5e9, 0 0 20px #0ea5e9, 0 0 30px #0ea5e9;
+  }
+}
+
+@keyframes twinkle {
+  0% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.3;
+  }
+}
+
+@keyframes orbit {
+  0% {
+    transform: rotate(0deg) translateX(100px) rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg) translateX(100px) rotate(-360deg);
+  }
+}
+
+/* Темная тема (по умолчанию) */
+.dark {
+  color-scheme: dark;
+}
+
+/* Светлая тема */
+.light {
+  --nasa-blue: #0B3D91;
+  --space-black: #1e293b;
+  --deep-space: #f8fafc;
+  --nebula-purple: #e0e7ff;
+  --cosmic-blue: #dbeafe;
+  
+  body {
+    /* stylelint-disable-next-line at-rule-no-unknown */
+    @apply bg-gradient-to-br from-blue-50 via-indigo-100 to-blue-50 text-gray-900;
+    color: #1e293b;
+  }
+  
+  .card-space {
+    /* stylelint-disable-next-line at-rule-no-unknown */
+    @apply bg-white/80 border-gray-200/50;
+    backdrop-filter: blur(10px);
+  }
+  
+  .text-gradient {
+    /* stylelint-disable-next-line at-rule-no-unknown */
+    @apply bg-gradient-to-r from-blue-600 to-purple-700;
+  }
+  
+  .star {
+    background: #64748b;
+    opacity: 0.4;
+  }
+}
+
+/* Адаптивные стили для мобильных устройств */
+@media screen and (max-width: 768px) {
+  body {
+    font-size: 14px;
+  }
+  
+  .btn-space, .btn-nasa {
+    /* stylelint-disable-next-line at-rule-no-unknown */
+    @apply px-4 py-2 text-sm;
+  }
+  
+  .card-space, .card-glass {
+    /* stylelint-disable-next-line at-rule-no-unknown */
+    @apply p-4;
+  }
+  
+  /* Отключаем hover эффекты на мобильных */
+  .btn-space:hover, .btn-nasa:hover {
+    transform: none;
+    /* stylelint-disable-next-line at-rule-no-unknown */
+    @apply brightness-100;
+  }
+  
+  .card-space:hover, .card-glass:hover {
+    transform: none;
+    /* stylelint-disable-next-line at-rule-no-unknown */
+    @apply shadow-xl;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  body {
+    font-size: 13px;
+  }
+  
+  .btn-space, .btn-nasa {
+    /* stylelint-disable-next-line at-rule-no-unknown */
+    @apply px-3 py-2 text-xs;
+  }
+  
+  .card-space, .card-glass {
+    /* stylelint-disable-next-line at-rule-no-unknown */
+    @apply p-3;
+  }
+}
+
+/* Ландшафтная ориентация на мобильных */
+@media screen and (max-height: 500px) and (orientation: landscape) {
+  body {
+    font-size: 12px;
+  }
+  
+  .btn-space, .btn-nasa {
+    /* stylelint-disable-next-line at-rule-no-unknown */
+    @apply px-3 py-1 text-xs;
+  }
+}
