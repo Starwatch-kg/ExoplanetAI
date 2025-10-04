@@ -464,15 +464,15 @@ const CatalogPage: React.FC = () => {
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
                         <span className="text-gray-400">Radius:</span>
-                        <span className="text-white">{selectedPlanet.radius_earth_radii.toFixed(2)} Earth radii</span>
+                        <span className="text-white">{selectedPlanet.radius_earth_radii?.toFixed(2) || 'N/A'} Earth radii</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-400">Mass:</span>
-                        <span className="text-white">{selectedPlanet.mass_earth_masses.toFixed(2)} Earth masses</span>
+                        <span className="text-white">{selectedPlanet.mass_earth_masses?.toFixed(2) || 'N/A'} Earth masses</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-400">Temperature:</span>
-                        <span className="text-white">{selectedPlanet.equilibrium_temperature_k.toFixed(0)} K</span>
+                        <span className="text-white">{selectedPlanet.equilibrium_temperature_k?.toFixed(0) || 'N/A'} K</span>
                       </div>
                     </div>
                   </div>

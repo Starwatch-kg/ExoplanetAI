@@ -81,7 +81,7 @@ export default function GPIAnalysisPage({ useSimpleBackground = false }: GPIAnal
       })
       formData.append('method', 'GPI')
 
-      const response = await fetch('/api/v1/analyze/gpi', {
+      const response = await fetch('/api/v1/analyze/gpi/analyze', {
         method: 'POST',
         body: formData
       })
