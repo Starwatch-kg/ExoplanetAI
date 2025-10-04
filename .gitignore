@@ -68,3 +68,23 @@ build/
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# Additional cache directories
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+
+# Backup files
+*.bak
+*.backup
+*.tmp
+
+# Package managers lock files
+package-lock.json
+yarn.lock
+
+# Python compiled files
+*.pyc
+*.pyo
+*.pyd

@@ -1,0 +1,357 @@
+# ExoplanetAI Data Management Configuration
+# Конфигурация системы управления данными ExoplanetAI
+
+# Data source configurations
+data_sources:
+  nasa_archive:
+    base_url: "https://exoplanetarchive.ipac.caltech.edu"
+    tap_url: "https://exoplanetarchive.ipac.caltech.edu/TAP/sync"
+    timeout_seconds: 300
+    retry_attempts: 3
+    retry_delay_seconds: 5
+    max_records_per_request: 10000
+    
+  mast:
+    base_url: "https://mast.stsci.edu"
+    api_url: "https://mast.stsci.edu/api/v0.1"
+    timeout_seconds: 600
+    retry_attempts: 5
+    retry_delay_seconds: 10
+    max_concurrent_downloads: 3
+    
+  exofop:
+    base_url: "https://exofop.ipac.caltech.edu"
+    tess_url: "https://exofop.ipac.caltech.edu/tess"
+    timeout_seconds: 300
+    retry_attempts: 3
+    retry_delay_seconds: 5
+    
+  lightkurve:
+    cache_dir: "~/.lightkurve-cache"
+    download_timeout_seconds: 1800
+    max_sectors_per_request: 10
+    quality_bitmask: "default"
+
+# Storage configuration
+storage:
+  # Base data directory
+  data_path: "/data/exoplanetai"
+  
+  # Retention policies (days)
+  raw_retention_days: 365
+  processed_retention_days: 180
+  cache_retention_days: 7
+  backup_retention_days: 30
+  log_retention_days: 90
+  
+  # File size limits (MB)
+  max_file_size_mb: 1000
+  max_cache_size_mb: 10000
+  max_backup_size_mb: 50000
+  
+  # Compression settings
+  compress_raw_data: false
+  compress_processed_data: true
+  compression_level: 6
+  
+  # Backup configuration
+  backup_enabled: true
+  backup_schedule: "0 2 * * *"  # Daily at 2 AM
+  backup_location: "/backups/exoplanetai"
+  
+# Cache configuration
+cache:
+  # Redis settings
+  redis_url: "redis://localhost:6379"
+  redis_db: 0
+  redis_timeout_seconds: 30
+  
+  # TTL settings (seconds)
+  table_ttl_seconds: 86400      # 24 hours for tables
+  lightcurve_ttl_seconds: 21600 # 6 hours for light curves
+  processed_ttl_seconds: 43200  # 12 hours for processed data
+  metadata_ttl_seconds: 3600    # 1 hour for metadata
+  
+  # Cache policies
+  max_memory_cache_mb: 1000
+  eviction_policy: "lru"
+  prefetch_popular_targets: true
+  
+  # Popular targets for prefetching
+  popular_targets:
+    - "TOI-715"
+    - "Kepler-452b"
+    - "TRAPPIST-1"
+    - "Proxima Centauri b"
+    - "K2-18b"
+    - "HD 209458b"
+    - "WASP-121b"
+    - "GJ 1214b"
+
+# Data validation configuration
+validation:
+  # Validation levels
+  strict_validation: false
+  coordinate_precision_check: true
+  physical_parameter_bounds: true
+  duplicate_detection: true
+  
+  # Parameter ranges for validation
+  parameter_ranges:
+    period_days: [0.1, 10000]
+    radius_earth: [0.1, 100]
+    radius_jupiter: [0.01, 10]
+    mass_earth: [0.01, 10000]
+    mass_jupiter: [0.001, 100]
+    temperature_k: [50, 5000]
+    ra_deg: [0, 360]
+    dec_deg: [-90, 90]
+    distance_pc: [0.1, 10000]
+    stellar_mass: [0.1, 10]
+    stellar_radius: [0.1, 100]
+    transit_depth_ppm: [1, 100000]
+    transit_duration_hours: [0.1, 48]
+    magnitude: [5, 25]
+    flux_relative: [0.5, 1.5]
+    flux_error_max: 0.1
+  
+  # Quality thresholds
+  min_data_completeness: 0.8
+  max_outlier_fraction: 0.1
+  min_time_coverage_hours: 1.0
+  
+# Processing configuration
+processing:
+  # Default preprocessing parameters
+  default_params:
+    remove_outliers: true
+    sigma_clip_sigma: 5.0
+    sigma_clip_maxiters: 3
+    baseline_window_length: 101
+    baseline_polyorder: 2
+    wavelet_denoising: false
+    wavelet_type: "db4"
+    wavelet_levels: 6
+    normalize_method: "median"
+    quality_bitmask: "default"
+    gap_threshold_hours: 0.5
+    min_points_per_segment: 100
+  
+  # Quality filtering presets
+  quality_presets:
+    none: 0
+    default: 2046  # Common bad quality flags
+    hard: 4095     # All known issues
+    hardest: -1    # Any non-zero flag
+  
+  # Performance settings
+  max_processing_time_minutes: 60
+  parallel_processing: true
+  max_concurrent_processes: 4
+  memory_limit_mb: 4000
+  
+  # Transit-specific parameters
+  transit_params:
+    sigma_clip_sigma: 4.0
+    baseline_window_length: 201
+    wavelet_denoising: true
+    wavelet_type: "db6"
+    wavelet_levels: 4
+    normalize_method: "robust"
+    quality_bitmask: "hard"
+    gap_threshold_hours: 2.0
+    min_points_per_segment: 200
+
+# Versioning configuration
+versioning:
+  # Git settings
+  git_enabled: true
+  git_author_name: "ExoplanetAI System"
+  git_author_email: "system@exoplanetai.org"
+  
+  # Version naming
+  version_prefix: "v"
+  auto_increment: true
+  semantic_versioning: true
+  
+  # File patterns for versioning
+  default_patterns:
+    - "*.csv"
+    - "*.fits"
+    - "*.json"
+  
+  exclude_patterns:
+    - "*.log"
+    - "*.tmp"
+    - "*.bak"
+    - "__pycache__/*"
+    - "*.pyc"
+  
+  # Cleanup settings
+  max_versions: 50
+  cleanup_old_versions: true
+  min_version_age_days: 30
+
+# Monitoring configuration
+monitoring:
+  # Health check intervals (seconds)
+  data_source_check_interval: 300
+  storage_check_interval: 60
+  cache_check_interval: 30
+  processing_check_interval: 120
+  
+  # Alert thresholds
+  disk_usage_warning: 80    # Percentage
+  disk_usage_critical: 90   # Percentage
+  cache_hit_rate_warning: 50  # Percentage
+  processing_failure_rate_warning: 10  # Percentage
+  
+  # Metrics collection
+  collect_metrics: true
+  metrics_retention_days: 30
+  detailed_logging: false
+  
+  # Performance monitoring
+  track_response_times: true
+  track_error_rates: true
+  track_cache_performance: true
+  track_storage_usage: true
+
+# Security configuration
+security:
+  # Access control
+  require_authentication: true
+  role_based_access: true
+  api_key_required: false
+  
+  # Rate limiting
+  enable_rate_limiting: true
+  requests_per_minute: 100
+  burst_limit: 200
+  
+  # Data protection
+  encrypt_sensitive_data: true
+  secure_file_permissions: true
+  audit_data_access: true
+  
+  # Backup security
+  encrypt_backups: true
+  backup_access_control: true
+
+# Logging configuration
+logging:
+  # Log levels
+  root_level: "INFO"
+  data_manager_level: "INFO"
+  storage_level: "INFO"
+  validator_level: "INFO"
+  processor_level: "INFO"
+  
+  # Log formats
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  date_format: "%Y-%m-%d %H:%M:%S"
+  
+  # Log files
+  log_directory: "/logs/exoplanetai"
+  log_file_max_size_mb: 100
+  log_file_backup_count: 5
+  
+  # Structured logging
+  structured_logging: true
+  json_format: false
+  include_context: true
+
+# Development and testing
+development:
+  # Mock data for testing
+  use_mock_data: false
+  mock_data_path: "/data/mock"
+  
+  # Debug settings
+  debug_mode: false
+  verbose_logging: false
+  save_intermediate_results: false
+  
+  # Testing configuration
+  test_data_size_limit: 1000  # Number of records
+  skip_slow_tests: false
+  parallel_testing: true
+
+# Feature flags
+features:
+  # Data ingestion features
+  enable_koi_ingestion: true
+  enable_toi_ingestion: true
+  enable_k2_ingestion: true
+  enable_lightcurve_ingestion: true
+  
+  # Processing features
+  enable_wavelet_denoising: true
+  enable_ml_outlier_detection: true
+  enable_adaptive_processing: true
+  
+  # Advanced features
+  enable_data_versioning: true
+  enable_automated_validation: true
+  enable_background_processing: true
+  enable_predictive_caching: true
+  
+  # Experimental features
+  enable_distributed_processing: false
+  enable_gpu_acceleration: false
+  enable_real_time_ingestion: false
+
+# Integration settings
+integrations:
+  # External services
+  simbad_enabled: true
+  vizier_enabled: true
+  ned_enabled: false
+  
+  # Notification services
+  slack_webhook: null
+  email_notifications: false
+  
+  # Monitoring services
+  prometheus_enabled: false
+  grafana_enabled: false
+  
+  # Cloud storage
+  aws_s3_enabled: false
+  google_cloud_enabled: false
+  azure_enabled: false
+
+# Resource limits
+resources:
+  # Memory limits (MB)
+  max_memory_per_process: 2000
+  max_total_memory: 8000
+  
+  # CPU limits
+  max_cpu_cores: 4
+  cpu_affinity: null
+  
+  # Network limits
+  max_concurrent_downloads: 10
+  max_bandwidth_mbps: 100
+  
+  # Disk I/O limits
+  max_disk_io_mbps: 500
+  max_open_files: 1000
+
+# Maintenance schedules
+maintenance:
+  # Automated tasks
+  cache_cleanup_schedule: "0 1 * * *"     # Daily at 1 AM
+  log_rotation_schedule: "0 0 * * 0"      # Weekly on Sunday
+  backup_schedule: "0 2 * * *"            # Daily at 2 AM
+  health_check_schedule: "*/5 * * * *"    # Every 5 minutes
+  
+  # Maintenance windows
+  maintenance_window_start: "02:00"
+  maintenance_window_end: "04:00"
+  maintenance_timezone: "UTC"
+  
+  # Update schedules
+  data_update_schedule: "0 6 * * *"       # Daily at 6 AM
+  catalog_update_schedule: "0 12 * * 1"   # Weekly on Monday at noon

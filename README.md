@@ -86,7 +86,7 @@ cd Exoplanet_AI
 
 ### 2. Backend Setup
 ```bash
-cd exoplanet-ai/backend
+cd backend
 pip install -r requirements.txt
 python main.py
 ```
@@ -94,7 +94,7 @@ Backend will start on `http://localhost:8001`
 
 ### 3. Frontend Setup
 ```bash
-cd exoplanet-ai/frontend
+cd frontend
 npm install
 npm run dev
 ```
@@ -102,11 +102,11 @@ Frontend will start on `http://localhost:5176`
 
 ### 4. Quick Start Scripts
 ```bash
-# Start everything at once
-./scripts/start_all.sh
+# Start backend
+./scripts/start-backend.sh
 
-# Stop all services
-./scripts/stop_all.sh
+# Start frontend (in another terminal)
+./scripts/start-frontend.sh
 ```
 
 ## 🛠️ Technology Stack
@@ -216,18 +216,22 @@ The system provides comprehensive analysis results:
 
 ### Project Structure
 ```
-exoplanet-ai/
+Exoplanet_AI/
 ├── backend/           # FastAPI backend
-│   ├── core/         # Configuration and logging
-│   ├── services/     # Data and ML services
+│   ├── api/          # API routes
+│   ├── auth/         # Authentication
+│   ├── core/         # Configuration and utilities
+│   ├── ml/           # ML models
+│   ├── services/     # Business logic
 │   └── main.py       # Application entry point
 ├── frontend/         # React frontend
 │   ├── src/
 │   │   ├── components/  # React components
-│   │   ├── contexts/    # React contexts
-│   │   ├── i18n/        # Internationalization
-│   │   └── services/    # API services
+│   │   ├── pages/       # Page components
+│   │   ├── services/    # API services
+│   │   └── types/       # TypeScript types
 │   └── public/       # Static assets
+├── config/           # Configuration files
 └── scripts/          # Utility scripts
 ```
 
