@@ -1,15 +1,12 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   Upload, 
   Play, 
-  Download, 
   Settings, 
   BarChart3, 
   Zap,
-  FileText,
   AlertCircle,
-  CheckCircle,
   Clock,
   Brain,
   Target
@@ -364,29 +361,29 @@ export default function GPIAnalysisPage({ useSimpleBackground = false }: GPIAnal
                           {
                             x: result.plot_data.time,
                             y: result.plot_data.flux,
-                            type: 'scatter',
-                            mode: 'markers',
+                            type: 'scatter' as const,
+                            mode: 'markers' as const,
                             marker: { size: 3, color: '#60A5FA' },
                             name: 'Light Curve'
-                          },
+                          } as any,
                           ...(result.plot_data.model ? [{
                             x: result.plot_data.time,
                             y: result.plot_data.model,
-                            type: 'scatter',
-                            mode: 'lines',
+                            type: 'scatter' as const,
+                            mode: 'lines' as const,
                             line: { color: '#F59E0B', width: 2 },
                             name: 'GPI Model'
-                          }] : [])
+                          } as any] : [])
                         ]}
                         layout={{
-                          title: 'GPI Analysis Result',
-                          xaxis: { title: 'Time (days)', color: '#9CA3AF' },
-                          yaxis: { title: 'Relative Flux', color: '#9CA3AF' },
+                          title: { text: 'GPI Analysis Result' },
+                          xaxis: { title: { text: 'Time (days)' }, color: '#9CA3AF' },
+                          yaxis: { title: { text: 'Relative Flux' }, color: '#9CA3AF' },
                           paper_bgcolor: 'rgba(0,0,0,0)',
                           plot_bgcolor: 'rgba(0,0,0,0)',
                           font: { color: '#9CA3AF' },
                           height: 300
-                        }}
+                        } as any}
                         config={{ displayModeBar: false }}
                         className="w-full"
                       />

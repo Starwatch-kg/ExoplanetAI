@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { motion } from 'framer-motion'
-import { AlertCircle, Search, BarChart3, Settings, TrendingUp, Download, Info, Layers, Activity, Sparkles, Target, Clock, CheckCircle, Play, Star, ArrowRight } from 'lucide-react'
+import { AlertCircle, Search, BarChart3, Settings, TrendingUp, Download, Info, Layers, Activity, Sparkles, Target, Clock, CheckCircle, Play, Star, ArrowRight, Upload, FileText, X } from 'lucide-react'
 import SafePageWrapper from '../components/SafePageWrapper'
 
 interface SearchParameters {
@@ -18,6 +18,10 @@ interface SearchResult {
   search_info: any
   performance: any
   timestamp: string
+  bls_result?: any
+  processing_time_ms?: number
+  lightcurve_info?: any
+  [key: string]: any
 }
 
 const SearchPageContent: React.FC = () => {
@@ -33,6 +37,8 @@ const SearchPageContent: React.FC = () => {
   const [result, setResult] = useState<SearchResult | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null)
+  const [uploadMode, setUploadMode] = useState<'target' | 'file'>('target')
 
   // Функция для преобразования нового формата API в старый формат результатов
   const adaptSearchResultToOldFormat = (apiData: any, lightcurveData: any, targetName: string): SearchResult => {
@@ -139,93 +145,120 @@ const SearchPageContent: React.FC = () => {
     setResult(null)
 
     try {
-      // Валидация пользовательского ввода перед отправкой запроса
-      if (!parameters.target_name || parameters.target_name.trim() === '') {
-        throw new Error('Target name is required');
-      }
-      
-      // Санитизация target_name для предотвращения XSS
-      const sanitizedTargetName = parameters.target_name.replace(/[<>'"&]/g, (match) => {
-        const escapeMap: Record<string, string> = {
-          '<': '<',
-          '>': '>',
-          '"': '"',
-          "'": '&#x27;',
-          '&': '&'
-        };
-        return escapeMap[match] || match;
-      });
+      let lightcurveData: any
+      let targetName: string
 
-      // Сначала получаем реальные данные из NASA API
-      const dataResponse = await fetch(`/api/v1/lightcurve/demo/${encodeURIComponent(sanitizedTargetName)}?mission=TESS`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest'
+      // Обработка загруженного файла
+      if (uploadMode === 'file' && uploadedFile) {
+        // Отправка файла на бэкенд для обработки
+        const formData = new FormData()
+        formData.append('file', uploadedFile)
+        
+        const uploadResponse = await fetch('/api/v1/lightcurve/upload', {
+          method: 'POST',
+          body: formData
+        })
+
+        if (!uploadResponse.ok) {
+          throw new Error('Failed to upload and process file')
         }
-      })
 
-      if (!dataResponse.ok) {
-        const errorText = await dataResponse.text()
-        console.error('Lightcurve API Error:', dataResponse.status, errorText)
-        throw new Error(`Failed to fetch lightcurve data: ${dataResponse.status}`)
-      }
-
-      const responseText = await dataResponse.text()
-      console.log('Lightcurve API Response:', responseText.substring(0, 200) + '...')
-      
-      let lightcurveResponse
-      try {
-        lightcurveResponse = JSON.parse(responseText)
-      } catch (parseError) {
-        console.error('JSON Parse Error:', parseError)
-        console.error('Response text:', responseText)
-        throw new Error('Invalid JSON response from lightcurve API')
-      }
-      const lightcurveData = lightcurveResponse.data.lightcurve
-      
-      if (!lightcurveData.time_data || !lightcurveData.flux_data) {
-        throw new Error('Invalid lightcurve data received')
-      }
-
-      // Теперь запускаем поиск экзопланет
-      const searchParams = new URLSearchParams({
-        q: sanitizedTargetName,
-        limit: '50',
-        sources: 'nasa,tess,kepler',
-        confirmed_only: 'false'
-      });
-      
-      const searchResponse = await fetch(`/api/v1/exoplanets/search?${searchParams}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest'
+        const uploadResult = await uploadResponse.json()
+        lightcurveData = uploadResult.data.lightcurve
+        targetName = uploadedFile.name.replace(/\.[^/.]+$/, '') // Имя файла без расширения
+      } else {
+        // Валидация target name
+        if (!parameters.target_name || parameters.target_name.trim() === '') {
+          throw new Error('Target name is required');
         }
-      })
+        
+        // Санитизация target_name для предотвращения XSS
+        const sanitizedTargetName = parameters.target_name.replace(/[<>'"&]/g, (match) => {
+          const escapeMap: Record<string, string> = {
+            '<': '<',
+            '>': '>',
+            '"': '"',
+            "'": '&#x27;',
+            '&': '&'
+          };
+          return escapeMap[match] || match;
+        });
+        targetName = sanitizedTargetName
 
-      if (!searchResponse.ok) {
-        const errorText = await searchResponse.text()
-        console.error('Search API Error:', searchResponse.status, errorText)
-        throw new Error(`HTTP error! status: ${searchResponse.status}`)
+        // Получаем данные из NASA API
+        const dataResponse = await fetch(`/api/v1/lightcurve/demo/${encodeURIComponent(sanitizedTargetName)}?mission=TESS`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+          }
+        })
+
+        if (!dataResponse.ok) {
+          const errorText = await dataResponse.text()
+          console.error('Lightcurve API Error:', dataResponse.status, errorText)
+          throw new Error(`Failed to fetch lightcurve data: ${dataResponse.status}`)
+        }
+
+        const responseText = await dataResponse.text()
+        console.log('Lightcurve API Response:', responseText.substring(0, 200) + '...')
+        
+        let lightcurveResponse
+        try {
+          lightcurveResponse = JSON.parse(responseText)
+        } catch (parseError) {
+          console.error('JSON Parse Error:', parseError)
+          console.error('Response text:', responseText)
+          throw new Error('Invalid JSON response from lightcurve API')
+        }
+        lightcurveData = lightcurveResponse.data.lightcurve
+        
+        if (!lightcurveData.time_data || !lightcurveData.flux_data) {
+          throw new Error('Invalid lightcurve data received')
+        }
       }
+
+      // Теперь запускаем поиск экзопланет (только для target mode)
+      let data: any = { data: { planets: [] } }
       
-      const searchResponseText = await searchResponse.text()
-      console.log('Search API Response:', searchResponseText.substring(0, 200) + '...')
-      
-      let data
-      try {
-        data = JSON.parse(searchResponseText)
-      } catch (parseError) {
-        console.error('Search JSON Parse Error:', parseError)
-        console.error('Search response text:', searchResponseText)
-        throw new Error('Invalid JSON response from search API')
+      if (uploadMode === 'target') {
+        const searchParams = new URLSearchParams({
+          q: targetName,
+          limit: '50',
+          sources: 'nasa,tess,kepler',
+          confirmed_only: 'false'
+        });
+        
+        const searchResponse = await fetch(`/api/v1/exoplanets/search?${searchParams}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+          }
+        })
+
+        if (!searchResponse.ok) {
+          const errorText = await searchResponse.text()
+          console.error('Search API Error:', searchResponse.status, errorText)
+          throw new Error(`HTTP error! status: ${searchResponse.status}`)
+        }
+        
+        const searchResponseText = await searchResponse.text()
+        console.log('Search API Response:', searchResponseText.substring(0, 200) + '...')
+        
+        try {
+          data = JSON.parse(searchResponseText)
+        } catch (parseError) {
+          console.error('Search JSON Parse Error:', parseError)
+          console.error('Search response text:', searchResponseText)
+          throw new Error('Invalid JSON response from search API')
+        }
       }
       
       // Преобразуем новый формат API в ожидаемый формат результатов
       console.log('Original API data:', data)
       console.log('Lightcurve data:', lightcurveData)
-      const adaptedResult = adaptSearchResultToOldFormat(data, lightcurveData, sanitizedTargetName)
+      const adaptedResult = adaptSearchResultToOldFormat(data, lightcurveData, targetName)
       console.log('Adapted result:', adaptedResult)
       console.log('BLS Result:', adaptedResult.bls_result)
       setResult(adaptedResult)
@@ -412,24 +445,64 @@ const SearchPageContent: React.FC = () => {
 
             {/* Parameters Form */}
             <form onSubmit={handleSubmit} className="space-y-6">
-              <div>
-                <label className="flex items-center gap-2 text-sm font-semibold text-gray-300 mb-3">
-                  <Target className="w-4 h-4 text-blue-400" />
-                  Target Name
-                </label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={parameters.target_name}
-                    onChange={(e) => handleParameterChange('target_name', e.target.value)}
-                    className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-400 transition-all duration-300"
-                    placeholder="e.g., TIC 441420236"
-                    required
-                  />
-                  <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+              {/* Mode Toggle */}
+              <div className="flex gap-2 p-1 bg-white/5 rounded-lg">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setUploadMode('target')
+                    setUploadedFile(null)
+                  }}
+                  className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all duration-300 ${
+                    uploadMode === 'target'
+                      ? 'bg-blue-500 text-white shadow-lg'
+                      : 'text-gray-400 hover:text-white'
+                  }`}
+                >
+                  <div className="flex items-center justify-center gap-2">
+                    <Target className="w-4 h-4" />
+                    Target Name
                   </div>
-                </div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setUploadMode('file')
+                    setParameters(prev => ({ ...prev, target_name: '' }))
+                  }}
+                  className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all duration-300 ${
+                    uploadMode === 'file'
+                      ? 'bg-purple-500 text-white shadow-lg'
+                      : 'text-gray-400 hover:text-white'
+                  }`}
+                >
+                  <div className="flex items-center justify-center gap-2">
+                    <Upload className="w-4 h-4" />
+                    Upload File
+                  </div>
+                </button>
+              </div>
+
+              {/* Target Name Input */}
+              {uploadMode === 'target' && (
+                <div>
+                  <label className="flex items-center gap-2 text-sm font-semibold text-gray-300 mb-3">
+                    <Target className="w-4 h-4 text-blue-400" />
+                    Target Name
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={parameters.target_name}
+                      onChange={(e) => handleParameterChange('target_name', e.target.value)}
+                      className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-400 transition-all duration-300"
+                      placeholder="e.g., TIC 441420236"
+                      required={uploadMode === 'target'}
+                    />
+                    <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                    </div>
+                  </div>
                 
                 {/* Preset Targets */}
                 <div className="mt-3">
@@ -454,6 +527,59 @@ const SearchPageContent: React.FC = () => {
                   </div>
                 </div>
               </div>
+              )}
+
+              {/* File Upload */}
+              {uploadMode === 'file' && (
+                <div>
+                  <label className="flex items-center gap-2 text-sm font-semibold text-gray-300 mb-3">
+                    <FileText className="w-4 h-4 text-purple-400" />
+                    Upload Light Curve File
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="file"
+                      accept=".csv,.txt,.dat,.fits"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0]
+                        if (file) {
+                          setUploadedFile(file)
+                        }
+                      }}
+                      className="hidden"
+                      id="lightcurve-upload"
+                    />
+                    <label
+                      htmlFor="lightcurve-upload"
+                      className={`flex flex-col items-center justify-center w-full px-4 py-8 border-2 border-dashed rounded-xl cursor-pointer transition-all duration-300 ${
+                        uploadedFile
+                          ? 'border-purple-500 bg-purple-500/10'
+                          : 'border-white/20 hover:border-purple-500 hover:bg-purple-500/5'
+                      }`}
+                    >
+                      <Upload className="w-8 h-8 text-purple-400 mb-2" />
+                      <p className="text-gray-300 font-medium">
+                        {uploadedFile ? uploadedFile.name : 'Click to upload light curve file'}
+                      </p>
+                      <p className="text-gray-500 text-sm mt-1">
+                        Supported: CSV, TXT, DAT, FITS
+                      </p>
+                    </label>
+                    {uploadedFile && (
+                      <button
+                        type="button"
+                        onClick={() => setUploadedFile(null)}
+                        className="absolute top-2 right-2 p-2 bg-red-500/20 hover:bg-red-500/30 rounded-lg transition-colors"
+                      >
+                        <X className="w-4 h-4 text-red-400" />
+                      </button>
+                    )}
+                  </div>
+                  <p className="text-xs text-gray-400 mt-2">
+                    Upload a file containing time and flux columns for analysis
+                  </p>
+                </div>
+              )}
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -571,7 +697,7 @@ const SearchPageContent: React.FC = () => {
                     </div>
                     <div>
                       <p className="text-gray-300">Confidence: {((result.bls_result?.significance || 0) * 100)?.toFixed(1) || 'N/A'}%</p>
-                      <p className="text-gray-300">Processing: {(result.processing_time_ms / 1000)?.toFixed(1) || 'N/A'}s</p>
+                      <p className="text-gray-300">Processing: {result.processing_time_ms ? (result.processing_time_ms / 1000).toFixed(1) : 'N/A'}s</p>
                     </div>
                   </div>
                 </div>
