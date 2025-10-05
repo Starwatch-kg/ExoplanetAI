@@ -53,7 +53,7 @@ class ExoplanetCNN:
         self.model = None
         self.scaler = StandardScaler()
         
-    def build_model(self) -> tf.keras.Model:
+    def build_model(self):
         """
         Построение 1D-CNN архитектуры
         """
