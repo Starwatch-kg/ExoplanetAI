@@ -241,7 +241,7 @@ def create_error_response(
     """Create standardized error response"""
     response = {
         "status": ResponseStatus.ERROR,
-        "message": None,
+        "message": message,
         "timestamp": datetime.now().isoformat(),
         "data": None,
         "error": {
