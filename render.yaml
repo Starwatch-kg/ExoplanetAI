@@ -5,13 +5,8 @@ services:
     env: python
     region: oregon
     plan: starter
-    buildCommand: |
-      cd backend
-      pip install --upgrade pip
-      pip install -r requirements.txt
-    startCommand: |
-      cd backend
-      gunicorn main:app --config gunicorn_config.py
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: cd backend && gunicorn main:app --config gunicorn_config.py
     envVars:
       - key: PYTHON_VERSION
         value: 3.11
