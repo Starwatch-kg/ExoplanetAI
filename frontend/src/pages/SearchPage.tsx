@@ -221,15 +221,14 @@ const SearchPageContent: React.FC = () => {
           throw new Error(`Failed to fetch lightcurve data: ${dataResponse.status}`)
         }
 
-        const responseText = await dataResponse.text()
-        console.log('Lightcurve API Response:', responseText.substring(0, 200) + '...')
-        
         let lightcurveResponse
         try {
-          lightcurveResponse = JSON.parse(responseText)
+          lightcurveResponse = await dataResponse.json()
+          console.log('Lightcurve API Response: Success')
         } catch (parseError) {
           console.error('JSON Parse Error:', parseError)
-          console.error('Response text:', responseText)
+          const responseText = await dataResponse.text()
+          console.error('Response text:', responseText.substring(0, 500))
           throw new Error('Invalid JSON response from lightcurve API')
         }
         lightcurveData = lightcurveResponse.data.lightcurve
@@ -267,14 +266,13 @@ const SearchPageContent: React.FC = () => {
           throw new Error(`HTTP error! status: ${searchResponse.status}`)
         }
         
-        const searchResponseText = await searchResponse.text()
-        console.log('Search API Response:', searchResponseText.substring(0, 200) + '...')
-        
         try {
-          data = JSON.parse(searchResponseText)
+          data = await searchResponse.json()
+          console.log('Search API Response: Success')
         } catch (parseError) {
           console.error('Search JSON Parse Error:', parseError)
-          console.error('Search response text:', searchResponseText)
+          const searchResponseText = await searchResponse.text()
+          console.error('Search response text:', searchResponseText.substring(0, 500))
           throw new Error('Invalid JSON response from search API')
         }
       }

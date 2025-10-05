@@ -188,7 +188,7 @@ export class ExoplanetApiClient {
 
     this.config = {
       baseURL: getApiUrl(),
-      timeout: 10000,
+      timeout: 30000, // Увеличиваем timeout до 30 секунд
       retryAttempts: 3,
       retryDelay: 1000,
       ...config
