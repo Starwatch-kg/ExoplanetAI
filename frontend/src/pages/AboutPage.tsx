@@ -96,7 +96,7 @@ export default function AboutPage({ useSimpleBackground = false }: AboutPageProp
               <Award className={`h-6 w-6 ${useSimpleBackground ? 'text-amber-300' : 'text-amber-400 drop-shadow-glow animate-pulse'}`} />
             </div>
             <div className="text-2xl md:text-3xl font-bold text-white mb-2">
-              {loading ? '...' : (stats ? `${stats.system_accuracy.toFixed(1)}%` : 'N/A')}
+              {loading ? '...' : (stats && stats.system_accuracy !== undefined ? `${stats.system_accuracy.toFixed(1)}%` : 'N/A')}
             </div>
             <div className="text-sm text-gray-400">
               Точность системы
