@@ -170,9 +170,25 @@ export class ExoplanetApiClient {
   private refreshPromise: Promise<void> | null = null
 
   constructor(config: Partial<ApiConfig> = {}) {
+    // Автоматическое определение API URL
+    const getApiUrl = () => {
+      // Если задана переменная окружения - используем её
+      if (import.meta.env.VITE_API_URL) {
+        return import.meta.env.VITE_API_URL;
+      }
+      
+      // Если на Render - используем production URL
+      if (window.location.hostname.includes('onrender.com')) {
+        return 'https://exoplanet-ai-backend.onrender.com';
+      }
+      
+      // Локальная разработка
+      return 'http://localhost:8001';
+    };
+
     this.config = {
-      baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8001',
-      timeout: 10000, // Уменьшили таймаут до 10 секунд
+      baseURL: getApiUrl(),
+      timeout: 10000,
       retryAttempts: 3,
       retryDelay: 1000,
       ...config
