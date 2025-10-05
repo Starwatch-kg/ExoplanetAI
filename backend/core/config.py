@@ -194,7 +194,7 @@ class AppConfig(BaseSettings):
 
     def model_post_init(self, __context):
         # Update security config based on environment
-        self.security.allowed_origins = get_allowed_origins(self.environment)
+        self.security.allowed_origins = get_allowed_origins()
 
     class Config:
         env_file = ".env"
