@@ -169,7 +169,10 @@ const SearchPageContent: React.FC = () => {
         const formData = new FormData()
         formData.append('file', uploadedFile)
         
-        const uploadResponse = await fetch('/api/v1/lightcurve/upload', {
+        const API_BASE = import.meta.env.VITE_API_URL || 
+          (window.location.hostname.includes('onrender.com') ? 'https://exoplanet-ai-backend.onrender.com' : 'http://localhost:8001');
+        
+        const uploadResponse = await fetch(`${API_BASE}/api/v1/lightcurve/upload`, {
           method: 'POST',
           body: formData
         })
@@ -201,7 +204,10 @@ const SearchPageContent: React.FC = () => {
         targetName = sanitizedTargetName
 
         // Получаем данные из NASA API
-        const dataResponse = await fetch(`/api/v1/lightcurve/demo/${encodeURIComponent(sanitizedTargetName)}?mission=TESS`, {
+        const API_BASE = import.meta.env.VITE_API_URL || 
+          (window.location.hostname.includes('onrender.com') ? 'https://exoplanet-ai-backend.onrender.com' : 'http://localhost:8001');
+        
+        const dataResponse = await fetch(`${API_BASE}/api/v1/lightcurve/demo/${encodeURIComponent(sanitizedTargetName)}?mission=TESS`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
