@@ -23,5 +23,5 @@ services:
       - key: ACCESS_TOKEN_EXPIRE_MINUTES
         value: "30"
       - key: ALLOWED_ORIGINS
-        value: "*"
+        value: "https://exoplanet-ai-frontend.onrender.com,http://localhost:5173,http://localhost:3000"
     healthCheckPath: /api/v1/health

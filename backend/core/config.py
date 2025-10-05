@@ -82,7 +82,7 @@ class SecurityConfig(BaseSettings):
     """Security configuration"""
 
     allowed_origins: List[str] = Field(
-        default_factory=lambda: get_allowed_origins("development"),
+        default_factory=lambda: get_allowed_origins(),
         description="Allowed CORS origins",
     )
     api_key: Optional[str] = Field(
@@ -93,11 +93,29 @@ class SecurityConfig(BaseSettings):
         env_prefix = "SECURITY_"
 
 
-def get_allowed_origins(env: str):
-    # FIX: [FINDING_005] make CORS origins environment-specific
+def get_allowed_origins():
+    """Get allowed CORS origins from environment or defaults"""
+    # Check if ALLOWED_ORIGINS is set in environment
+    env_origins = os.getenv("ALLOWED_ORIGINS")
+    if env_origins:
+        # Split by comma and strip whitespace
+        return [origin.strip() for origin in env_origins.split(",")]
+    
+    # Default origins for development
+    env = os.getenv("ENVIRONMENT", "development")
     if env == "production":
-        return ["https://exoplanet-ai.example.com"]
-    return ["http://localhost:5173", "http://localhost:3000", "http://localhost:5176", "http://localhost:5177"]
+        return [
+            "https://exoplanet-ai-frontend.onrender.com",
+            "https://exoplanet-ai.onrender.com"
+        ]
+    return [
+        "http://localhost:5173", 
+        "http://localhost:3000", 
+        "http://localhost:5174",
+        "http://localhost:5175",
+        "http://localhost:5176", 
+        "http://localhost:5177"
+    ]
 
 
 class LoggingConfig(BaseSettings):
