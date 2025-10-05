@@ -212,23 +212,15 @@ if SLOWAPI_AVAILABLE:
     app.state.limiter = limiter
     app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
-# CORS middleware
+# CORS middleware - use config from environment
+cors_origins = config.security.allowed_origins
+logger.info(f"🔒 CORS allowed origins: {cors_origins}")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"] if os.getenv("ENVIRONMENT") == "development" else [
-        "http://localhost:3000",  # Frontend dev
-        "http://127.0.0.1:3000",  # Frontend dev alt
-        "http://localhost:5173",  # Vite dev server
-        "http://127.0.0.1:5173",  # Vite dev server alt
-        "http://localhost:5174",  # Vite dev server alt port
-        "http://localhost:5175",  # Vite dev server alt port
-        "http://localhost:5176",  # Vite dev server alt port
-        "http://localhost:5177",  # Vite dev server alt port
-        "http://localhost:5178",  # Vite dev server alt port
-        os.getenv("FRONTEND_URL", "http://localhost:3000")  # Production
-    ],
+    allow_origins=cors_origins,
     allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allow_headers=["*"],
 )
 
