@@ -7,6 +7,8 @@ uvicorn[standard]==0.32.0
 gunicorn==23.0.0
 pydantic==2.9.2
 pydantic-settings==2.5.2
+email-validator==2.2.0
+dnspython==2.8.0
 
 # HTTP client and async support
 aiohttp==3.10.10
