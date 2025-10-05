@@ -46,6 +46,7 @@ joblib==1.4.2
 # Data management
 pandas==2.2.3
 aiofiles==24.1.0
+GitPython==3.1.43
 
 # Logging
 structlog==24.4.0
