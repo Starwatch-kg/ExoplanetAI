@@ -1,0 +1,5 @@
+# Root requirements file for Render deployment
+# Using minimal dependencies to avoid build issues
+# Full dependencies are in backend/requirements.render.txt
+
+-r requirements.minimal.txt
