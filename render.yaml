@@ -1,4 +1,13 @@
 services:
+  # Frontend Static Service
+  - type: static
+    name: exoplanet-ai-frontend
+    buildCommand: cd frontend && npm ci && npm run build
+    staticPublishPath: ./frontend/dist
+    envVars:
+      - key: VITE_API_URL
+        value: https://exoplanet-ai-backend.onrender.com
+
   # Backend API Service
   - type: web
     name: exoplanet-ai-backend
