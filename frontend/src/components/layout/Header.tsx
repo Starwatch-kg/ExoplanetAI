@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom'
 import {
   Telescope, Menu, X, Home, Database, Globe, Info, Zap, Search,
   Activity, Cpu, Wifi, WifiOff, AlertTriangle, CheckCircle, Clock,
-  TrendingUp, Users
+  TrendingUp, Users, Brain
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import BackgroundToggle from '../ui/ThemeToggle'
@@ -36,6 +36,7 @@ const Header: React.FC<HeaderProps> = React.memo(({ healthStatus, useSimpleBackg
     { path: '/', label: t('navigation.home'), icon: Home },
     { path: '/search', label: 'Поиск', icon: Search },
     { path: '/gpi', label: 'GPI Анализ', icon: Zap },
+    { path: '/ai-training', label: 'AI Training', icon: Brain },
     { path: '/catalog', label: t('navigation.catalog'), icon: Globe },
     { path: '/database', label: t('navigation.database'), icon: Database },
     { path: '/about', label: t('navigation.about'), icon: Info },

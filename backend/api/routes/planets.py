@@ -24,6 +24,24 @@ async def generate_demo_search_results(query: str, limit: int) -> dict:
     import random
     import numpy as np
     
+    # Check if query looks like a real target
+    # Remove planet suffixes (b, c, d, etc.) before checking
+    query_clean = query.upper().replace('-', '').replace(' ', '').rstrip('BCDEFGH')
+    is_real_target = any(query_clean.startswith(prefix) for prefix in 
+                         ['TOI', 'TIC', 'KEPLER', 'KOI', 'K2', 'EPIC', 'WASP', 'HAT', 'HD', 'GJ'])
+    
+    # If it's just random numbers or invalid query, return no results
+    if not is_real_target and query.replace('-', '').replace(' ', '').isdigit():
+        return {
+            "planets": [],
+            "total_planets_found": 0,
+            "sources_searched": ["nasa", "tess", "kepler"],
+            "search_query": query,
+            "cached": False,
+            "demo_data": True,
+            "message": "No exoplanets found for this target. Try searching for known targets like TOI-715, TIC-307210830, or Kepler-452b"
+        }
+    
     # Generate consistent mock data based on query
     random.seed(hash(query) % 2**32)
     np.random.seed(hash(query) % 2**32)

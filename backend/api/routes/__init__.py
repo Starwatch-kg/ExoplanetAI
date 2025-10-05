@@ -16,6 +16,10 @@ from .system import router as system_router
 from .unified_analysis import router as unified_analysis_router
 from .real_unified_analysis import router as real_unified_analysis_router
 from .gpi_analysis import router as gpi_analysis_router
+from .ai_training import router as ai_training_router
+from .auto_discovery import router as auto_discovery_router
+from .monitoring import router as monitoring_router
+from .scheduler import router as scheduler_router
 
 
 def create_api_router() -> APIRouter:
@@ -34,6 +38,9 @@ def create_api_router() -> APIRouter:
     
     # GPI Analysis - специализированный метод
     api_router.include_router(gpi_analysis_router, prefix="/analyze/gpi", tags=["GPI Analysis"])
+    
+    # AI Training - обучение моделей
+    api_router.include_router(ai_training_router, prefix="/ai", tags=["AI Training"])
     
     # Exoplanets endpoints
     api_router.include_router(planets_router, prefix="/exoplanets", tags=["Exoplanets"])
@@ -60,5 +67,10 @@ def create_api_router() -> APIRouter:
 
     # Admin routes
     api_router.include_router(admin_router, prefix="/admin", tags=["Administration"])
+    
+    # Automated Discovery System
+    api_router.include_router(auto_discovery_router, tags=["Auto Discovery"])
+    api_router.include_router(monitoring_router, tags=["Monitoring"])
+    api_router.include_router(scheduler_router, tags=["Scheduler"])
 
     return api_router

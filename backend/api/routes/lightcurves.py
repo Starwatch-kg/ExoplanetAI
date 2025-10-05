@@ -45,8 +45,14 @@ async def get_light_curve_demo(
     # Base flux with noise
     flux_data = np.ones(n_points) + np.random.normal(0, 0.001, n_points)
     
-    # Add a transit signal if target looks like a planet candidate
-    if any(keyword in target_name.upper() for keyword in ['TOI', 'TIC', 'KEPLER']):
+    # Add a transit signal ONLY if target looks like a real planet candidate
+    # Check for known prefixes: TOI, TIC, Kepler, KOI, K2, EPIC
+    # Remove planet suffixes (b, c, d, etc.) before checking
+    target_clean = target_name.upper().replace('-', '').replace(' ', '').rstrip('BCDEFGH')
+    is_real_target = any(target_clean.startswith(prefix) for prefix in 
+                         ['TOI', 'TIC', 'KEPLER', 'KOI', 'K2', 'EPIC', 'WASP', 'HAT', 'HD', 'GJ'])
+    
+    if is_real_target:
         period = 19.3  # days
         transit_depth = 0.01
         transit_duration = 4.0 / 24.0  # 4 hours in days
@@ -55,6 +61,9 @@ async def get_light_curve_demo(
             phase = (time_data[i] % period) / period
             if phase < transit_duration / period or phase > (1 - transit_duration / period):
                 flux_data[i] -= transit_depth * np.exp(-((phase - 0.5) * period / (transit_duration / 2))**2)
+    else:
+        # For random/invalid targets, add more noise and no clear transit
+        flux_data += np.random.normal(0, 0.002, n_points)  # More noise
     
     flux_err_data = np.full(n_points, 0.001)
     

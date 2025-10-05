@@ -14,6 +14,7 @@ const GPIAnalysisPage = lazy(() => import('./pages/GPIAnalysisPage'))
 const SearchPage = lazy(() => import('./pages/SearchPage'))
 const CatalogPage = lazy(() => import('./pages/CatalogPage'))
 const DatabasePage = lazy(() => import('./pages/DatabasePage'))
+const AITrainingPage = lazy(() => import('./pages/AITrainingPage'))
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'))
 
 function App() {
@@ -82,6 +83,7 @@ function App() {
               <Route path="/gpi" element={<GPIAnalysisPage useSimpleBackground={useSimpleBackground} />} />
               <Route path="/catalog" element={<CatalogPage />} />
               <Route path="/database" element={<DatabasePage />} />
+              <Route path="/ai-training" element={<AITrainingPage />} />
               <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </Suspense>

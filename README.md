@@ -1,20 +1,44 @@
-# 🌌 AstroManas - High-Performance Exoplanet Detection System
+# 🌌 ExoplanetAI - Enterprise-Grade Exoplanet Detection Platform
 
 <div align="center">
 
-![AstroManas Logo](https://img.shields.io/badge/AstroManas-v3.0.0--enhanced-blue?style=for-the-badge&logo=nasa)
+![ExoplanetAI](https://img.shields.io/badge/ExoplanetAI-v2.0-blue?style=for-the-badge&logo=nasa)
 [![React](https://img.shields.io/badge/React-18.3.1-61DAFB?style=for-the-badge&logo=react)](https://reactjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.6.3-3178C6?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
 [![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python)](https://python.org/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.104+-009688?style=for-the-badge&logo=fastapi)](https://fastapi.tiangolo.com/)
-[![SQLite](https://img.shields.io/badge/SQLite-3.0+-003B57?style=for-the-badge&logo=sqlite)](https://sqlite.org/)
-[![C++](https://img.shields.io/badge/C++-17+-00599C?style=for-the-badge&logo=cplusplus)](https://isocpp.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688?style=for-the-badge&logo=fastapi)](https://fastapi.tiangolo.com/)
+[![Render](https://img.shields.io/badge/Deploy-Render-46E3B7?style=for-the-badge&logo=render)](https://render.com)
 
-**🚀 Production-ready AI system with revolutionary GPI method, C++ acceleration, and comprehensive database integration**
+**🚀 Production-ready AI system for exoplanet detection with NASA/ESA data integration, ML classification, and auto-discovery**
 
-[🚀 Live Demo](#) • [📖 Documentation](#documentation) • [🛠️ Installation](#installation) • [🤝 Contributing](#contributing)
+[🚀 Deploy on Render](./RENDER_QUICKSTART.md) • [📖 Documentation](#documentation) • [🛠️ Installation](#installation) • [🤝 Contributing](#contributing)
 
 </div>
+
+---
+
+## 🎯 Quick Deploy on Render
+
+**Deploy in 5 minutes!**
+
+```bash
+# 1. Check readiness
+./check_render_readiness_simple.sh
+
+# 2. Push to GitHub
+git push origin main
+
+# 3. Deploy on Render
+# Go to https://dashboard.render.com
+# New + → Blueprint → Connect repo → Apply
+```
+
+📚 **Deployment Guides:**
+- [Quick Start (5 min)](./RENDER_QUICKSTART.md)
+- [Full Guide (detailed)](./RENDER_DEPLOYMENT.md)
+- [Deployment Summary](./DEPLOYMENT_SUMMARY.md)
+
+---
 
 ## 🚀 **Latest Major Update (v3.0.0-enhanced)**
 
