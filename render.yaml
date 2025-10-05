@@ -4,7 +4,7 @@ services:
     name: exoplanet-ai-backend
     env: python
     region: oregon
-    plan: starter
+    plan: free
     buildCommand: pip install -r backend/requirements.txt
     startCommand: cd backend && gunicorn main:app --config gunicorn_config.py
     envVars:
@@ -39,7 +39,7 @@ services:
   - type: redis
     name: exoplanet-ai-redis
     region: oregon
-    plan: starter
+    plan: free
     maxmemoryPolicy: allkeys-lru
     ipAllowList: []
 
