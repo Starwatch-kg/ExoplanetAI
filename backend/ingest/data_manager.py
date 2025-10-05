@@ -14,6 +14,10 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 import aiohttp
 import numpy as np
 import pandas as pd
+
+# Initialize logger first
+logger = logging.getLogger(__name__)
+
 # Astronomy data access - using fallback for compatibility
 try:
     from astroquery.exoplanetarchive import ExoplanetArchive
@@ -31,15 +35,18 @@ except ImportError:
     Catalogs = None
     Observations = None
     logger.warning("MAST services not available - using HTTP fallback")
-from lightkurve import search_lightcurve
+
+try:
+    from lightkurve import search_lightcurve
+except ImportError:
+    search_lightcurve = None
+    logger.warning("Lightkurve not available - using demo data only")
 
 from .storage import StorageManager
 from .validator import DataValidator
 from .versioning import VersionManager
 from core.config import get_settings
 from data_sources.base import LightCurveData, PlanetInfo
-
-logger = logging.getLogger(__name__)
 
 
 class DataManager:

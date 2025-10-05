@@ -7,7 +7,8 @@ from fastapi import APIRouter
 
 from .admin import router as admin_router
 from .auth import router as auth_router
-from .data_management import router as data_management_router
+# Temporarily disabled due to missing astroquery dependencies
+# from .data_management import router as data_management_router
 from .lightcurves import router as lightcurves_router
 from .ml_classification import router as ml_classification_router
 from .planets import router as planets_router
@@ -61,9 +62,10 @@ def create_api_router() -> APIRouter:
     api_router.include_router(
         statistics_router, prefix="/statistics", tags=["Statistics"]
     )
-    api_router.include_router(
-        data_management_router, tags=["Data Management"]
-    )
+    # Temporarily disabled due to missing astroquery dependencies
+    # api_router.include_router(
+    #     data_management_router, tags=["Data Management"]
+    # )
 
     # Admin routes
     api_router.include_router(admin_router, prefix="/admin", tags=["Administration"])
