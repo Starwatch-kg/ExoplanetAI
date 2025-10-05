@@ -55,6 +55,10 @@ colorama==0.4.6
 # Monitoring
 prometheus-client==0.21.0
 
+# Task scheduling
+APScheduler==3.10.4
+schedule==1.2.2
+
 # System monitoring
 psutil==6.1.0
 
