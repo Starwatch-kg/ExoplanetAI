@@ -1,5 +1,5 @@
 # Root requirements file for Render deployment
-# This file ensures Render can find dependencies
-# Actual dependencies are in backend/requirements.render.txt
+# Using minimal dependencies to avoid build issues
+# Full dependencies are in backend/requirements.render.txt
 
--r backend/requirements.render.txt
+-r requirements.minimal.txt
