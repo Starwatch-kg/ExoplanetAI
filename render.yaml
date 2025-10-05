@@ -9,7 +9,7 @@ services:
     startCommand: cd backend && gunicorn main:app --workers 2 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:$PORT --timeout 120
     envVars:
       - key: PYTHON_VERSION
-        value: "3.11"
+        value: "3.11.0"
       - key: ENVIRONMENT
         value: production
       - key: LOG_LEVEL
