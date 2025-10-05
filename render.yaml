@@ -47,7 +47,6 @@ services:
   - type: web
     name: exoplanet-ai-frontend
     env: static
-    region: oregon
     buildCommand: |
       cd frontend
       npm install
