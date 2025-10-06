@@ -1,0 +1,26 @@
+[
+  {
+    "target_name": "TIC-441420236",
+    "tic_id": "441420236",
+    "mission": "TESS",
+    "sector": null,
+    "download_time": "2025-10-06T09:43:08.056404",
+    "file_path": "data/raw/tess/TIC-441420236_441420236_sNone_20251006_094307.json",
+    "data_points": 17687,
+    "time_span_days": 27.100874766856577,
+    "quality_score": 0.7605291083739179,
+    "checksum": "29fbb4c813305242"
+  },
+  {
+    "target_name": "TIC-441420236",
+    "tic_id": "441420236",
+    "mission": "TESS",
+    "sector": null,
+    "download_time": "2025-10-06T09:43:26.850064",
+    "file_path": "data/raw/tess/TIC-441420236_441420236_sNone_20251006_094326.json",
+    "data_points": 17687,
+    "time_span_days": 27.100874766856577,
+    "quality_score": 0.7605291083739179,
+    "checksum": "29fbb4c813305242"
+  }
+]

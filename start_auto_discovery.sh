@@ -1,31 +1,39 @@
 #!/bin/bash
 
-# ExoplanetAI - Automated Discovery Startup Script
-# This script starts the automated discovery system with recommended settings
+# ExoplanetAI Auto Discovery Pipeline Startup Script
+# Запускает полный пайплайн автоматического обнаружения экзопланет
 
 set -e
 
-echo "🚀 ExoplanetAI Automated Discovery System"
-echo "=========================================="
-echo ""
-
 # Colors for output
+RED='\033[0;31m'
 GREEN='\033[0;32m'
-BLUE='\033[0;34m'
 YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+PURPLE='\033[0;35m'
+CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
 # Configuration
-BACKEND_URL="${BACKEND_URL:-http://localhost:8001}"
-CONFIDENCE_THRESHOLD="${CONFIDENCE_THRESHOLD:-0.85}"
-CHECK_INTERVAL="${CHECK_INTERVAL:-6}"
-MAX_CONCURRENT="${MAX_CONCURRENT:-5}"
+BACKEND_DIR="backend"
+FRONTEND_DIR="frontend"
+PYTHON_ENV=".venv"
+NODE_ENV="node_modules"
+BACKEND_PORT=8001
+FRONTEND_PORT=5173
+
+echo -e "${PURPLE} ExoplanetAI Auto Discovery Pipeline v2.0${NC}"
+echo -e "${CYAN}=================================================${NC}"
+echo -e "${BLUE} Automated Exoplanet Discovery System${NC}"
+echo -e "${BLUE} Real-time NASA/MAST data ingestion${NC}"
+echo -e "${BLUE} ML-powered candidate detection${NC}"
+echo -e "${BLUE} Model versioning and deployment${NC}"
+echo -e "${CYAN}=================================================${NC}"
 
 echo -e "${BLUE}Configuration:${NC}"
-echo "  Backend URL: $BACKEND_URL"
+echo "  Backend URL: http://localhost:$BACKEND_PORT"
 echo "  Confidence Threshold: $CONFIDENCE_THRESHOLD"
 echo "  Check Interval: $CHECK_INTERVAL hours"
-echo "  Max Concurrent Tasks: $MAX_CONCURRENT"
 echo ""
 
 # Function to check if backend is running

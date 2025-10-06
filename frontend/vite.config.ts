@@ -11,13 +11,22 @@ export default defineConfig({
     rollupOptions: {
       output: {
         // Разделение кода для лучшего кэширования
-        manualChunks: {
-          vendor: ['react', 'react-dom'],
-          router: ['react-router-dom'],
-          ui: ['lucide-react', 'framer-motion'],
-          charts: ['plotly.js-dist-min', 'react-plotly.js'],
-          i18n: ['i18next', 'react-i18next'],
-          particles: ['react-tsparticles', 'tsparticles-slim'],
+        manualChunks: (id) => {
+          if (id.includes('node_modules')) {
+            if (id.includes('plotly')) {
+              return 'charts';
+            }
+            if (id.includes('react') && !id.includes('plotly')) {
+              return 'vendor';
+            }
+            if (id.includes('i18next')) {
+              return 'i18n';
+            }
+            if (id.includes('particles')) {
+              return 'particles';
+            }
+            return 'vendor';
+          }
         },
       },
     },

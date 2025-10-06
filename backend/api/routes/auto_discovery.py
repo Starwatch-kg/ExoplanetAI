@@ -8,6 +8,8 @@ from datetime import datetime
 from pydantic import BaseModel, Field
 
 from services.auto_discovery import AutoDiscoveryService, DiscoveryCandidate
+from services.data_ingest import get_ingest_service
+from services.model_registry import get_model_registry
 
 router = APIRouter(prefix="/auto-discovery", tags=["Auto Discovery"])
 
@@ -410,3 +412,260 @@ async def export_candidates(
             "count": len(candidates),
             "data": output.getvalue()
         }
+
+
+@router.get("/data-ingestion/stats")
+async def get_ingestion_stats():
+    """Get data ingestion statistics"""
+    try:
+        ingest_service = get_ingest_service()
+        stats = ingest_service.get_ingestion_stats()
+        return {
+            "status": "success",
+            "stats": stats
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error getting ingestion stats: {str(e)}")
+
+
+@router.post("/data-ingestion/start")
+async def start_data_ingestion(background_tasks: BackgroundTasks):
+    """Start continuous data ingestion"""
+    try:
+        ingest_service = get_ingest_service()
+        if ingest_service.is_running:
+            return {"status": "already_running", "message": "Data ingestion is already running"}
+        
+        background_tasks.add_task(ingest_service.start_continuous_ingestion)
+        return {"status": "started", "message": "Data ingestion started"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error starting ingestion: {str(e)}")
+
+
+@router.post("/data-ingestion/stop")
+async def stop_data_ingestion():
+    """Stop continuous data ingestion"""
+    try:
+        ingest_service = get_ingest_service()
+        ingest_service.stop_ingestion()
+        return {"status": "stopped", "message": "Data ingestion stopped"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error stopping ingestion: {str(e)}")
+
+
+@router.get("/models/registry")
+async def get_model_registry_info():
+    """Get model registry information"""
+    try:
+        registry = get_model_registry()
+        stats = registry.get_registry_stats()
+        active_models = registry.get_active_models()
+        
+        return {
+            "status": "success",
+            "registry_stats": stats,
+            "active_models": active_models
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error getting registry info: {str(e)}")
+
+
+@router.get("/models/{model_name}/versions")
+async def list_model_versions(model_name: str):
+    """List all versions of a specific model"""
+    try:
+        registry = get_model_registry()
+        models = registry.list_models(model_name)
+        
+        if not models:
+            raise HTTPException(status_code=404, detail=f"Model {model_name} not found")
+        
+        return {
+            "status": "success",
+            "model_name": model_name,
+            "versions": models[model_name]
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error listing model versions: {str(e)}")
+
+
+@router.post("/models/{model_name}/deploy/{version}")
+async def deploy_model_version(model_name: str, version: str):
+    """Deploy a specific model version"""
+    try:
+        registry = get_model_registry()
+        success = registry.deploy_model(model_name, version)
+        
+        if success:
+            return {
+                "status": "success",
+                "message": f"Model {model_name} v{version} deployed successfully"
+            }
+        else:
+            raise HTTPException(status_code=400, detail=f"Failed to deploy model {model_name} v{version}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error deploying model: {str(e)}")
+
+
+@router.post("/models/{model_name}/rollback")
+async def rollback_model(model_name: str):
+    """Rollback model to previous version"""
+    try:
+        registry = get_model_registry()
+        success = registry.rollback_model(model_name)
+        
+        if success:
+            return {
+                "status": "success",
+                "message": f"Model {model_name} rolled back successfully"
+            }
+        else:
+            raise HTTPException(status_code=400, detail=f"Failed to rollback model {model_name}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error rolling back model: {str(e)}")
+
+
+@router.get("/models/{model_name}/performance")
+async def get_model_performance_history(
+    model_name: str,
+    days: int = Query(30, ge=1, le=365, description="Number of days of history")
+):
+    """Get model performance history"""
+    try:
+        registry = get_model_registry()
+        history = registry.get_performance_history(model_name, days)
+        
+        return {
+            "status": "success",
+            "model_name": model_name,
+            "days": days,
+            "performance_history": history
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error getting performance history: {str(e)}")
+
+
+class PipelineConfig(BaseModel):
+    """Configuration for the complete discovery pipeline"""
+    ingestion_interval_hours: int = Field(6, ge=1, le=24, description="Hours between data ingestion cycles")
+    discovery_interval_hours: int = Field(6, ge=1, le=24, description="Hours between discovery cycles")
+    confidence_threshold: float = Field(0.85, ge=0.0, le=1.0, description="Minimum confidence for candidates")
+    max_concurrent_tasks: int = Field(5, ge=1, le=20, description="Max parallel processing tasks")
+    auto_model_updates: bool = Field(True, description="Enable automatic model updates")
+
+
+@router.post("/pipeline/configure")
+async def configure_pipeline(config: PipelineConfig):
+    """Configure the complete discovery pipeline"""
+    global discovery_service
+    
+    try:
+        # Update discovery service configuration
+        if discovery_service:
+            discovery_service.confidence_threshold = config.confidence_threshold
+            discovery_service.max_concurrent = config.max_concurrent_tasks
+            discovery_service.check_interval = timedelta(hours=config.discovery_interval_hours)
+        
+        # Update ingestion service configuration
+        ingest_service = get_ingest_service()
+        ingest_service.check_interval = timedelta(hours=config.ingestion_interval_hours)
+        
+        return {
+            "status": "success",
+            "message": "Pipeline configuration updated",
+            "config": config.dict()
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error configuring pipeline: {str(e)}")
+
+
+@router.get("/pipeline/status")
+async def get_pipeline_status():
+    """Get complete pipeline status"""
+    try:
+        # Discovery service status
+        discovery_status = {
+            "is_running": discovery_service.is_running if discovery_service else False,
+            "last_check": discovery_service.last_check_time.isoformat() if discovery_service and discovery_service.last_check_time else None,
+            "stats": discovery_service.discovery_stats if discovery_service else {}
+        }
+        
+        # Ingestion service status
+        ingest_service = get_ingest_service()
+        ingestion_status = {
+            "is_running": ingest_service.is_running,
+            "last_check": ingest_service.last_check_time.isoformat() if ingest_service.last_check_time else None,
+            "stats": ingest_service.get_ingestion_stats()
+        }
+        
+        # Model registry status
+        registry = get_model_registry()
+        registry_status = {
+            "stats": registry.get_registry_stats(),
+            "active_models": registry.get_active_models()
+        }
+        
+        return {
+            "status": "success",
+            "pipeline": {
+                "discovery": discovery_status,
+                "ingestion": ingestion_status,
+                "model_registry": registry_status
+            }
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error getting pipeline status: {str(e)}")
+
+
+@router.post("/pipeline/start-full")
+async def start_full_pipeline(background_tasks: BackgroundTasks):
+    """Start the complete automated discovery pipeline"""
+    global discovery_service
+    
+    try:
+        # Initialize discovery service if not exists
+        if not discovery_service:
+            discovery_service = AutoDiscoveryService()
+        
+        # Start data ingestion
+        ingest_service = get_ingest_service()
+        if not ingest_service.is_running:
+            background_tasks.add_task(ingest_service.start_continuous_ingestion)
+        
+        # Start discovery service
+        if not discovery_service.is_running:
+            background_tasks.add_task(discovery_service.start)
+        
+        return {
+            "status": "success",
+            "message": "Full automated discovery pipeline started",
+            "components": {
+                "data_ingestion": "started" if not ingest_service.is_running else "already_running",
+                "auto_discovery": "started" if not discovery_service.is_running else "already_running"
+            }
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error starting full pipeline: {str(e)}")
+
+
+@router.post("/pipeline/stop-full")
+async def stop_full_pipeline():
+    """Stop the complete automated discovery pipeline"""
+    global discovery_service
+    
+    try:
+        # Stop discovery service
+        if discovery_service and discovery_service.is_running:
+            discovery_service.stop()
+        
+        # Stop ingestion service
+        ingest_service = get_ingest_service()
+        if ingest_service.is_running:
+            ingest_service.stop_ingestion()
+        
+        return {
+            "status": "success",
+            "message": "Full automated discovery pipeline stopped"
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error stopping full pipeline: {str(e)}")

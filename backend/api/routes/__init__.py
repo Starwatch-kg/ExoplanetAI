@@ -7,8 +7,6 @@ from fastapi import APIRouter
 
 from .admin import router as admin_router
 from .auth import router as auth_router
-# Temporarily disabled due to missing astroquery dependencies
-# from .data_management import router as data_management_router
 from .lightcurves import router as lightcurves_router
 from .ml_classification import router as ml_classification_router
 from .planets import router as planets_router
@@ -16,11 +14,11 @@ from .statistics import router as statistics_router
 from .system import router as system_router
 from .unified_analysis import router as unified_analysis_router
 from .real_unified_analysis import router as real_unified_analysis_router
-from .gpi_analysis import router as gpi_analysis_router
 from .ai_training import router as ai_training_router
 from .auto_discovery import router as auto_discovery_router
 from .monitoring import router as monitoring_router
 from .scheduler import router as scheduler_router
+from .auto_training import router as auto_training_router
 
 
 def create_api_router() -> APIRouter:
@@ -36,9 +34,6 @@ def create_api_router() -> APIRouter:
     
     # Legacy Unified Analysis (с синтетикой)
     api_router.include_router(unified_analysis_router, prefix="/analyze/legacy", tags=["Legacy Analysis"])
-    
-    # GPI Analysis - специализированный метод
-    api_router.include_router(gpi_analysis_router, prefix="/analyze/gpi", tags=["GPI Analysis"])
     
     # AI Training - обучение моделей
     api_router.include_router(ai_training_router, prefix="/ai", tags=["AI Training"])
@@ -74,5 +69,8 @@ def create_api_router() -> APIRouter:
     api_router.include_router(auto_discovery_router, tags=["Auto Discovery"])
     api_router.include_router(monitoring_router, tags=["Monitoring"])
     api_router.include_router(scheduler_router, tags=["Scheduler"])
+    
+    # Auto Training System
+    api_router.include_router(auto_training_router, prefix="/auto-training", tags=["Auto Training"])
 
     return api_router

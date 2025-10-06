@@ -16,9 +16,12 @@ from data_sources.real_nasa_client import RealNASAClient
 from ml.lightcurve_preprocessor import LightCurvePreprocessor
 from ml.feature_extractor import ExoplanetFeatureExtractor
 from ml.exoplanet_classifier import ExoplanetEnsembleClassifier
-from core.cache import CacheManager
+from core.cache import get_cache
+from core.logging import get_logger
+from services.data_ingest import get_ingest_service
+from services.model_registry import get_model_registry
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 @dataclass
@@ -76,17 +79,27 @@ class AutoDiscoveryService:
         self.data_dir = data_dir
         self.data_dir.mkdir(parents=True, exist_ok=True)
         
+        # Integrated services
+        self.ingest_service = get_ingest_service()
+        self.model_registry = get_model_registry()
+        self.cache = get_cache()
+        
         # Components (lazy initialization)
         self._nasa_client = None
         self._preprocessor = None
         self._feature_extractor = None
         self._classifier = None
-        self._cache = None
         
         # State tracking
         self.last_check_time: Optional[datetime] = None
         self.processed_targets: set = set()
         self.candidates: List[DiscoveryCandidate] = []
+        self.discovery_stats = {
+            "total_processed": 0,
+            "total_candidates": 0,
+            "high_confidence_candidates": 0,
+            "last_model_update": None
+        }
         self.is_running = False
         
         logger.info(f"AutoDiscoveryService initialized with threshold={confidence_threshold}")
@@ -119,12 +132,15 @@ class AutoDiscoveryService:
             self._classifier = ExoplanetEnsembleClassifier()
         return self._classifier
     
-    @property
-    def cache(self):
-        """Lazy load cache"""
-        if self._cache is None:
-            self._cache = CacheManager()
-        return self._cache
+    def get_active_model(self):
+        """Get the active exoplanet classification model"""
+        model = self.model_registry.load_active_model("exoplanet_classifier")
+        if model is None:
+            # Fallback to lazy-loaded classifier
+            if self._classifier is None:
+                self._classifier = ExoplanetEnsembleClassifier()
+            return self._classifier
+        return model
     
     async def start(self):
         """Start the automated discovery pipeline"""
@@ -149,25 +165,37 @@ class AutoDiscoveryService:
         cycle_start = datetime.now()
         logger.info(f"🔍 Starting discovery cycle at {cycle_start}")
         
-        # Step 1: Fetch new lightcurves
-        new_targets = await self._fetch_new_targets()
+        # Step 1: Check for new ingested data
+        ingestion_stats = self.ingest_service.get_ingestion_stats()
+        recent_count = ingestion_stats.get('recent_ingested', 0)
+        total_count = ingestion_stats.get('total_ingested', 0)
+        logger.info(f"📊 Ingestion stats: {recent_count} recent, {total_count} total")
+        
+        # Step 2: Get targets from ingested data
+        new_targets = await self._get_targets_from_ingested_data()
         logger.info(f"📥 Found {len(new_targets)} new targets to analyze")
         
         if not new_targets:
             logger.info("No new targets found in this cycle")
             return
         
-        # Step 2: Process targets in parallel batches
+        # Step 3: Check model freshness and update if needed
+        await self._check_and_update_model()
+        
+        # Step 4: Process targets in parallel batches
         candidates = await self._process_targets_batch(new_targets)
         
-        # Step 3: Filter high-confidence candidates
+        # Step 5: Filter high-confidence candidates
         high_confidence = [c for c in candidates if c.confidence >= self.confidence_threshold]
         logger.info(f"✨ Found {len(high_confidence)} high-confidence candidates")
         
-        # Step 4: Save results
-        await self._save_candidates(high_confidence)
+        # Step 6: Update statistics
+        self.discovery_stats["total_processed"] += len(candidates)
+        self.discovery_stats["total_candidates"] += len(candidates)
+        self.discovery_stats["high_confidence_candidates"] += len(high_confidence)
         
-        # Step 5: Generate report
+        # Step 7: Save results and generate report
+        await self._save_candidates(high_confidence)
         await self._generate_report(cycle_start, candidates, high_confidence)
         
         self.last_check_time = cycle_start
@@ -216,6 +244,104 @@ class AutoDiscoveryService:
         
         return new_targets
     
+    async def _get_targets_from_ingested_data(self) -> List[Dict]:
+        """Get targets from recently ingested data"""
+        try:
+            # Get recent ingestion records
+            recent_records = self.ingest_service.get_recent_ingestions(hours=24)
+            
+            targets = []
+            for record in recent_records:
+                targets.append({
+                    "tic_id": record.tic_id,
+                    "name": record.target_name,
+                    "mission": record.mission,
+                    "file_path": record.file_path,
+                    "quality_score": record.quality_score
+                })
+            
+            return targets
+            
+        except Exception as e:
+            logger.error(f"Error getting targets from ingested data: {e}")
+            return []
+    
+    async def _load_lightcurve_from_files(self, tic_id: str, mission: str = "TESS") -> Optional[Dict]:
+        """Load lightcurve data from ingested files"""
+        try:
+            import json
+            import os
+            from pathlib import Path
+            
+            # Look for files matching the TIC ID
+            data_dir = Path("data/raw") / mission.lower()
+            if not data_dir.exists():
+                return None
+            
+            # Find files with this TIC ID
+            pattern = f"*{tic_id}*.json"
+            matching_files = list(data_dir.glob(pattern))
+            
+            if not matching_files:
+                logger.debug(f"No files found for TIC {tic_id} in {data_dir}")
+                return None
+            
+            # Use the most recent file
+            latest_file = max(matching_files, key=os.path.getmtime)
+            
+            with open(latest_file, 'r') as f:
+                data = json.load(f)
+            
+            logger.debug(f"Loaded lightcurve for TIC {tic_id} from {latest_file}")
+            return data
+            
+        except Exception as e:
+            logger.error(f"Error loading lightcurve for TIC {tic_id}: {e}")
+            return None
+    
+    async def _check_and_update_model(self):
+        """Check if model needs updating and deploy new version if available"""
+        try:
+            # Get current active model info
+            active_models = self.model_registry.get_active_models()
+            current_model = active_models.get("exoplanet_classifier")
+            
+            # Get all available models
+            all_models = self.model_registry.list_models("exoplanet_classifier")
+            
+            if not all_models.get("exoplanet_classifier"):
+                logger.info("No models available in registry")
+                return
+            
+            # Find the latest model
+            latest_model = all_models["exoplanet_classifier"][0]  # Already sorted by creation time
+            
+            # Check if we need to update
+            should_update = False
+            if not current_model:
+                logger.info("No active model, deploying latest")
+                should_update = True
+            elif latest_model["version"] != current_model["version"]:
+                # Check if latest model is significantly better
+                latest_auc = latest_model["performance_metrics"].get("auc", 0)
+                current_auc = current_model["performance_metrics"].get("auc", 0)
+                
+                if latest_auc > current_auc + 0.02:  # 2% improvement threshold
+                    logger.info(f"New model shows improvement: {latest_auc:.3f} vs {current_auc:.3f}")
+                    should_update = True
+            
+            if should_update:
+                success = self.model_registry.deploy_model("exoplanet_classifier", latest_model["version"])
+                if success:
+                    self.discovery_stats["last_model_update"] = datetime.now().isoformat()
+                    logger.info(f"✅ Updated to model version {latest_model['version']}")
+                    
+                    # Clear classifier cache to force reload
+                    self._classifier = None
+            
+        except Exception as e:
+            logger.error(f"Error checking/updating model: {e}")
+    
     async def _process_targets_batch(self, targets: List[Dict]) -> List[DiscoveryCandidate]:
         """Process multiple targets in parallel"""
         semaphore = asyncio.Semaphore(self.max_concurrent)
@@ -240,8 +366,8 @@ class AutoDiscoveryService:
             
             logger.info(f"🔬 Processing {target_name} (TIC {tic_id})")
             
-            # Step 1: Download lightcurve
-            lightcurve_data = await self._download_lightcurve(tic_id, mission)
+            # Step 4: Load lightcurve data from ingested files
+            lightcurve_data = await self._load_lightcurve_from_files(tic_id, mission)
             if not lightcurve_data:
                 logger.warning(f"No lightcurve data for {target_name}")
                 return None
