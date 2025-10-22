@@ -1,0 +1,63 @@
+# ExoplanetAI Configuration - REAL NASA DATA ONLY
+# Конфигурация ExoplanetAI - ТОЛЬКО РЕАЛЬНЫЕ ДАННЫЕ NASA
+
+data_sources:
+  mode: "real_only"  # real_only, demo_only, mixed
+  
+  nasa_exoplanet_archive:
+    enabled: true
+    base_url: "https://exoplanetarchive.ipac.caltech.edu"
+    timeout_seconds: 30
+    max_results_per_query: 1000
+    cache_ttl_hours: 24
+    
+  mast_archive:
+    enabled: true
+    base_url: "https://mast.stsci.edu"
+    timeout_seconds: 60
+    max_concurrent_downloads: 3
+    cache_ttl_hours: 6
+    
+  lightkurve:
+    enabled: true
+    missions: ["TESS", "Kepler", "K2"]
+    auto_clean: true
+    remove_outliers: true
+    sigma_clip: 5.0
+    
+  synthetic_data:
+    enabled: false  # ОТКЛЮЧЕНО - НЕТ СИНТЕТИЧЕСКИХ ДАННЫХ
+    demo_endpoints: false
+    mock_generators: false
+    random_data: false
+
+ml_models:
+  training_data_source: "real_only"  # Только реальные данные для обучения
+  use_synthetic_augmentation: false  # Без синтетического увеличения данных
+  real_data_validation: true
+  
+api_endpoints:
+  # Только реальные эндпоинты
+  real_lightcurves: true
+  real_planet_search: true
+  real_nasa_archive: true
+  
+  # Отключенные demo эндпоинты
+  demo_lightcurves: false
+  mock_search: false
+  synthetic_data: false
+
+logging:
+  real_data_requests: true
+  nasa_api_calls: true
+  data_source_verification: true
+  
+cache:
+  real_data_only: true
+  cache_synthetic: false
+  verify_data_source: true
+
+security:
+  validate_nasa_sources: true
+  block_synthetic_requests: true
+  require_real_data_flag: true

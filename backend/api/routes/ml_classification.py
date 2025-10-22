@@ -10,7 +10,6 @@ API маршруты для машинного обучения и класси�
 - /feature-importance - Важность признаков
 """
 
-import numpy as np
 import pandas as pd
 from typing import Dict, List, Optional, Any
 from fastapi import APIRouter, HTTPException, BackgroundTasks, Depends, UploadFile, File
@@ -94,6 +93,8 @@ class ClassificationRequest(BaseModel):
 
 class ClassificationResult(BaseModel):
     """Результат классификации"""
+    model_config = {"protected_namespaces": ()}
+    
     target_name: str
     predicted_class: str
     confidence: float
@@ -119,6 +120,8 @@ class TrainingRequest(BaseModel):
 
 class ModelStatusResponse(BaseModel):
     """Статус модели"""
+    model_config = {"protected_namespaces": ()}
+    
     is_trained: bool
     training_in_progress: bool
     last_training_time: Optional[str]

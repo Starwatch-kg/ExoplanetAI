@@ -617,7 +617,9 @@ class ExoplanetFeatureExtractor:
             
             bls = BoxLeastSquares(time, flux)
             periods = np.linspace(1.0, 20.0, 1000)
-            bls_result = bls.power(periods)
+            # Оценим длительность транзита как 10% от периода
+            durations = periods * 0.1
+            bls_result = bls.power(periods, durations)
             
             best_period = periods[np.argmax(bls_result.power)]
             epoch = time[0]  # Простая оценка

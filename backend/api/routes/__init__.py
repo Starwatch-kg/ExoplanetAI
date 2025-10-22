@@ -7,6 +7,9 @@ from fastapi import APIRouter
 
 from .admin import router as admin_router
 from .auth import router as auth_router
+from .catalog import router as catalog_router
+from .database import router as database_router
+from .gpi_analysis import router as gpi_router
 from .lightcurves import router as lightcurves_router
 from .ml_classification import router as ml_classification_router
 from .planets import router as planets_router
@@ -19,6 +22,8 @@ from .auto_discovery import router as auto_discovery_router
 from .monitoring import router as monitoring_router
 from .scheduler import router as scheduler_router
 from .auto_training import router as auto_training_router
+from .advanced_ml import router as advanced_ml_router
+from .ml_999_accuracy import router as ml_999_router
 
 
 def create_api_router() -> APIRouter:
@@ -41,11 +46,12 @@ def create_api_router() -> APIRouter:
     # Exoplanets endpoints
     api_router.include_router(planets_router, prefix="/exoplanets", tags=["Exoplanets"])
     
-    # Compatibility endpoints (создаем отдельные роутеры для избежания конфликтов)
-    from .planets import router as catalog_router
-    from .planets import router as database_router
+    # Catalog and Database endpoints
     api_router.include_router(catalog_router, prefix="/catalog", tags=["Catalog"])
     api_router.include_router(database_router, prefix="/database", tags=["Database"])
+    
+    # GPI Analysis endpoints
+    api_router.include_router(gpi_router, prefix="/gpi", tags=["GPI Analysis"])
 
     # Protected routes
     api_router.include_router(
@@ -72,5 +78,11 @@ def create_api_router() -> APIRouter:
     
     # Auto Training System
     api_router.include_router(auto_training_router, prefix="/auto-training", tags=["Auto Training"])
+    
+    # Advanced ML System (99.9%+ accuracy)
+    api_router.include_router(advanced_ml_router, prefix="/advanced-ml", tags=["Advanced ML (99.9%+)"])
+    
+    # 99.9%+ Accuracy ML System (Production-Ready)
+    api_router.include_router(ml_999_router, prefix="/ml-999", tags=["ML 99.9% Accuracy"])
 
     return api_router

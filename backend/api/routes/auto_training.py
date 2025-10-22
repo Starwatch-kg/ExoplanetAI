@@ -18,6 +18,8 @@ router = APIRouter()
 
 class TrainingConfig(BaseModel):
     """Конфигурация автообучения"""
+    model_config = {"protected_namespaces": ()}
+    
     training_interval_hours: int = Field(12, ge=1, le=168, description="Интервал проверки (часы)")
     min_real_samples: int = Field(20, ge=5, le=100, description="Минимум реальных образцов")
     quality_threshold: float = Field(0.80, ge=0.5, le=0.99, description="Порог качества модели")
@@ -26,6 +28,8 @@ class TrainingConfig(BaseModel):
 
 class TrainingStatusResponse(BaseModel):
     """Статус системы автообучения"""
+    model_config = {"protected_namespaces": ()}
+    
     is_training: bool
     model_version: int
     last_training_time: Optional[str]
@@ -38,6 +42,8 @@ class TrainingStatusResponse(BaseModel):
 
 class TrainingMetricsResponse(BaseModel):
     """Метрики обучения"""
+    model_config = {"protected_namespaces": ()}
+    
     time_since_last_training: float
     new_real_data_count: int
     model_performance_score: float

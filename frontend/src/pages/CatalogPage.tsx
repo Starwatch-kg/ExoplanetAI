@@ -4,41 +4,25 @@ import { useTranslation } from 'react-i18next'
 import { motion } from 'framer-motion'
 
 interface ExoplanetData {
-  id: string
+  id: number
   name: string
   host_star: string
   discovery_method: string
   discovery_year: number
-  orbital_period_days: number
-  radius_earth_radii: number
-  mass_earth_masses: number
-  equilibrium_temperature_k: number
-  distance_parsecs: number
-  confidence: number
-  status: string
-  habitable_zone: boolean
+  orbital_period: number
+  planet_radius: number
+  planet_mass: number
+  equilibrium_temperature: number
+  distance_pc: number
+  confidence?: number
+  status?: string
+  habitable: boolean
+  confirmed: boolean
+  source: string
   created_at?: string
   updated_at?: string
 }
 
-interface CatalogResponse {
-  total: number
-  limit: number
-  offset: number
-  filters: {
-    method?: string
-    min_confidence?: number
-    habitable_only: boolean
-  }
-  statistics: {
-    confirmed_planets: number
-    habitable_zone_planets: number
-    average_confidence: number
-  }
-  exoplanets: ExoplanetData[]
-  timestamp: string
-  source: string
-}
 
 const CatalogPage: React.FC = () => {
   const { t } = useTranslation()
@@ -75,9 +59,18 @@ const CatalogPage: React.FC = () => {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
 
-      const data: CatalogResponse = await response.json()
-      setExoplanets(data.exoplanets)
-      setStatistics(data.statistics)
+      const data: any = await response.json()
+      // Адаптируем структуру ответа API
+      const planets = data.data?.planets || data.exoplanets || []
+      setExoplanets(planets)
+      
+      // Создаем статистику из данных
+      const stats = data.data?.statistics || data.statistics || {
+        total: planets.length,
+        confirmed: planets.filter((p: any) => p.confirmed || p.disposition === 'CONFIRMED').length,
+        candidates: planets.filter((p: any) => !p.confirmed || p.disposition === 'CANDIDATE').length
+      }
+      setStatistics(stats)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch exoplanet catalog')
     } finally {
@@ -89,12 +82,14 @@ const CatalogPage: React.FC = () => {
     fetchExoplanets()
   }, [currentPage, selectedMethod, minConfidence, habitableOnly])
 
-  const filteredExoplanets = exoplanets.filter(planet =>
-    planet.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    planet.host_star.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredExoplanets = (exoplanets || []).filter(planet =>
+    planet?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    planet?.host_star?.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
-  const getMethodColor = (method: string) => {
+  const getMethodColor = (method: string | undefined) => {
+    if (!method) return 'bg-gray-500/20 text-gray-300 border-gray-500/30'
+    
     switch (method.toLowerCase()) {
       case 'transit': return 'bg-blue-500/20 text-blue-300 border-blue-500/30'
       case 'radial_velocity': return 'bg-green-500/20 text-green-300 border-green-500/30'
@@ -104,7 +99,9 @@ const CatalogPage: React.FC = () => {
     }
   }
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: string | undefined) => {
+    if (!status) return 'bg-gray-500/20 text-gray-300 border-gray-500/30'
+    
     switch (status.toLowerCase()) {
       case 'confirmed': return 'bg-green-500/20 text-green-300 border-green-500/30'
       case 'candidate': return 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30'
@@ -352,7 +349,7 @@ const CatalogPage: React.FC = () => {
                       Host: {planet.host_star}
                     </p>
                   </div>
-                  {planet.habitable_zone && (
+                  {planet.habitable && (
                     <div className="w-3 h-3 bg-green-400 rounded-full" title="Habitable Zone" />
                   )}
                 </div>
@@ -361,28 +358,28 @@ const CatalogPage: React.FC = () => {
                   <div className="flex items-center gap-2 text-sm">
                     <Clock className="w-4 h-4 text-gray-400" />
                     <span className="text-gray-300">
-                      {planet.orbital_period_days ? planet.orbital_period_days.toFixed(1) : 'N/A'} days
+                      {planet.orbital_period ? planet.orbital_period.toFixed(1) : 'N/A'} days
                     </span>
                   </div>
                   
                   <div className="flex items-center gap-2 text-sm">
                     <Ruler className="w-4 h-4 text-gray-400" />
                     <span className="text-gray-300">
-                      {planet.radius_earth_radii ? planet.radius_earth_radii.toFixed(2) : 'N/A'} R⊕
+                      {planet.planet_radius ? planet.planet_radius.toFixed(2) : 'N/A'} R⊕
                     </span>
                   </div>
                   
                   <div className="flex items-center gap-2 text-sm">
                     <Thermometer className="w-4 h-4 text-gray-400" />
                     <span className="text-gray-300">
-                      {planet.equilibrium_temperature_k ? planet.equilibrium_temperature_k.toFixed(0) : 'N/A'} K
+                      {planet.equilibrium_temperature ? planet.equilibrium_temperature.toFixed(0) : 'N/A'} K
                     </span>
                   </div>
                   
                   <div className="flex items-center gap-2 text-sm">
                     <MapPin className="w-4 h-4 text-gray-400" />
                     <span className="text-gray-300">
-                      {planet.distance_parsecs ? planet.distance_parsecs.toFixed(1) : 'N/A'} pc
+                      {planet.distance_pc ? planet.distance_pc.toFixed(1) : 'N/A'} pc
                     </span>
                   </div>
                 </div>
@@ -391,8 +388,8 @@ const CatalogPage: React.FC = () => {
                   <span className={`text-xs px-2 py-1 rounded border ${getMethodColor(planet.discovery_method || 'Unknown')}`}>
                     {planet.discovery_method ? planet.discovery_method.replace('_', ' ') : 'Unknown'}
                   </span>
-                  <span className={`text-xs px-2 py-1 rounded border ${getStatusColor(planet.status)}`}>
-                    {planet.status}
+                  <span className={`text-xs px-2 py-1 rounded border ${getStatusColor(planet.confirmed ? 'confirmed' : 'candidate')}`}>
+                    {planet.confirmed ? 'Confirmed' : 'Candidate'}
                   </span>
                 </div>
 
@@ -401,7 +398,7 @@ const CatalogPage: React.FC = () => {
                     Discovered {planet.discovery_year}
                   </span>
                   <span className="text-xs text-gray-300">
-                    {(planet.confidence * 100).toFixed(0)}% confidence
+                    {planet.confidence ? (planet.confidence * 100).toFixed(0) + '% confidence' : planet.source}
                   </span>
                 </div>
               </motion.div>
@@ -464,15 +461,15 @@ const CatalogPage: React.FC = () => {
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
                         <span className="text-gray-400">Radius:</span>
-                        <span className="text-white">{selectedPlanet.radius_earth_radii?.toFixed(2) || 'N/A'} Earth radii</span>
+                        <span className="text-white">{selectedPlanet.planet_radius?.toFixed(2) || 'N/A'} Earth radii</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-400">Mass:</span>
-                        <span className="text-white">{selectedPlanet.mass_earth_masses?.toFixed(2) || 'N/A'} Earth masses</span>
+                        <span className="text-white">{selectedPlanet.planet_mass?.toFixed(2) || 'N/A'} Earth masses</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-400">Temperature:</span>
-                        <span className="text-white">{selectedPlanet.equilibrium_temperature_k?.toFixed(0) || 'N/A'} K</span>
+                        <span className="text-white">{selectedPlanet.equilibrium_temperature?.toFixed(0) || 'N/A'} K</span>
                       </div>
                     </div>
                   </div>
@@ -482,11 +479,15 @@ const CatalogPage: React.FC = () => {
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
                         <span className="text-gray-400">Period:</span>
-                        <span className="text-white">{selectedPlanet.orbital_period_days.toFixed(2)} days</span>
+                        <span className="text-white">
+                          {selectedPlanet.orbital_period ? selectedPlanet.orbital_period.toFixed(2) : 'N/A'} days
+                        </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-400">Distance:</span>
-                        <span className="text-white">{selectedPlanet.distance_parsecs.toFixed(1)} parsecs</span>
+                        <span className="text-white">
+                          {selectedPlanet.distance_pc ? selectedPlanet.distance_pc.toFixed(1) : 'N/A'} parsecs
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -506,11 +507,11 @@ const CatalogPage: React.FC = () => {
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-400">Status:</span>
-                        <span className="text-white">{selectedPlanet.status}</span>
+                        <span className="text-white">{selectedPlanet.confirmed ? 'Confirmed' : 'Candidate'}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-gray-400">Confidence:</span>
-                        <span className="text-white">{(selectedPlanet.confidence * 100).toFixed(1)}%</span>
+                        <span className="text-gray-400">Source:</span>
+                        <span className="text-white">{selectedPlanet.source}</span>
                       </div>
                     </div>
                   </div>
@@ -518,9 +519,9 @@ const CatalogPage: React.FC = () => {
                   <div>
                     <h3 className="text-lg font-semibold text-white mb-3">Habitability</h3>
                     <div className="flex items-center gap-2">
-                      <div className={`w-3 h-3 rounded-full ${selectedPlanet.habitable_zone ? 'bg-green-400' : 'bg-red-400'}`} />
+                      <div className={`w-3 h-3 rounded-full ${selectedPlanet.habitable ? 'bg-green-400' : 'bg-red-400'}`} />
                       <span className="text-white text-sm">
-                        {selectedPlanet.habitable_zone ? 'In Habitable Zone' : 'Outside Habitable Zone'}
+                        {selectedPlanet.habitable ? 'In Habitable Zone' : 'Outside Habitable Zone'}
                       </span>
                     </div>
                   </div>

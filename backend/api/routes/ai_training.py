@@ -35,6 +35,8 @@ training_state = {
 
 class TrainingConfig(BaseModel):
     """Конфигурация обучения"""
+    model_config = {"protected_namespaces": ()}
+    
     model_type: str = Field("cnn_lstm", description="Тип модели")
     learning_rate: float = Field(0.001, description="Learning rate")
     batch_size: int = Field(32, description="Размер батча")

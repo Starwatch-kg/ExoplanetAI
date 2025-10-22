@@ -1,14 +1,22 @@
 """
-Light curves API routes
-Маршруты API кривых блеска
+Light curves API routes - REAL NASA DATA ONLY
+Маршруты API кривых блеска - ТОЛЬКО РЕАЛЬНЫЕ ДАННЫЕ NASA
 """
 
 import logging
-import time
 from typing import List, Optional
 
-import numpy as np
 from fastapi import APIRouter, Depends, HTTPException, Path, Query
+
+try:
+    import lightkurve as lk
+    from astroquery.mast import Catalogs, Observations
+    from astropy.coordinates import SkyCoord
+    import astropy.units as u
+    LIGHTKURVE_AVAILABLE = True
+except ImportError:
+    LIGHTKURVE_AVAILABLE = False
+    logging.warning("lightkurve/astroquery not available - real NASA data disabled")
 
 from auth.dependencies import require_researcher
 from auth.models import User
@@ -20,460 +28,255 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
-@router.get("/demo/{target_name}")
-async def get_light_curve_demo(
-    target_name: str = Path(
-        ..., description="Target name (e.g., 'TOI-715', 'TIC 123456')"
-    ),
-    mission: Optional[str] = Query("TESS", description="Mission (TESS, Kepler, K2)"),
+@router.get("/real/{target_name}")
+async def get_real_lightcurve(
+    target_name: str = Path(..., description="Target name (e.g., TOI-715, TIC-441420236)"),
+    mission: str = Query("TESS", description="Mission name (TESS, Kepler, K2)"),
+    sector: Optional[int] = Query(None, description="TESS sector number"),
 ):
     """
-    Get light curve data for a target (Demo version - no authentication required)
+    Get REAL lightcurve data from NASA archives
+    Получить РЕАЛЬНЫЕ данные кривой блеска из архивов NASA
+    """
+    if not LIGHTKURVE_AVAILABLE:
+        raise HTTPException(
+            status_code=503,
+            detail="Real NASA data service unavailable - lightkurve not installed"
+        )
     
-    Returns mock photometric time series data for demonstration purposes.
+    try:
+        logger.info(f"Fetching REAL NASA data for {target_name} from {mission}")
+        
+        # Search for real lightcurve data
+        search_result = lk.search_lightcurve(
+            target_name, 
+            mission=mission.upper(),
+            sector=sector
+        )
+        
+        if len(search_result) == 0:
+            raise HTTPException(
+                status_code=404,
+                detail=f"No real {mission} data found for target {target_name}"
+            )
+        
+        # Download the first available lightcurve
+        lc = search_result[0].download()
+        
+        if lc is None:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Failed to download real data for {target_name}"
+            )
+        
+        # Clean and normalize the real data
+        lc = lc.normalize().remove_outliers(sigma=5)
+        
+        # Extract real data
+        time_data = lc.time.value.tolist()
+        flux_data = lc.flux.value.tolist()
+        quality_data = lc.quality.value.tolist() if hasattr(lc, 'quality') else [0] * len(time_data)
+        
+        # Get real metadata
+        metadata = {
+            "mission": mission.upper(),
+            "target_name": target_name,
+            "sector": getattr(lc, 'sector', sector),
+            "camera": getattr(lc, 'camera', None),
+            "ccd": getattr(lc, 'ccd', None),
+            "data_points": len(time_data),
+            "time_span_days": float(max(time_data) - min(time_data)),
+            "cadence_minutes": float(lc.time[1].value - lc.time[0].value) * 24 * 60,
+            "data_source": "NASA MAST Archive",
+            "real_data": True
+        }
+        
+        return create_success_response({
+            "target_name": target_name,
+            "mission": mission.upper(),
+            "lightcurve": {
+                "time": time_data,
+                "flux": flux_data,
+                "quality": quality_data,
+                "time_data": time_data,  # Для совместимости с фронтендом
+                "flux_data": flux_data   # Для совместимости с фронтендом
+            },
+            "metadata": metadata,
+            "data_quality": {
+                "total_points": len(time_data),
+                "good_quality_points": sum(1 for q in quality_data if q == 0),
+                "outliers_removed": True,
+                "normalized": True
+            }
+        })
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching real NASA data for {target_name}: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to fetch real NASA data: {str(e)}"
+        )
+
+
+@router.get("/search/{target_name}")
+async def search_real_targets(
+    target_name: str = Path(..., description="Target name to search"),
+    mission: str = Query("TESS", description="Mission name"),
+    limit: int = Query(10, description="Maximum results"),
+):
+    """
+    Search for real targets in NASA archives
+    Поиск реальных целей в архивах NASA
+    """
+    if not LIGHTKURVE_AVAILABLE:
+        raise HTTPException(
+            status_code=503,
+            detail="Real NASA search unavailable - lightkurve not installed"
+        )
+    
+    try:
+        logger.info(f"Searching real NASA targets for {target_name}")
+        
+        # Search for real observations
+        search_result = lk.search_lightcurve(target_name, mission=mission.upper())
+        
+        if len(search_result) == 0:
+            return create_success_response({
+                "query": target_name,
+                "mission": mission.upper(),
+                "results": [],
+                "total_found": 0,
+                "message": f"No real {mission} observations found for {target_name}"
+            })
+        
+        # Limit results
+        search_result = search_result[:limit]
+        
+        results = []
+        for obs in search_result:
+            result = {
+                "target_name": str(obs.target_name),
+                "mission": str(obs.mission),
+                "sector": getattr(obs, 'sector', None),
+                "camera": getattr(obs, 'camera', None),
+                "ccd": getattr(obs, 'ccd', None),
+                "exptime": getattr(obs, 'exptime', None),
+                "distance": getattr(obs, 'distance', None),
+                "data_available": True,
+                "real_nasa_data": True
+            }
+            results.append(result)
+        
+        return create_success_response({
+            "query": target_name,
+            "mission": mission.upper(),
+            "results": results,
+            "total_found": len(results),
+            "data_source": "NASA MAST Archive"
+        })
+        
+    except Exception as e:
+        logger.error(f"Error searching real NASA targets: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to search real NASA data: {str(e)}"
+        )
+
+
+@router.get("/demo/{target_name}")
+async def get_demo_lightcurve(
+    target_name: str = Path(..., description="Target name for demo data"),
+    mission: str = Query("TESS", description="Mission name (TESS, Kepler, K2)"),
+):
+    """
+    Get demo lightcurve data for testing (no authentication required)
+    Получить demo данные кривой блеска для тестирования
     """
     import numpy as np
+    import hashlib
     
-    # Generate mock data for demo
-    np.random.seed(hash(target_name) % 2**32)  # Consistent data for same target
-    
-    # Create realistic time series
-    n_points = 1000
-    time_span = 27.4  # TESS sector duration in days
-    time_data = np.linspace(0, time_span, n_points)
-    
-    # Base flux with noise
-    flux_data = np.ones(n_points) + np.random.normal(0, 0.001, n_points)
-    
-    # Add a transit signal ONLY if target looks like a real planet candidate
-    # Check for known prefixes: TOI, TIC, Kepler, KOI, K2, EPIC
-    # Remove planet suffixes (b, c, d, etc.) before checking
-    target_clean = target_name.upper().replace('-', '').replace(' ', '').rstrip('BCDEFGH')
-    is_real_target = any(target_clean.startswith(prefix) for prefix in 
-                         ['TOI', 'TIC', 'KEPLER', 'KOI', 'K2', 'EPIC', 'WASP', 'HAT', 'HD', 'GJ'])
-    
-    if is_real_target:
-        period = 19.3  # days
-        transit_depth = 0.01
-        transit_duration = 4.0 / 24.0  # 4 hours in days
+    try:
+        logger.info(f"Generating demo lightcurve for {target_name} from {mission}")
         
-        for i in range(len(time_data)):
-            phase = (time_data[i] % period) / period
-            if phase < transit_duration / period or phase > (1 - transit_duration / period):
-                flux_data[i] -= transit_depth * np.exp(-((phase - 0.5) * period / (transit_duration / 2))**2)
-    else:
-        # For random/invalid targets, add more noise and no clear transit
-        flux_data += np.random.normal(0, 0.002, n_points)  # More noise
-    
-    flux_err_data = np.full(n_points, 0.001)
-    
-    return {
-        "status": "success",
-        "data": {
+        # Use target name hash for deterministic results
+        seed = int(hashlib.md5(target_name.encode()).hexdigest()[:8], 16)
+        np.random.seed(seed)
+        
+        # Generate time series (TESS sector = 27.4 days)
+        if mission.upper() == "TESS":
+            duration_days = 27.4
+            cadence_minutes = 2.0  # TESS 2-minute cadence
+        elif mission.upper() in ["KEPLER", "K2"]:
+            duration_days = 90.0
+            cadence_minutes = 29.4  # Kepler long cadence
+        else:
+            duration_days = 30.0
+            cadence_minutes = 10.0
+        
+        # Generate time array
+        total_points = int((duration_days * 24 * 60) / cadence_minutes)
+        time = np.linspace(0, duration_days, total_points)
+        
+        # Generate base flux with realistic noise
+        base_flux = np.ones_like(time)
+        noise_level = 1000e-6  # 1000 ppm noise
+        noise = np.random.normal(0, noise_level, len(time))
+        flux = base_flux + noise
+        
+        # Add transit signals for known targets
+        if any(prefix in target_name.upper() for prefix in ['TOI', 'TIC', 'KEPLER', 'KOI']):
+            # Add realistic transit
+            period = np.random.uniform(1.0, 50.0)  # 1-50 day period
+            depth = np.random.uniform(0.001, 0.01)  # 0.1-1% depth
+            duration = np.random.uniform(0.05, 0.2) * period  # 5-20% of period
+            
+            # Add multiple transits
+            num_transits = int(duration_days / period)
+            for i in range(num_transits):
+                transit_center = (i + 0.5) * period
+                if transit_center < duration_days:
+                    # Simple box transit model
+                    transit_mask = np.abs(time - transit_center) < (duration / 2)
+                    flux[transit_mask] -= depth
+        
+        # Add stellar variability
+        stellar_period = np.random.uniform(5.0, 30.0)  # Stellar rotation
+        stellar_amplitude = np.random.uniform(0.0005, 0.005)  # 0.05-0.5%
+        stellar_variation = stellar_amplitude * np.sin(2 * np.pi * time / stellar_period)
+        flux += stellar_variation
+        
+        # Quality flags (0 = good, >0 = bad)
+        quality = np.zeros_like(time, dtype=int)
+        # Add some bad data points
+        bad_indices = np.random.choice(len(time), size=int(0.05 * len(time)), replace=False)
+        quality[bad_indices] = 1
+        
+        return create_success_response({
+            "target_name": target_name,
+            "mission": mission.upper(),
             "lightcurve": {
-                "target_name": target_name,
-                "mission": mission,
-                "time_data": time_data.tolist(),
-                "flux_data": flux_data.tolist(),
-                "flux_err_data": flux_err_data.tolist(),
-                "data_points": n_points,
-                "time_span_days": time_span,
-                "cadence_minutes": (time_span * 24 * 60) / n_points,
-                "noise_level_ppm": 1000
+                "time": time.tolist(),
+                "flux": flux.tolist(),
+                "quality": quality.tolist(),
+                "time_data": time.tolist(),  # Для совместимости с фронтендом
+                "flux_data": flux.tolist()   # Для совместимости с фронтендом
             },
-            "cached": False
-        },
-        "message": f"Demo light curve data for {target_name}",
-        "processing_time_ms": 50
-    }
-
-
-@router.get("/{target_name}")
-async def get_light_curve(
-    target_name: str = Path(
-        ..., description="Target name (e.g., 'TOI-715', 'TIC 123456')"
-    ),
-    mission: Optional[str] = Query(None, description="Mission (TESS, Kepler, K2)"),
-    sector_quarter: Optional[int] = Query(
-        None, description="Specific sector/quarter number"
-    ),
-    normalize: bool = Query(True, description="Normalize flux data"),
-    remove_outliers: bool = Query(True, description="Remove outliers"),
-    current_user: User = Depends(require_researcher),
-):
-    """
-    Get light curve data for a target
-
-    **🔒 Requires researcher role or higher**
-
-    Returns real photometric time series data from space missions.
-
-    **Examples:**
-    - `/api/v1/lightcurve/TOI-715?mission=TESS`
-    - `/api/v1/lightcurve/TIC%20261136679?sector_quarter=1`
-    """
-    start_time = time.time()
-
-    try:
-        # Check cache first
-        cache = get_cache()
-        cache_key = (
-            f"{target_name}:{mission}:{sector_quarter}:{normalize}:{remove_outliers}"
-        )
-        cached_lc = await cache.get("lightcurves", cache_key)
-
-        if cached_lc:
-            logger.info(f"Cache hit for light curve: {target_name}")
-            return create_success_response(
-                data={"lightcurve": cached_lc, "cached": True},
-                message=f"Light curve data for {target_name}",
-                processing_time_ms=(time.time() - start_time) * 1000,
-            )
-
-        # Get registry and find sources that support light curves
-        registry = get_registry()
-        sources = [
-            s
-            for s in registry.get_available_sources()
-            if s.get_capabilities().get("light_curves", False)
-        ]
-
-        if not sources:
-            return create_error_response(
-                ErrorCode.SERVICE_UNAVAILABLE, "No light curve data sources available"
-            )
-
-        # Try to get light curve from sources
-        lightcurve_data = None
-        source_used = None
-
-        # If mission specified, try mission-specific sources first
-        if mission:
-            mission_sources = [
-                s for s in sources if mission.upper() in s.get_supported_missions()
-            ]
-            for source in mission_sources:
-                try:
-                    lightcurve_data = await source.fetch_light_curve(
-                        target_name, mission, sector_quarter
-                    )
-                    if lightcurve_data:
-                        source_used = source.name
-                        break
-                except Exception as e:
-                    logger.debug(f"Light curve not found in {source.name}: {e}")
-                    continue
-
-        # If not found, try all light curve sources
-        if not lightcurve_data:
-            for source in sources:
-                try:
-                    lightcurve_data = await source.fetch_light_curve(
-                        target_name, mission, sector_quarter
-                    )
-                    if lightcurve_data:
-                        source_used = source.name
-                        break
-                except Exception as e:
-                    logger.debug(f"Light curve not found in {source.name}: {e}")
-                    continue
-
-        if not lightcurve_data:
-            return create_error_response(
-                ErrorCode.DATA_NOT_FOUND,
-                f"Light curve data for '{target_name}' not found",
-                processing_time_ms=(time.time() - start_time) * 1000,
-            )
-
-        # Process data according to parameters
-        processed_data = _process_light_curve_data(
-            lightcurve_data, normalize=normalize, remove_outliers=remove_outliers
-        )
-
-        # Add metadata
-        processed_data["source_used"] = source_used
-        processed_data["processing_options"] = {
-            "normalized": normalize,
-            "outliers_removed": remove_outliers,
-        }
-
-        # Cache for 2 hours (light curves are large)
-        await cache.set("lightcurves", cache_key, processed_data, ttl=7200)
-
-        processing_time = (time.time() - start_time) * 1000
-
-        logger.info(
-            f"Light curve retrieved: {target_name} from {source_used} "
-            f"({len(processed_data['time'])} points)"
-        )
-
-        return create_success_response(
-            data={"lightcurve": processed_data, "cached": False},
-            message=f"Light curve data for {target_name}",
-            processing_time_ms=processing_time,
-        )
-
+            "metadata": {
+                "total_points": len(time),
+                "duration_days": duration_days,
+                "cadence_minutes": cadence_minutes,
+                "noise_level_ppm": int(noise_level * 1e6),
+                "data_source": "Demo Data Generator",
+                "real_data": False
+            },
+            "message": f"Demo lightcurve generated for {target_name}"
+        })
+        
     except Exception as e:
-        logger.error(f"Error fetching light curve for '{target_name}': {e}")
-        return create_error_response(
-            ErrorCode.INTERNAL_ERROR,
-            f"Failed to fetch light curve: {str(e)}",
-            processing_time_ms=(time.time() - start_time) * 1000,
+        logger.error(f"Error generating demo lightcurve: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to generate demo lightcurve: {str(e)}"
         )
-
-
-@router.get("/{target_name}/analysis")
-async def analyze_light_curve(
-    target_name: str = Path(..., description="Target name"),
-    mission: Optional[str] = Query(None, description="Mission"),
-    period_min: float = Query(0.5, description="Minimum period to search (days)", gt=0),
-    period_max: float = Query(
-        50.0, description="Maximum period to search (days)", gt=0
-    ),
-    snr_threshold: float = Query(
-        7.0, description="SNR threshold for detection", ge=3.0
-    ),
-    current_user: User = Depends(require_researcher),
-):
-    """
-    Analyze light curve for transit signals
-
-    **🔒 Requires researcher role or higher**
-
-    Performs Box Least Squares (BLS) analysis on real light curve data
-    to search for periodic transit signals.
-    """
-    start_time = time.time()
-
-    try:
-        # First get the light curve
-        cache = get_cache()
-        lc_cache_key = f"{target_name}:{mission}:None:True:True"
-        lightcurve_data = await cache.get("lightcurves", lc_cache_key)
-
-        if not lightcurve_data:
-            # Need to fetch light curve first
-            registry = get_registry()
-            sources = [
-                s
-                for s in registry.get_available_sources()
-                if s.get_capabilities().get("light_curves", False)
-            ]
-
-            if not sources:
-                return create_error_response(
-                    ErrorCode.SERVICE_UNAVAILABLE,
-                    "No light curve data sources available",
-                )
-
-            # Try to get light curve
-            lc_obj = None
-            for source in sources:
-                try:
-                    lc_obj = await source.fetch_light_curve(target_name, mission)
-                    if lc_obj:
-                        break
-                except Exception:
-                    continue
-
-            if not lc_obj:
-                return create_error_response(
-                    ErrorCode.DATA_NOT_FOUND,
-                    f"Light curve data for '{target_name}' not found",
-                )
-
-            lightcurve_data = _process_light_curve_data(
-                lc_obj, normalize=True, remove_outliers=True
-            )
-
-        # Check analysis cache
-        analysis_cache_key = (
-            f"analysis:{target_name}:{period_min}:{period_max}:{snr_threshold}"
-        )
-        cached_analysis = await cache.get("lc_analysis", analysis_cache_key)
-
-        if cached_analysis:
-            logger.info(f"Cache hit for light curve analysis: {target_name}")
-            return create_success_response(
-                data=cached_analysis,
-                message=f"Light curve analysis for {target_name} (cached)",
-                processing_time_ms=(time.time() - start_time) * 1000,
-            )
-
-        # Perform BLS analysis
-        analysis_result = await _perform_bls_analysis(
-            lightcurve_data,
-            period_min=period_min,
-            period_max=period_max,
-            snr_threshold=snr_threshold,
-        )
-
-        # Add metadata
-        analysis_result["target_name"] = target_name
-        analysis_result["analysis_parameters"] = {
-            "period_min_days": period_min,
-            "period_max_days": period_max,
-            "snr_threshold": snr_threshold,
-        }
-        analysis_result["data_points"] = len(lightcurve_data["time"])
-
-        # Cache analysis for 4 hours
-        await cache.set("lc_analysis", analysis_cache_key, analysis_result, ttl=14400)
-
-        processing_time = (time.time() - start_time) * 1000
-
-        logger.info(
-            f"Light curve analysis completed: {target_name} "
-            f"(SNR: {analysis_result.get('best_snr', 0):.2f})"
-        )
-
-        return create_success_response(
-            data=analysis_result,
-            message=f"Light curve analysis for {target_name}",
-            processing_time_ms=processing_time,
-        )
-
-    except Exception as e:
-        logger.error(f"Error analyzing light curve for '{target_name}': {e}")
-        return create_error_response(
-            ErrorCode.INTERNAL_ERROR,
-            f"Light curve analysis failed: {str(e)}",
-            processing_time_ms=(time.time() - start_time) * 1000,
-        )
-
-
-def _process_light_curve_data(lc_data, normalize=True, remove_outliers=True) -> dict:
-    """Process light curve data according to options"""
-
-    # Convert to numpy arrays if needed
-    time = np.array(lc_data.time_bjd)
-    flux = np.array(lc_data.flux)
-    flux_err = np.array(lc_data.flux_err)
-
-    # Remove NaN values
-    mask = np.isfinite(time) & np.isfinite(flux) & np.isfinite(flux_err)
-    time = time[mask]
-    flux = flux[mask]
-    flux_err = flux_err[mask]
-
-    # Remove outliers if requested
-    if remove_outliers:
-        # Simple sigma clipping
-        flux_median = np.median(flux)
-        flux_std = np.std(flux)
-        outlier_mask = np.abs(flux - flux_median) < 5 * flux_std
-
-        time = time[outlier_mask]
-        flux = flux[outlier_mask]
-        flux_err = flux_err[outlier_mask]
-
-    # Normalize if requested
-    if normalize:
-        flux_median = np.median(flux)
-        flux = flux / flux_median
-        flux_err = flux_err / flux_median
-
-    return {
-        "target_name": lc_data.target_name,
-        "mission": lc_data.mission,
-        "time": time.tolist(),
-        "flux": flux.tolist(),
-        "flux_err": flux_err.tolist(),
-        "time_format": "BJD",
-        "flux_format": "Normalized" if normalize else "Raw",
-        "cadence_minutes": lc_data.cadence_minutes,
-        "sectors_quarters": lc_data.sectors_quarters,
-        "data_points": len(time),
-        "time_span_days": float(np.max(time) - np.min(time)),
-        "noise_level_ppm": float(np.std(flux) * 1e6) if len(flux) > 0 else None,
-    }
-
-
-async def _perform_bls_analysis(
-    lc_data, period_min=0.5, period_max=50.0, snr_threshold=7.0
-) -> dict:
-    """Perform Box Least Squares analysis on light curve data"""
-
-    try:
-        # Import BLS here to avoid dependency issues
-        import astropy.units as u
-        from astropy.timeseries import BoxLeastSquares
-
-        time = np.array(lc_data["time"])
-        flux = np.array(lc_data["flux"])
-
-        # Create BLS object
-        bls = BoxLeastSquares(time * u.day, flux)
-
-        # Define period grid
-        periods = np.linspace(period_min, period_max, 10000)
-
-        # Run BLS
-        periodogram = bls.power(periods * u.day)
-
-        # Find best period
-        best_index = np.argmax(periodogram.power)
-        best_period = periods[best_index]
-        best_power = periodogram.power[best_index]
-
-        # Calculate SNR (simplified)
-        noise_level = np.std(periodogram.power)
-        snr = (best_power - np.median(periodogram.power)) / noise_level
-
-        # Get transit parameters for best period
-        stats = bls.compute_stats(best_period * u.day)
-
-        # Determine if significant
-        is_significant = snr >= snr_threshold
-
-        return {
-            "method": "Box Least Squares (BLS)",
-            "best_period_days": float(best_period),
-            "best_power": float(best_power),
-            "best_snr": float(snr),
-            "is_significant": is_significant,
-            "transit_depth": (
-                float(stats["depth"][0]) if len(stats["depth"]) > 0 else None
-            ),
-            "transit_duration_hours": (
-                float(stats["duration"][0] * 24) if len(stats["duration"]) > 0 else None
-            ),
-            "transit_epoch": (
-                float(stats["transit_time"][0])
-                if len(stats["transit_time"]) > 0
-                else None
-            ),
-            "periods_searched": len(periods),
-            "period_range_days": [period_min, period_max],
-            "snr_threshold": snr_threshold,
-        }
-
-    except ImportError:
-        # Fallback simple analysis if astropy not available
-        logger.warning("Astropy BLS not available, using simple analysis")
-
-        time = np.array(lc_data["time"])
-        flux = np.array(lc_data["flux"])
-
-        # Very simple period detection (for demo)
-        # In real implementation, you'd use proper BLS
-        flux_std = np.std(flux)
-
-        return {
-            "method": "Simple Analysis (Fallback)",
-            "best_period_days": 2.5,  # Placeholder
-            "best_power": 0.1,
-            "best_snr": 5.0,
-            "is_significant": False,
-            "transit_depth": None,
-            "transit_duration_hours": None,
-            "transit_epoch": None,
-            "periods_searched": 1000,
-            "period_range_days": [period_min, period_max],
-            "snr_threshold": snr_threshold,
-            "note": "Fallback analysis - install astropy for full BLS",
-        }
-
-    except Exception as e:
-        logger.error(f"BLS analysis error: {e}")
-        raise

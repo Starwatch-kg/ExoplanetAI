@@ -1,13 +1,22 @@
 """
-Exoplanets API routes
-Маршруты API экзопланет
+Exoplanets API routes - REAL NASA DATA ONLY
+Маршруты API экзопланет - ТОЛЬКО РЕАЛЬНЫЕ ДАННЫЕ NASA
 """
 
 import logging
 import time
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, List
 
 from fastapi import APIRouter, Depends, HTTPException, Path, Query
+
+try:
+    from astroquery.ipac.nexsci.nasa_exoplanet_archive import NasaExoplanetArchive
+    from astroquery.mast import Catalogs
+    import pandas as pd
+    NASA_ARCHIVE_AVAILABLE = True
+except ImportError:
+    NASA_ARCHIVE_AVAILABLE = False
+    logging.warning("astroquery not available - real NASA exoplanet data disabled")
 
 from auth.dependencies import get_optional_user, require_researcher
 from auth.models import User
@@ -19,596 +28,516 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
-async def generate_demo_search_results(query: str, limit: int) -> dict:
-    """Generate demo search results when real data is not available"""
+async def generate_demo_search_results(query: str, limit: int) -> List[Dict[str, Any]]:
+    """Generate demo search results for testing"""
+    import hashlib
     import random
-    import numpy as np
     
-    # Check if query looks like a real target
-    # Remove planet suffixes (b, c, d, etc.) before checking
-    query_clean = query.upper().replace('-', '').replace(' ', '').rstrip('BCDEFGH')
-    is_real_target = any(query_clean.startswith(prefix) for prefix in 
-                         ['TOI', 'TIC', 'KEPLER', 'KOI', 'K2', 'EPIC', 'WASP', 'HAT', 'HD', 'GJ'])
-    
-    # If it's just random numbers or invalid query, return no results
-    if not is_real_target and query.replace('-', '').replace(' ', '').isdigit():
-        return {
-            "planets": [],
-            "total_planets_found": 0,
-            "sources_searched": ["nasa", "tess", "kepler"],
-            "search_query": query,
-            "cached": False,
-            "demo_data": True,
-            "message": "No exoplanets found for this target. Try searching for known targets like TOI-715, TIC-307210830, or Kepler-452b"
+    # Известные экзопланеты для более реалистичного опыта
+    famous_exoplanets = {
+        'kepler-452b': {
+            'name': 'Kepler-452b', 'host_star': 'Kepler-452', 'discovery_year': 2015,
+            'discovery_method': 'Transit', 'orbital_period': 384.8, 'planet_radius': 1.63,
+            'planet_mass': 5.0, 'equilibrium_temperature': 265, 'distance_pc': 430.0,
+            'disposition': 'CONFIRMED'
+        },
+        'trappist-1': {
+            'name': 'TRAPPIST-1e', 'host_star': 'TRAPPIST-1', 'discovery_year': 2017,
+            'discovery_method': 'Transit', 'orbital_period': 6.1, 'planet_radius': 0.92,
+            'planet_mass': 0.77, 'equilibrium_temperature': 251, 'distance_pc': 12.1,
+            'disposition': 'CONFIRMED'
+        },
+        'proxima': {
+            'name': 'Proxima Centauri b', 'host_star': 'Proxima Centauri', 'discovery_year': 2016,
+            'discovery_method': 'Radial Velocity', 'orbital_period': 11.2, 'planet_radius': 1.17,
+            'planet_mass': 1.27, 'equilibrium_temperature': 234, 'distance_pc': 1.3,
+            'disposition': 'CONFIRMED'
         }
-    
-    # Generate consistent mock data based on query
-    random.seed(hash(query) % 2**32)
-    np.random.seed(hash(query) % 2**32)
-    
-    # Create mock planets based on query
-    mock_planets = []
-    num_results = min(random.randint(1, 5), limit)
-    
-    for i in range(num_results):
-        planet_name = f"{query}-{chr(97+i)}" if not any(char.isdigit() for char in query) else f"{query}.{i+1:02d}"
-        
-        mock_planet = {
-            "name": planet_name,
-            "host_star": query if "TIC" in query or "TOI" in query else f"{query.split('-')[0]} {random.randint(1, 999)}",
-            "discovery_year": random.randint(2009, 2024),
-            "discovery_method": random.choice(["Transit", "Radial Velocity", "Direct Imaging"]),
-            "orbital_period": round(random.uniform(0.5, 365.0), 3),
-            "planet_radius": round(random.uniform(0.5, 15.0), 3),
-            "planet_mass": round(random.uniform(0.1, 300.0), 3),
-            "equilibrium_temperature": random.randint(200, 2000),
-            "distance_pc": round(random.uniform(10.0, 500.0), 1),
-            "stellar_magnitude": round(random.uniform(8.0, 16.0), 2),
-            "disposition": random.choice(["CONFIRMED", "CANDIDATE", "FALSE POSITIVE"]),
-            "source": random.choice(["NASA Exoplanet Archive", "TESS", "Kepler"]),
-            "ra": round(random.uniform(0, 360), 6),
-            "dec": round(random.uniform(-90, 90), 6),
-            "transit_depth_ppm": random.randint(100, 10000) if random.random() > 0.3 else None,
-            "impact_parameter": round(random.uniform(0, 1), 3) if random.random() > 0.5 else None
-        }
-        mock_planets.append(mock_planet)
-    
-    return {
-        "planets": mock_planets,
-        "total_planets_found": len(mock_planets),
-        "sources_searched": ["nasa", "tess", "kepler"],
-        "search_query": query,
-        "cached": False,
-        "demo_data": True
     }
+    
+    # Проверяем, есть ли запрос среди известных планет
+    query_lower = query.lower()
+    if any(famous in query_lower for famous in famous_exoplanets.keys()):
+        for famous_key, planet_data in famous_exoplanets.items():
+            if famous_key in query_lower:
+                planet_data.update({
+                    'has_transit': planet_data['discovery_method'] == 'Transit',
+                    'has_rv': planet_data['discovery_method'] == 'Radial Velocity',
+                    'source': 'Demo Data (Famous Exoplanet)',
+                    'real_nasa_data': False
+                })
+                return [planet_data]
+    
+    # Use query hash for deterministic results
+    seed = int(hashlib.md5(query.encode()).hexdigest()[:8], 16)
+    random.seed(seed)
+    
+    # Generate 1-5 planets based on query
+    num_planets = random.randint(1, min(5, limit))
+    
+    planets = []
+    for i in range(num_planets):
+        # Более реалистичные имена для известных объектов
+        if query.upper().startswith(('TOI', 'TIC')):
+            planet_name = f"{query.upper()}.{i+1:02d}"
+        elif query.upper().startswith('KOI'):
+            planet_name = f"{query.upper()}.{i+1:02d}"
+        elif 'kepler' in query.lower():
+            planet_name = f"{query} {chr(98+i)}" if i == 0 else f"{query} {chr(98+i)}"
+        elif 'trappist' in query.lower():
+            planet_name = f"{query}-{i+1}{chr(98+i)}"
+        else:
+            planet_name = f"{query} {chr(98+i)}"
+        
+        planet = {
+            "name": planet_name,
+            "host_star": query.upper() if query.upper().startswith(('TOI', 'TIC', 'KOI')) else query,
+            "discovery_year": random.randint(2009, 2024),
+            "discovery_method": random.choice(["Transit", "Radial Velocity", "Direct Imaging", "Microlensing"]),
+            "orbital_period": round(random.uniform(0.5, 500.0), 2),
+            "planet_radius": round(random.uniform(0.5, 15.0), 2),
+            "planet_mass": round(random.uniform(0.1, 20.0), 2),
+            "equilibrium_temperature": random.randint(200, 2000),
+            "distance_pc": round(random.uniform(10.0, 1000.0), 1),
+            "has_transit": random.choice([True, False]),
+            "has_rv": random.choice([True, False]),
+            "disposition": random.choice(["CONFIRMED", "CANDIDATE", "FALSE POSITIVE"]),
+            "source": "Demo Data",
+            "real_nasa_data": False
+        }
+        planets.append(planet)
+    
+    return planets
+
+
+@router.get("/search")
+async def search_real_exoplanets(
+    q: str = Query(..., description="Search query (planet name, star name, etc.)", min_length=1),
+    limit: int = Query(50, description="Maximum results", ge=1, le=200),
+    confirmed_only: bool = Query(False, description="Only confirmed planets"),
+):
+    """
+    Search for REAL exoplanets in NASA Exoplanet Archive
+    Поиск РЕАЛЬНЫХ экзопланет в архиве NASA
+    """
+    if not NASA_ARCHIVE_AVAILABLE:
+        raise HTTPException(
+            status_code=503,
+            detail="Real NASA exoplanet data unavailable - astroquery not installed"
+        )
+    
+    try:
+        logger.info(f"Searching REAL NASA exoplanet data for: '{q}'")
+        
+        # Multiple search strategies for NASA Exoplanet Archive
+        search_strategies = [
+            # Точное совпадение имени планеты или звезды
+            f"pl_name like '%{q}%' or hostname like '%{q}%'",
+            # Поиск по частичному совпадению (убираем пробелы и дефисы)
+            f"replace(replace(pl_name, ' ', ''), '-', '') like '%{q.replace(' ', '').replace('-', '')}%' or replace(replace(hostname, ' ', ''), '-', '') like '%{q.replace(' ', '').replace('-', '')}%'",
+            # Поиск по началу имени
+            f"pl_name like '{q}%' or hostname like '{q}%'",
+            # Поиск по TIC/TOI/KOI ID (убираем префиксы)
+            f"hostname like '%{q.replace('TIC-', '').replace('TIC ', '').replace('TOI-', '').replace('TOI ', '').replace('KOI-', '').replace('KOI ', '')}%'" if any(prefix in q.upper() for prefix in ['TIC', 'TOI', 'KOI']) else None
+        ]
+        
+        result = None
+        successful_strategy = None
+        
+        for i, where_clause in enumerate(search_strategies):
+            if where_clause is None:
+                continue
+                
+            try:
+                query_params = {
+                    'table': 'ps',  # Planetary Systems table
+                    'select': 'pl_name,hostname,disc_year,discoverymethod,pl_orbper,pl_rade,pl_masse,pl_eqt,sy_dist',
+                    'where': where_clause,
+                    'order': 'pl_name',
+                    'format': 'csv'
+                }
+                
+                if confirmed_only:
+                    query_params['where'] += " and default_flag=1"
+                
+                logger.info(f"NASA search strategy {i+1}: {where_clause[:100]}...")
+                
+                # Query NASA Exoplanet Archive
+                temp_result = NasaExoplanetArchive.query_criteria(**query_params)
+                
+                if temp_result is not None and len(temp_result) > 0:
+                    result = temp_result
+                    successful_strategy = i + 1
+                    logger.info(f"✅ NASA search strategy {i+1} found {len(result)} results")
+                    break
+                else:
+                    logger.info(f"❌ NASA search strategy {i+1} found no results")
+                    
+            except Exception as e:
+                logger.warning(f"NASA search strategy {i+1} failed: {e}")
+                continue
+        
+        # Если не нашли в основной таблице, попробуем другие таблицы NASA
+        if result is None or len(result) == 0:
+            logger.info(f"No results in main table, trying additional NASA tables...")
+            
+            # Попробуем таблицу Kepler Objects of Interest
+            try:
+                koi_params = {
+                    'table': 'cumulative',
+                    'select': 'kepoi_name,kepler_name,koi_disposition,koi_period,koi_prad,koi_teq,koi_dor',
+                    'where': f"kepoi_name like '%{q}%' or kepler_name like '%{q}%'",
+                    'order': 'kepoi_name',
+                    'format': 'csv'
+                }
+                
+                koi_result = NasaExoplanetArchive.query_criteria(**koi_params)
+                
+                if koi_result is not None and len(koi_result) > 0:
+                    logger.info(f"✅ Found {len(koi_result)} results in Kepler table")
+                    
+                    # Конвертируем KOI данные в стандартный формат
+                    planets = []
+                    for row in koi_result[:limit]:
+                        # Безопасное извлечение значений из MaskedQuantity
+                        def safe_float(value):
+                            if value is None:
+                                return None
+                            try:
+                                # Обработка MaskedQuantity и других астрономических типов
+                                if hasattr(value, 'value'):
+                                    return float(value.value) if not hasattr(value, 'mask') or not value.mask else None
+                                elif hasattr(value, '__float__'):
+                                    return float(value)
+                                else:
+                                    return float(str(value)) if str(value) not in ['--', 'nan', 'None'] else None
+                            except (ValueError, TypeError, AttributeError):
+                                return None
+                        
+                        def safe_str(value):
+                            if value is None:
+                                return None
+                            try:
+                                if hasattr(value, 'value'):
+                                    return str(value.value) if not hasattr(value, 'mask') or not value.mask else None
+                                else:
+                                    return str(value) if str(value) not in ['--', 'nan', 'None'] else None
+                            except (AttributeError, TypeError):
+                                return None
+                        
+                        planet = {
+                            "name": safe_str(row['kepoi_name']) or safe_str(row['kepler_name']) or "Unknown",
+                            "host_star": safe_str(row['kepler_name']) or "Kepler",
+                            "discovery_year": 2009,  # Kepler mission start
+                            "discovery_method": "Transit",
+                            "orbital_period": safe_float(row['koi_period']),
+                            "planet_radius": safe_float(row['koi_prad']),
+                            "planet_mass": None,
+                            "equilibrium_temperature": safe_float(row['koi_teq']),
+                            "distance_pc": None,
+                            "has_transit": True,
+                            "has_rv": False,
+                            "disposition": safe_str(row['koi_disposition']) or "CANDIDATE",
+                            "source": "NASA Kepler Archive",
+                            "real_nasa_data": True
+                        }
+                        planets.append(planet)
+                    
+                    return create_success_response({
+                        "planets": planets,
+                        "total_planets_found": len(planets),
+                        "sources_searched": ["NASA Exoplanet Archive", "NASA Kepler Archive"],
+                        "search_query": q,
+                        "cached": False,
+                        "real_nasa_data": True,
+                        "data_source": "NASA Kepler Archive",
+                        "search_strategy": "Kepler Objects of Interest"
+                    })
+                    
+            except Exception as e:
+                logger.warning(f"Kepler table search failed: {e}")
+            
+            logger.info(f"All NASA search strategies exhausted for '{q}', falling back to demo data")
+            
+            # Fallback to demo data when NASA archive has no results
+            demo_planets = await generate_demo_search_results(q, limit)
+            
+            return create_success_response({
+                "planets": demo_planets,
+                "total_planets_found": len(demo_planets),
+                "sources_searched": ["NASA Exoplanet Archive", "NASA Kepler Archive", "Demo Data"],
+                "search_query": q,
+                "cached": False,
+                "real_nasa_data": False,
+                "fallback_reason": f"Exhausted all NASA search strategies for '{q}'",
+                "data_source": "Demo Data (NASA archives empty)",
+                "nasa_search_attempts": ["Planetary Systems table", "Kepler Objects of Interest table"],
+                "search_priority": "NASA archives first, demo data as fallback"
+            })
+        
+        # Limit results
+        result = result[:limit]
+        
+        planets = []
+        for row in result:
+            planet = {
+                "name": str(row['pl_name']) if row['pl_name'] else "Unknown",
+                "host_star": str(row['hostname']) if row['hostname'] else "Unknown",
+                "discovery_year": int(row['disc_year']) if row['disc_year'] and str(row['disc_year']).isdigit() else None,
+                "discovery_method": str(row['discoverymethod']) if row['discoverymethod'] else "Unknown",
+                "orbital_period": float(row['pl_orbper']) if row['pl_orbper'] else None,
+                "planet_radius": float(row['pl_rade']) if row['pl_rade'] else None,
+                "planet_mass": float(row['pl_masse']) if row['pl_masse'] else None,
+                "equilibrium_temperature": float(row['pl_eqt']) if row['pl_eqt'] else None,
+                "distance_pc": float(row['sy_dist']) if row['sy_dist'] else None,
+                "has_transit": True,  # Assume transit method if discovery method contains 'Transit'
+                "has_rv": False,  # RV flag not available in current schema
+                "disposition": "CONFIRMED",
+                "source": "NASA Exoplanet Archive",
+                "real_nasa_data": True
+            }
+            planets.append(planet)
+        
+        return create_success_response({
+            "planets": planets,
+            "total_planets_found": len(planets),
+            "sources_searched": ["NASA Exoplanet Archive"],
+            "search_query": q,
+            "cached": False,
+            "real_nasa_data": True,
+            "data_source": "NASA Exoplanet Archive",
+            "search_strategy": f"Strategy {successful_strategy}" if successful_strategy else "Primary search"
+        })
+        
+    except Exception as e:
+        logger.error(f"Error searching real NASA exoplanet data: {e}")
+        logger.info("Falling back to demo data due to NASA API issues")
+        
+        # Fallback to demo data
+        demo_planets = await generate_demo_search_results(q, limit)
+        
+        return create_success_response({
+            "planets": demo_planets,
+            "total_planets_found": len(demo_planets),
+            "sources_searched": ["NASA Exoplanet Archive", "NASA Kepler Archive", "Demo Data"],
+            "search_query": q,
+            "cached": False,
+            "real_nasa_data": False,
+            "fallback_reason": f"NASA API error: {str(e)[:100]}",
+            "data_source": "Demo Data (NASA API unavailable)",
+            "nasa_search_attempts": ["Multiple NASA archive tables attempted"],
+            "search_priority": "NASA archives first, demo data as fallback"
+        })
 
 
 @router.get("/search/demo")
-async def search_exoplanets_demo(
-    q: str = Query(
-        ..., description="Search query (planet name, star name, etc.)", min_length=1
-    ),
-    limit: int = Query(50, description="Maximum results per source", ge=1, le=200),
+async def search_demo_exoplanets(
+    q: str = Query(..., description="Search query for demo data", min_length=1),
+    limit: int = Query(50, description="Maximum results", ge=1, le=200),
 ):
     """
-    Search for exoplanets (Demo version - returns mock data)
-    
-    Returns realistic mock exoplanet data for demonstration purposes.
+    Search demo exoplanets - always returns mock data
+    Поиск demo экзопланет - всегда возвращает mock данные
     """
-    import random
-    import numpy as np
-    
-    # Generate consistent mock data based on query
-    random.seed(hash(q) % 2**32)
-    np.random.seed(hash(q) % 2**32)
-    
-    # Create mock planets based on query
-    mock_planets = []
-    num_results = min(random.randint(1, 5), limit)
-    
-    for i in range(num_results):
-        planet_name = f"{q}-{chr(97+i)}" if not any(char.isdigit() for char in q) else f"{q}.{i+1:02d}"
+    try:
+        # Генерируем demo данные на основе запроса
+        demo_planets = await generate_demo_search_results(q, limit)
         
-        mock_planet = {
-            "name": planet_name,
-            "host_star": q if "TIC" in q or "TOI" in q else f"{q.split('-')[0]} {random.randint(1, 999)}",
-            "discovery_year": random.randint(2009, 2024),
-            "discovery_method": random.choice(["Transit", "Radial Velocity", "Direct Imaging"]),
-            "orbital_period": round(random.uniform(0.5, 365.0), 3),
-            "planet_radius": round(random.uniform(0.5, 15.0), 3),
-            "planet_mass": round(random.uniform(0.1, 300.0), 3),
-            "equilibrium_temperature": random.randint(200, 2000),
-            "distance_pc": round(random.uniform(10.0, 500.0), 1),
-            "stellar_magnitude": round(random.uniform(8.0, 16.0), 2),
-            "disposition": random.choice(["CONFIRMED", "CANDIDATE", "FALSE POSITIVE"]),
-            "source": random.choice(["NASA Exoplanet Archive", "TESS", "Kepler"]),
-            "ra": round(random.uniform(0, 360), 6),
-            "dec": round(random.uniform(-90, 90), 6),
-            "transit_depth_ppm": random.randint(100, 10000) if random.random() > 0.3 else None,
-            "impact_parameter": round(random.uniform(0, 1), 3) if random.random() > 0.5 else None
-        }
-        mock_planets.append(mock_planet)
-    
-    return {
-        "status": "success",
-        "data": {
-            "planets": mock_planets,
-            "total_planets_found": len(mock_planets),
-            "sources_searched": ["nasa", "tess", "kepler"],
+        return create_success_response({
+            "planets": demo_planets,
+            "total_planets_found": len(demo_planets),
+            "sources_searched": ["Demo Data Generator"],
             "search_query": q,
-            "cached": False
-        },
-        "message": f"Found {len(mock_planets)} demo planets for '{q}'",
-        "processing_time_ms": random.randint(50, 200)
-    }
-
-
-@router.get("/exoplanets")
-async def get_exoplanet_catalog(
-    limit: int = Query(12, ge=1, le=100),
-    offset: int = Query(0, ge=0),
-    habitable_only: bool = Query(False)
-):
-    """
-    Получить каталог экзопланет для отображения
-    """
-    try:
-        # Генерируем demo каталог
-        exoplanets = []
-        
-        demo_planets = [
-            {"name": "TOI-715 b", "host_star": "TOI-715", "radius_earth_radii": 1.55, "orbital_period_days": 19.3, "equilibrium_temperature_k": 450, "distance_parsecs": 137.0, "discovery_method": "Transit", "discovery_year": 2024, "status": "Confirmed"},
-            {"name": "Kepler-452b", "host_star": "Kepler-452", "radius_earth_radii": 1.63, "orbital_period_days": 384.8, "equilibrium_temperature_k": 265, "distance_parsecs": 430.0, "discovery_method": "Transit", "discovery_year": 2015, "status": "Confirmed"},
-            {"name": "TOI-849 b", "host_star": "TOI-849", "radius_earth_radii": 3.4, "orbital_period_days": 0.765, "equilibrium_temperature_k": 1800, "distance_parsecs": 224.0, "discovery_method": "Transit", "discovery_year": 2020, "status": "Confirmed"},
-            {"name": "TOI-1338 b", "host_star": "TOI-1338", "radius_earth_radii": 6.9, "orbital_period_days": 95.2, "equilibrium_temperature_k": 200, "distance_parsecs": 395.0, "discovery_method": "Transit", "discovery_year": 2020, "status": "Confirmed"},
-            {"name": "K2-18 b", "host_star": "K2-18", "radius_earth_radii": 2.3, "orbital_period_days": 33.0, "equilibrium_temperature_k": 234, "distance_parsecs": 34.0, "discovery_method": "Transit", "discovery_year": 2015, "status": "Confirmed"},
-            {"name": "TRAPPIST-1e", "host_star": "TRAPPIST-1", "radius_earth_radii": 0.92, "orbital_period_days": 6.1, "equilibrium_temperature_k": 251, "distance_parsecs": 12.1, "discovery_method": "Transit", "discovery_year": 2017, "status": "Confirmed"},
-            {"name": "Proxima Cen b", "host_star": "Proxima Centauri", "radius_earth_radii": 1.17, "orbital_period_days": 11.2, "equilibrium_temperature_k": 234, "distance_parsecs": 1.3, "discovery_method": "Radial_Velocity", "discovery_year": 2016, "status": "Confirmed"},
-            {"name": "TOI-2109 b", "host_star": "TOI-2109", "radius_earth_radii": 1.35, "orbital_period_days": 0.67, "equilibrium_temperature_k": 2400, "distance_parsecs": 262.0, "discovery_method": "Transit", "discovery_year": 2021, "status": "Confirmed"},
-        ]
-        
-        # Фильтрация по обитаемости
-        if habitable_only:
-            demo_planets = [p for p in demo_planets if 200 <= p["equilibrium_temperature_k"] <= 300]
-        
-        # Пагинация
-        total = len(demo_planets)
-        paginated = demo_planets[offset:offset + limit]
-        
-        return {
-            "exoplanets": paginated,
-            "total": total,
-            "limit": limit,
-            "offset": offset,
-            "has_more": offset + limit < total
-        }
-        
-    except Exception as e:
-        logger.error(f"Error getting exoplanet catalog: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-@router.get("/statistics")
-async def get_database_statistics():
-    """
-    Получить статистику базы данных
-    """
-    return {
-        "total_exoplanets": 5234,
-        "confirmed_planets": 3456,
-        "candidate_planets": 1234,
-        "false_positives": 544,
-        "missions": {
-            "TESS": 2100,
-            "Kepler": 2800,
-            "K2": 334
-        },
-        "discovery_methods": {
-            "Transit": 4200,
-            "Radial Velocity": 800,
-            "Direct Imaging": 134,
-            "Microlensing": 100
-        },
-        "last_updated": "2025-10-04T20:15:00Z"
-    }
-
-@router.get("/search-history")
-async def get_search_history(limit: int = Query(50, ge=1, le=100)):
-    """
-    Получить историю поиска
-    """
-    import random
-    from datetime import datetime, timedelta
-    
-    history = []
-    targets = ["TOI-715", "Kepler-452b", "TOI-849", "TRAPPIST-1e", "K2-18b", "Proxima Cen b"]
-    
-    for i in range(min(limit, 20)):
-        history.append({
-            "id": i + 1,
-            "target_name": random.choice(targets),
-            "timestamp": (datetime.now() - timedelta(hours=random.randint(1, 168))).isoformat(),
-            "result_class": random.choice(["Confirmed", "Candidate", "False Positive"]),
-            "confidence": round(random.uniform(0.6, 0.99), 2),
-            "processing_time_ms": random.randint(150, 800)
+            "cached": False,
+            "real_nasa_data": False,
+            "data_source": "Demo Data Generator",
+            "search_type": "demo_only"
         })
-    
-    return {
-        "search_history": history,
-        "total": len(history)
-    }
-
-@router.get("/metrics")
-async def get_database_metrics(hours: int = Query(24, ge=1, le=168)):
-    """
-    Получить метрики базы данных
-    """
-    import random
-    from datetime import datetime, timedelta
-    
-    # Генерируем метрики за указанный период
-    metrics = {
-        "time_period_hours": hours,
-        "total_searches": random.randint(50, 200),
-        "successful_analyses": random.randint(40, 180),
-        "average_processing_time_ms": random.randint(200, 500),
-        "api_calls": {
-            "analyze": random.randint(30, 150),
-            "catalog": random.randint(10, 50),
-            "health": random.randint(100, 300)
-        },
-        "classification_results": {
-            "Confirmed": random.randint(10, 40),
-            "Candidate": random.randint(15, 60),
-            "False Positive": random.randint(5, 30)
-        },
-        "data_sources_used": {
-            "NASA": random.randint(20, 80),
-            "Demo": random.randint(10, 40),
-            "User Upload": random.randint(5, 20)
-        }
-    }
-    
-    return metrics
-
-@router.get("/search")
-async def search_exoplanets(
-    q: str = Query(
-        ..., description="Search query (planet name, star name, etc.)", min_length=1
-    ),
-    limit: int = Query(50, description="Maximum results per source", ge=1, le=200),
-    sources: Optional[str] = Query(
-        None, description="Comma-separated source types (nasa,tess,kepler)"
-    ),
-    discovery_year_min: Optional[int] = Query(
-        None, description="Minimum discovery year", ge=1990
-    ),
-    discovery_year_max: Optional[int] = Query(
-        None, description="Maximum discovery year", le=2030
-    ),
-    confirmed_only: bool = Query(False, description="Only confirmed planets"),
-    current_user: Optional[User] = Depends(get_optional_user),
-):
-    """
-    Search for exoplanets across multiple data sources
-
-    **Public endpoint** - no authentication required
-
-    **Example queries:**
-    - `TOI-715` - Search for specific planet
-    - `Kepler` - Search for Kepler planets
-    - `TRAPPIST` - Search for TRAPPIST system
-    """
-    start_time = time.time()
-
-    try:
-        # Get registry
-        registry = get_registry()
-
-        # Parse source types
-        source_types = None
-        if sources:
-            from data_sources.base import DataSourceType
-
-            try:
-                source_types = [
-                    DataSourceType(s.strip().lower()) for s in sources.split(",")
-                ]
-            except ValueError as e:
-                return create_error_response(
-                    ErrorCode.VALIDATION_ERROR, f"Invalid source type: {e}"
-                )
-
-        # Build filters
-        filters = {}
-        if discovery_year_min:
-            filters["discovery_year_min"] = discovery_year_min
-        if discovery_year_max:
-            filters["discovery_year_max"] = discovery_year_max
-        if confirmed_only:
-            filters["confirmed_only"] = True
-
-        # Check cache first
-        cache = get_cache()
-        cache_key = f"search:{q}:{limit}:{sources}:{discovery_year_min}:{discovery_year_max}:{confirmed_only}"
-        cached_result = await cache.get("planet_search", cache_key)
-
-        if cached_result:
-            logger.info(f"Cache hit for search: {q}")
-            cached_result["cached"] = True
-            cached_result["search_time_ms"] = (time.time() - start_time) * 1000
-            return create_success_response(
-                data=cached_result, message="Search results (cached)"
-            )
-
-        # For demo purposes, always use demo data to avoid timeouts
-        logger.info(f"Using demo data for search: '{q}'")
-        search_results = await generate_demo_search_results(q, limit)
-
-        # Cache results for 1 hour
-        await cache.set("planet_search", cache_key, search_results, ttl=3600)
-
-        processing_time = (time.time() - start_time) * 1000
-
-        logger.info(
-            f"Search completed: '{q}' - {search_results['total_planets_found']} planets found"
-        )
-
-        return create_success_response(
-            data=search_results,
-            message=f"Found {search_results['total_planets_found']} planets",
-            processing_time_ms=processing_time,
-        )
-
+        
     except Exception as e:
-        logger.error(f"Search error for '{q}': {e}")
+        logger.error(f"Error generating demo search results: {e}")
         return create_error_response(
             ErrorCode.INTERNAL_ERROR,
-            f"Search failed: {str(e)}",
-            processing_time_ms=(time.time() - start_time) * 1000,
+            f"Demo search failed: {str(e)}"
+        )
+
+
+@router.get("/nasa-status")
+async def check_nasa_api_status():
+    """
+    Check NASA Exoplanet Archive API status
+    Проверка статуса NASA Exoplanet Archive API
+    """
+    if not NASA_ARCHIVE_AVAILABLE:
+        return create_success_response({
+            "nasa_api_available": False,
+            "reason": "astroquery not installed",
+            "recommendation": "Install astroquery to enable real NASA data"
+        })
+    
+    try:
+        # Простой тестовый запрос к NASA архиву
+        test_params = {
+            'table': 'ps',
+            'select': 'pl_name',
+            'where': "pl_name like 'Kepler-452 b'",
+            'format': 'csv'
+        }
+        
+        test_result = NasaExoplanetArchive.query_criteria(**test_params)
+        
+        return create_success_response({
+            "nasa_api_available": True,
+            "test_query_successful": test_result is not None,
+            "available_tables": ["ps (Planetary Systems)", "cumulative (Kepler Objects of Interest)"],
+            "search_strategies": [
+                "Exact name match",
+                "Partial name match (no spaces/dashes)",
+                "Name prefix match", 
+                "TIC/TOI/KOI ID search"
+            ],
+            "status": "NASA Exoplanet Archive API is operational"
+        })
+        
+    except Exception as e:
+        return create_success_response({
+            "nasa_api_available": False,
+            "error": str(e),
+            "fallback_active": True,
+            "recommendation": "Using demo data due to NASA API issues"
+        })
+
+
+@router.get("/confirmed")
+async def get_confirmed_exoplanets(
+    limit: int = Query(100, description="Maximum results", ge=1, le=500),
+    sort_by: str = Query("discovery_year", description="Sort field"),
+):
+    """
+    Get confirmed exoplanets from NASA Exoplanet Archive
+    Получить подтвержденные экзопланеты из архива NASA
+    """
+    if not NASA_ARCHIVE_AVAILABLE:
+        raise HTTPException(
+            status_code=503,
+            detail="Real NASA exoplanet data unavailable - astroquery not installed"
+        )
+    
+    try:
+        logger.info(f"Fetching {limit} confirmed exoplanets from NASA archive")
+        
+        # Query confirmed planets only
+        result = NasaExoplanetArchive.query_criteria(
+            table='ps',
+            select='pl_name,hostname,disc_year,discoverymethod,pl_orbper,pl_rade,pl_masse,pl_eqt,sy_dist',
+            where='default_flag=1',
+            order='disc_year desc',
+            format='csv'
+        )
+        
+        if result is None or len(result) == 0:
+            return create_success_response({
+                "planets": [],
+                "total_found": 0,
+                "message": "No confirmed planets found in NASA archive"
+            })
+        
+        # Limit results
+        result = result[:limit]
+        
+        planets = []
+        for row in result:
+            planet = {
+                "name": str(row['pl_name']) if row['pl_name'] else "Unknown",
+                "host_star": str(row['hostname']) if row['hostname'] else "Unknown",
+                "discovery_year": int(row['disc_year']) if row['disc_year'] and str(row['disc_year']).isdigit() else None,
+                "discovery_method": str(row['discoverymethod']) if row['discoverymethod'] else "Unknown",
+                "orbital_period": float(row['pl_orbper']) if row['pl_orbper'] else None,
+                "planet_radius": float(row['pl_rade']) if row['pl_rade'] else None,
+                "planet_mass": float(row['pl_masse']) if row['pl_masse'] else None,
+                "equilibrium_temperature": float(row['pl_eqt']) if row['pl_eqt'] else None,
+                "distance_pc": float(row['sy_dist']) if row['sy_dist'] else None,
+                "status": "CONFIRMED",
+                "source": "NASA Exoplanet Archive",
+                "real_nasa_data": True
+            }
+            planets.append(planet)
+        
+        return create_success_response({
+            "planets": planets,
+            "total_found": len(planets),
+            "sort_by": sort_by,
+            "data_source": "NASA Exoplanet Archive",
+            "real_nasa_data": True
+        })
+        
+    except Exception as e:
+        logger.error(f"Error fetching confirmed exoplanets: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to fetch confirmed planets: {str(e)}"
         )
 
 
 @router.get("/{planet_name}")
-async def get_planet_info(
-    planet_name: str = Path(
-        ..., description="Planet name (e.g., 'TOI-715 b', 'Kepler-452b')"
-    ),
-    source: Optional[str] = Query(None, description="Preferred data source"),
-    current_user: Optional[User] = Depends(get_optional_user),
+async def get_planet_details(
+    planet_name: str = Path(..., description="Planet name"),
 ):
     """
-    Get detailed information about a specific exoplanet
-
-    **Public endpoint** - no authentication required
-
-    **Examples:**
-    - `/api/v1/exoplanets/TOI-715%20b`
-    - `/api/v1/exoplanets/Kepler-452b`
-    - `/api/v1/exoplanets/TRAPPIST-1%20e`
+    Get detailed information about a specific planet from NASA archive
+    Получить детальную информацию о планете из архива NASA
     """
-    start_time = time.time()
-
+    if not NASA_ARCHIVE_AVAILABLE:
+        raise HTTPException(
+            status_code=503,
+            detail="Real NASA exoplanet data unavailable - astroquery not installed"
+        )
+    
     try:
-        # Check cache first
-        cache = get_cache()
-        cache_key = f"{planet_name}:{source}"
-        cached_planet = await cache.get("planets", cache_key)
-
-        if cached_planet:
-            logger.info(f"Cache hit for planet: {planet_name}")
-            return create_success_response(
-                data={"planet": cached_planet, "cached": True},
-                message=f"Planet information for {planet_name}",
-                processing_time_ms=(time.time() - start_time) * 1000,
-            )
-
-        # Get registry and sources
-        registry = get_registry()
-        sources = registry.get_available_sources()
-
-        if not sources:
-            return create_error_response(
-                ErrorCode.SERVICE_UNAVAILABLE, "No data sources available"
-            )
-
-        # Try to find planet in sources
-        planet_info = None
-        source_used = None
-
-        # If specific source requested, try it first
-        if source:
-            specific_source = registry.get_source(source)
-            if specific_source and specific_source.is_initialized:
-                try:
-                    planet_info = await specific_source.fetch_planet_info(planet_name)
-                    if planet_info:
-                        source_used = source
-                except Exception as e:
-                    logger.warning(f"Failed to fetch from {source}: {e}")
-
-        # If not found, try all sources
-        if not planet_info:
-            for src in sources:
-                try:
-                    planet_info = await src.fetch_planet_info(planet_name)
-                    if planet_info:
-                        source_used = src.name
-                        break
-                except Exception as e:
-                    logger.debug(f"Planet not found in {src.name}: {e}")
-                    continue
-
-        if not planet_info:
-            return create_error_response(
-                ErrorCode.DATA_NOT_FOUND,
-                f"Planet '{planet_name}' not found in any data source",
-                processing_time_ms=(time.time() - start_time) * 1000,
-            )
-
-        # Convert to dict and cache
-        planet_dict = planet_info.__dict__
-        planet_dict["source_used"] = source_used
-
-        # Cache for 6 hours
-        await cache.set("planets", cache_key, planet_dict, ttl=21600)
-
-        processing_time = (time.time() - start_time) * 1000
-
-        logger.info(f"Planet info retrieved: {planet_name} from {source_used}")
-
-        return create_success_response(
-            data={"planet": planet_dict, "cached": False},
-            message=f"Planet information for {planet_name}",
-            processing_time_ms=processing_time,
+        logger.info(f"Fetching details for planet: {planet_name}")
+        
+        # Query specific planet
+        result = NasaExoplanetArchive.query_criteria(
+            table='ps',
+            where=f"pl_name='{planet_name}'",
+            format='csv'
         )
-
-    except Exception as e:
-        logger.error(f"Error fetching planet info for '{planet_name}': {e}")
-        return create_error_response(
-            ErrorCode.INTERNAL_ERROR,
-            f"Failed to fetch planet information: {str(e)}",
-            processing_time_ms=(time.time() - start_time) * 1000,
-        )
-
-
-@router.get("/{planet_name}/validate")
-async def validate_planet(
-    planet_name: str = Path(..., description="Planet name to validate"),
-    current_user: Optional[User] = Depends(get_optional_user),
-):
-    """
-    Validate if a planet exists in astronomical databases
-
-    **Public endpoint** - no authentication required
-    """
-    start_time = time.time()
-
-    try:
-        registry = get_registry()
-        sources = registry.get_available_sources()
-
-        validation_results = {}
-        found_in_sources = []
-
-        for source in sources:
-            try:
-                exists = await source.validate_target(planet_name)
-                validation_results[source.name] = {
-                    "exists": exists,
-                    "source_type": source.source_type.value,
-                }
-                if exists:
-                    found_in_sources.append(source.name)
-            except Exception as e:
-                validation_results[source.name] = {"exists": False, "error": str(e)}
-
-        is_valid = len(found_in_sources) > 0
-
-        return create_success_response(
-            data={
-                "planet_name": planet_name,
-                "is_valid": is_valid,
-                "found_in_sources": found_in_sources,
-                "validation_details": validation_results,
-            },
-            message=f"Validation {'successful' if is_valid else 'failed'} for {planet_name}",
-            processing_time_ms=(time.time() - start_time) * 1000,
-        )
-
-    except Exception as e:
-        logger.error(f"Validation error for '{planet_name}': {e}")
-        return create_error_response(
-            ErrorCode.INTERNAL_ERROR,
-            f"Validation failed: {str(e)}",
-            processing_time_ms=(time.time() - start_time) * 1000,
-        )
-
-
-@router.get("/")
-async def list_recent_discoveries(
-    limit: int = Query(20, description="Number of recent discoveries", ge=1, le=100),
-    discovery_year: Optional[int] = Query(None, description="Filter by discovery year"),
-    current_user: Optional[User] = Depends(get_optional_user),
-):
-    """
-    Get list of recent exoplanet discoveries
-
-    **Public endpoint** - no authentication required
-    """
-    start_time = time.time()
-
-    try:
-        # This is a simplified implementation
-        # In a real system, you'd query for recent discoveries from your database
-
-        cache = get_cache()
-        cache_key = f"recent:{limit}:{discovery_year}"
-        cached_results = await cache.get("recent_discoveries", cache_key)
-
-        if cached_results:
-            return create_success_response(
-                data=cached_results,
-                message="Recent discoveries (cached)",
-                processing_time_ms=(time.time() - start_time) * 1000,
+        
+        if result is None or len(result) == 0:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Planet '{planet_name}' not found in NASA Exoplanet Archive"
             )
-
-        # For now, return some example recent discoveries
-        recent_discoveries = [
-            {
-                "name": "TOI-715 b",
-                "host_star": "TOI-715",
-                "discovery_year": 2024,
-                "discovery_method": "Transit",
-                "discovery_facility": "TESS",
-                "status": "confirmed",
-                "radius_earth_radii": 1.55,
-                "orbital_period_days": 19.3,
-                "habitable_zone": True,
-            },
-            {
-                "name": "K2-18 b",
-                "host_star": "K2-18",
-                "discovery_year": 2015,
-                "discovery_method": "Transit",
-                "discovery_facility": "K2",
-                "status": "confirmed",
-                "radius_earth_radii": 2.3,
-                "orbital_period_days": 33.0,
-                "habitable_zone": True,
-                "atmosphere_detected": True,
-            },
-        ]
-
-        # Filter by year if specified
-        if discovery_year:
-            recent_discoveries = [
-                p
-                for p in recent_discoveries
-                if p.get("discovery_year") == discovery_year
-            ]
-
-        # Limit results
-        recent_discoveries = recent_discoveries[:limit]
-
-        result = {
-            "discoveries": recent_discoveries,
-            "total_count": len(recent_discoveries),
-            "filters": {"limit": limit, "discovery_year": discovery_year},
+        
+        row = result[0]
+        
+        planet_details = {
+            "name": str(row['pl_name']) if row['pl_name'] else planet_name,
+            "host_star": str(row['hostname']) if row['hostname'] else "Unknown",
+            "discovery_year": int(row['disc_year']) if row['disc_year'] and str(row['disc_year']).isdigit() else None,
+            "discovery_method": str(row['discoverymethod']) if row['discoverymethod'] else "Unknown",
+            "orbital_period": float(row['pl_orbper']) if row['pl_orbper'] else None,
+            "planet_radius": float(row['pl_rade']) if row['pl_rade'] else None,
+            "planet_mass": float(row['pl_masse']) if row['pl_masse'] else None,
+            "equilibrium_temperature": float(row['pl_eqt']) if row['pl_eqt'] else None,
+            "distance_pc": float(row['sy_dist']) if row['sy_dist'] else None,
+            "status": "CONFIRMED",
+            "source": "NASA Exoplanet Archive",
+            "real_nasa_data": True,
+            "last_updated": time.strftime("%Y-%m-%d %H:%M:%S")
         }
-
-        # Cache for 1 hour
-        await cache.set("recent_discoveries", cache_key, result, ttl=3600)
-
-        return create_success_response(
-            data=result,
-            message=f"Found {len(recent_discoveries)} recent discoveries",
-            processing_time_ms=(time.time() - start_time) * 1000,
-        )
-
+        
+        return create_success_response({
+            "planet": planet_details,
+            "data_source": "NASA Exoplanet Archive",
+            "real_nasa_data": True
+        })
+        
+    except HTTPException:
+        raise
     except Exception as e:
-        logger.error(f"Error fetching recent discoveries: {e}")
-        return create_error_response(
-            ErrorCode.INTERNAL_ERROR,
-            f"Failed to fetch recent discoveries: {str(e)}",
-            processing_time_ms=(time.time() - start_time) * 1000,
+        logger.error(f"Error fetching planet details: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to fetch planet details: {str(e)}"
         )

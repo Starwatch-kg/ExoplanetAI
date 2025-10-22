@@ -10,7 +10,6 @@ Model Training and Validation System
 - Мониторинг производительности
 """
 
-import numpy as np
 import pandas as pd
 from typing import Dict, List, Optional, Tuple, Any, Union
 from pathlib import Path

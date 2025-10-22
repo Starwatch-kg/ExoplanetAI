@@ -157,15 +157,11 @@ class EnhancedAutoMLTrainer:
             real_data = await self.collect_nasa_real_data()
             logger.info(f"Collected {len(real_data)} real samples")
             
-            # 2. Генерация синтетических данных для дополнения
-            synthetic_needed = max(100, len(real_data) * 3)  # 3:1 соотношение
-            synthetic_data = await self.generate_adaptive_synthetic_data(
-                real_data, synthetic_needed
-            )
-            logger.info(f"Generated {len(synthetic_data)} synthetic samples")
+            # 2. ТОЛЬКО РЕАЛЬНЫЕ ДАННЫЕ - синтетические данные отключены
+            logger.info("Synthetic data generation disabled - using real data only")
             
-            # 3. Объединение и балансировка данных
-            training_data = await self.balance_training_data(real_data, synthetic_data)
+            # 3. Балансировка только реальных данных
+            training_data = await self.balance_training_data(real_data, [])
             
             if len(training_data) < 50:
                 logger.warning(f"Insufficient training data: {len(training_data)}")
@@ -308,49 +304,9 @@ class EnhancedAutoMLTrainer:
             return None
     
     async def generate_adaptive_synthetic_data(self, real_data: List[Dict], count: int) -> List[Dict]:
-        """Генерирует синтетические данные, адаптированные к реальным"""
-        synthetic_data = []
-        
-        try:
-            # Анализируем характеристики реальных данных
-            real_characteristics = self.analyze_real_data_characteristics(real_data)
-            
-            # Генерируем синтетику с похожими характеристиками
-            raw_synthetic = create_synthetic_training_data(count)
-            
-            for i, (time, flux, flux_err, label) in enumerate(raw_synthetic):
-                try:
-                    # Адаптируем под реальные характеристики
-                    adapted_flux = self.adapt_synthetic_to_real(
-                        flux, real_characteristics
-                    )
-                    
-                    # Обработка
-                    processed = self.preprocessor.preprocess_lightcurve(
-                        time, adapted_flux, flux_err
-                    )
-                    
-                    features = self.feature_extractor.extract_features(
-                        processed['time'], processed['flux'], processed['flux_err']
-                    )
-                    
-                    synthetic_data.append({
-                        'features': features,
-                        'label': label,
-                        'target_name': f"synthetic_adapted_{i}",
-                        'data_source': 'synthetic_adapted',
-                        'data_quality': processed.get('data_quality', 0.7)
-                    })
-                    
-                except Exception as e:
-                    logger.warning(f"Error processing synthetic sample {i}: {e}")
-                    continue
-            
-            return synthetic_data
-            
-        except Exception as e:
-            logger.error(f"Error generating adaptive synthetic data: {e}")
-            return []
+        """ОТКЛЮЧЕНО: Генерация синтетических данных отключена - используются только реальные данные NASA"""
+        logger.info("Synthetic data generation is disabled - real NASA data only")
+        return []
     
     def analyze_real_data_characteristics(self, real_data: List[Dict]) -> Dict:
         """Анализирует характеристики реальных данных"""

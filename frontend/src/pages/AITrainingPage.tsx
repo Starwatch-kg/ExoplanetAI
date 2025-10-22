@@ -121,7 +121,7 @@ const AITrainingPageContent: React.FC = () => {
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = 'astromanas_model.h5'
+      a.download = 'vohymanas_model.h5'
       document.body.appendChild(a)
       a.click()
       window.URL.revokeObjectURL(url)

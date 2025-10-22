@@ -103,7 +103,7 @@ const Header: React.FC<HeaderProps> = React.memo(({ healthStatus, useSimpleBackg
           <div className="flex items-center gap-2">
             <Telescope size={32} className="text-amber-400 animate-pulse-slow drop-shadow-lg" />
             <h1 className="text-2xl font-bold bg-gradient-to-r from-gray-100 via-amber-200 to-orange-300 bg-clip-text text-transparent">
-              AstroManas
+              VoHyManas
             </h1>
           </div>
         </Link>

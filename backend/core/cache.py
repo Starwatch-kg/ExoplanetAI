@@ -397,6 +397,11 @@ def get_cache() -> CacheManager:
     return _cache_manager
 
 
+def get_cache_manager() -> CacheManager:
+    """Get the global cache manager (alias for compatibility)"""
+    return _cache_manager
+
+
 async def initialize_cache() -> bool:
     """Initialize the global cache"""
     success = await _cache_manager.initialize()

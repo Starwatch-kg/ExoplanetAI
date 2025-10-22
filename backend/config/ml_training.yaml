@@ -1,0 +1,18 @@
+
+# Конфигурация для реального обучения ML моделей
+REAL_DATA_SOURCES:
+  - NASA_EXOPLANET_ARCHIVE
+  - TESS_LIGHTCURVES
+  - KEPLER_DATA
+  - K2_MISSION
+
+TRAINING_CONFIG:
+  use_real_data_only: true
+  mock_data_enabled: false
+  min_training_samples: 1000
+  validation_split: 0.2
+  
+DATA_QUALITY_FILTERS:
+  min_snr: 5.0
+  min_transit_depth: 0.001
+  max_noise_level: 0.01

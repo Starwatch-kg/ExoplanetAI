@@ -334,9 +334,12 @@ class LightCurvePreprocessor:
         """
         try:
             # Используем полный пайплайн предобработки
-            processed_time, processed_flux, processed_flux_err = self.full_preprocessing_pipeline(
+            processed_data = self.full_preprocessing_pipeline(
                 time, flux, flux_err
             )
+            processed_time = processed_data['time']
+            processed_flux = processed_data['flux']
+            processed_flux_err = processed_data['flux_err']
             
             return {
                 'time': processed_time,

@@ -47,7 +47,7 @@ const GPIPage: React.FC = () => {
     setResult(null)
 
     try {
-      const response = await fetch('/api/v1/gpi/search', {
+      const response = await fetch('/api/v1/exoplanets/search?q=' + encodeURIComponent(parameters.target_name || 'TOI'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -75,7 +75,7 @@ const GPIPage: React.FC = () => {
   const generateSyntheticData = async () => {
     try {
       setLoading(true)
-      const response = await fetch('/api/v1/gpi/generate-data', {
+      const response = await fetch('/api/v1/analyze/analyze', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

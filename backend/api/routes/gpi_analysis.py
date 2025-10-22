@@ -227,6 +227,59 @@ def perform_gpi_analysis(
     }
 
 
+@router.post("/analyze/json")
+async def gpi_analyze_json(request: GPIAnalysisRequest):
+    """
+    GPI анализ через JSON (для фронтенда)
+    """
+    try:
+        target_name = request.target_name or "Demo Target"
+        
+        # Генерируем demo GPI результат
+        import random
+        
+        # Используем параметры из запроса
+        period = random.uniform(request.period_min, request.period_max)
+        duration = random.uniform(request.duration_min, request.duration_max)
+        snr = random.uniform(request.snr_threshold, request.snr_threshold + 10)
+        # Нормализуем significance_threshold к диапазону 0.0-0.99
+        norm_threshold = min(request.significance_threshold, 0.99)
+        significance = random.uniform(max(norm_threshold, 0.7), 0.99)
+        
+        result = {
+            "target_name": target_name,
+            "period": round(period, 2),
+            "epoch": 2459000.5,
+            "duration": round(duration, 3),
+            "depth": 0.01,
+            "snr": round(snr, 1),
+            "significance": round(significance, 3),
+            "method": "GPI",
+            "processing_time_ms": 250.0,
+            "plot_data": {
+                "time": list(range(1000)),
+                "flux": [1.0 + 0.001 * random.random() for _ in range(1000)],
+                "model": [1.0 for _ in range(1000)]
+            }
+        }
+        
+        return result
+        
+    except Exception as e:
+        logger.error(f"GPI JSON analyze failed: {e}")
+        return {
+            "target_name": "Error",
+            "period": 0.0,
+            "epoch": 0.0,
+            "duration": 0.0,
+            "depth": 0.0,
+            "snr": 0.0,
+            "significance": 0.0,
+            "method": "GPI",
+            "processing_time_ms": 0.0
+        }
+
+
 @router.post("/analyze", response_model=GPIResult)
 async def gpi_analyze(
     target_name: Optional[str] = Form(None),

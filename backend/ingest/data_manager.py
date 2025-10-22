@@ -12,7 +12,6 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 import aiohttp
-import numpy as np
 import pandas as pd
 
 # Initialize logger first

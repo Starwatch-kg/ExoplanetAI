@@ -4,7 +4,7 @@ NASA Data Service
 """
 
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import aiohttp
 import numpy as np
@@ -108,7 +108,7 @@ class NASADataService:
 
     async def get_lightcurve_data(
         self, target_name: str, mission: str = "TESS"
-    ) -> Optional[Tuple[np.ndarray, np.ndarray, np.ndarray]]:
+    ) -> Optional[Dict[str, Any]]:
         """Получить реальные данные кривой блеска из MAST"""
         try:
             # Проверяем кэш
@@ -150,7 +150,11 @@ class NASADataService:
         try:
             # Если уже TIC ID
             if target_name.upper().startswith("TIC"):
-                return target_name.replace("TIC", "").strip()
+                # Извлекаем числовую часть TIC ID
+                tic_part = target_name.upper().replace("TIC", "").strip()
+                # Убираем все нечисловые символы кроме цифр
+                tic_id = ''.join(filter(str.isdigit, tic_part))
+                return tic_id if tic_id else None
 
             # Поиск через MAST resolver
             resolver_url = f"{self.base_url_mast}/Mashup/Catalogs/resolve"

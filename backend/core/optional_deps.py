@@ -94,8 +94,7 @@ class FallbackStats:
     @staticmethod
     def skew(data):
         """Simple skewness calculation"""
-        import numpy as np
-        data = np.asarray(data)
+                data = np.asarray(data)
         mean = np.mean(data)
         std = np.std(data)
         if std == 0:
@@ -105,8 +104,7 @@ class FallbackStats:
     @staticmethod
     def kurtosis(data):
         """Simple kurtosis calculation"""
-        import numpy as np
-        data = np.asarray(data)
+                data = np.asarray(data)
         mean = np.mean(data)
         std = np.std(data)
         if std == 0:
@@ -116,8 +114,7 @@ class FallbackStats:
     @staticmethod
     def linregress(x, y):
         """Simple linear regression"""
-        import numpy as np
-        x, y = np.asarray(x), np.asarray(y)
+                x, y = np.asarray(x), np.asarray(y)
         n = len(x)
         if n < 2:
             return 0, 0, 0, 1, 0
@@ -138,8 +135,7 @@ class FallbackSignal:
     @staticmethod
     def find_peaks(data, height=None, distance=None):
         """Simple peak finding"""
-        import numpy as np
-        data = np.asarray(data)
+                data = np.asarray(data)
         peaks = []
         
         for i in range(1, len(data) - 1):
@@ -152,8 +148,7 @@ class FallbackSignal:
     @staticmethod
     def periodogram(data, fs=1.0):
         """Simple periodogram using numpy FFT"""
-        import numpy as np
-        data = np.asarray(data)
+                data = np.asarray(data)
         n = len(data)
         
         # Simple FFT-based periodogram

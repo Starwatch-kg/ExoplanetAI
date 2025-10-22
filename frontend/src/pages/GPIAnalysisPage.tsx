@@ -67,23 +67,29 @@ export default function GPIAnalysisPage({ useSimpleBackground = false }: GPIAnal
     setResult(null)
 
     try {
-      const formData = new FormData()
-      
+      // Для файлового анализа используем FormData, для обычного - JSON
       if (uploadedFile) {
+        const formData = new FormData()
         formData.append('file', uploadedFile)
-      } else {
         formData.append('target_name', targetName.trim())
+        Object.entries(gpiParams).forEach(([key, value]) => {
+          formData.append(key, value.toString())
+        })
+        formData.append('method', 'GPI')
+        
+        // TODO: Implement file upload GPI analysis
+        throw new Error('File upload GPI analysis not implemented yet')
       }
-      
-      // Добавляем GPI параметры
-      Object.entries(gpiParams).forEach(([key, value]) => {
-        formData.append(key, value.toString())
-      })
-      formData.append('method', 'GPI')
 
-      const response = await fetch('/api/v1/analyze/gpi/analyze', {
+      const response = await fetch('/api/v1/gpi/analyze/json', {
         method: 'POST',
-        body: formData
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          target_name: targetName.trim(),
+          ...gpiParams
+        })
       })
 
       if (!response.ok) {
@@ -94,14 +100,14 @@ export default function GPIAnalysisPage({ useSimpleBackground = false }: GPIAnal
       
       const gpiResult: GPIResult = {
         id: Date.now().toString(),
-        target_name: targetName || uploadedFile?.name || 'Unknown',
-        method: 'GPI',
-        result_class: data.predicted_class || 'Unknown',
-        confidence: data.confidence_score || 0,
+        target_name: data.target_name || targetName.trim() || 'Unknown',
+        method: data.method || 'GPI',
+        result_class: 'Candidate', // GPI всегда находит кандидатов
+        confidence: Math.min((data.significance || 0) * 100, 99.9), // ограничиваем до 99.9%
         parameters: {
-          period: data.planet_parameters?.orbital_period_days || 0,
-          depth: data.planet_parameters?.transit_depth_ppm || 0,
-          snr: data.planet_parameters?.snr || 0,
+          period: data.period || 0,
+          depth: (data.depth || 0) * 1000000, // конвертируем из долей в ppm
+          snr: data.snr || 0,
           significance: data.significance || 0
         },
         processing_time_ms: data.processing_time_ms || 0,
@@ -329,7 +335,7 @@ export default function GPIAnalysisPage({ useSimpleBackground = false }: GPIAnal
                     </div>
                     <div className="p-4 rounded-lg border border-gray-600 bg-gray-700/30">
                       <div className="text-sm text-gray-400 mb-1">Confidence</div>
-                      <div className="font-bold text-lg text-white">{(result.confidence * 100).toFixed(1)}%</div>
+                      <div className="font-bold text-lg text-white">{result.confidence.toFixed(1)}%</div>
                     </div>
                   </div>
 
@@ -426,7 +432,7 @@ export default function GPIAnalysisPage({ useSimpleBackground = false }: GPIAnal
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="font-semibold text-white">{(analysis.confidence * 100).toFixed(1)}%</div>
+                    <div className="font-semibold text-white">{analysis.confidence.toFixed(1)}%</div>
                     <div className="text-sm text-gray-400">confidence</div>
                   </div>
                 </div>
